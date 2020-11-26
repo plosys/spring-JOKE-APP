@@ -87,4 +87,92 @@ yarn appsemble login
 > default. The workaround for this is manually adding OAuth2 credentials and passing them to the CLI
 > using `--client-credentials=`.
 
-This will open Appsemble stud
+This will open Appsemble studio in a new window in your browser. A panel will pop up where you must
+select the permissions you need. You will need to select at least _blocks:write_,
+_organizations:write_ and _apps:write_ to complete the steps below. Clicking confirm creates an
+OAuth2 access token, which is required in order to publish blocks and apps. Click register and your
+OAuth2 client credentials will be shown. This will be required when you proceed with the publishing
+blocks and apps steps below.
+
+#### Registering an Organization
+
+To get started developing locally, an Appsemble organization identified through id: `appsemble`
+needs to be created. This organization can be created either in Appsemble Studio, or using the
+following CLI command.
+
+```sh
+yarn appsemble organization create --name Appsemble appsemble
+```
+
+#### Publishing Blocks
+
+After logging in to the CLI, Appsemble blocks can be published locally by running the following
+command.
+
+```sh
+yarn appsemble block publish blocks/*
+```
+
+If prompted, select the OAuth2 credential you created earlier to proceed. You will now see the
+published blocks in the `Block store` page.
+
+Any block that is found within the workspaces listed in `package.json` will be hot-reloaded. More
+information about block development and hot-reloading can be found
+[here](https://appsemble.app/docs/development/developing-blocks).
+
+#### Publishing App templates
+
+In order for users to create apps from within the Appsemble Studio, existing apps that can be used
+as a starting point must be marked as templates. This can be done using the Appsemble CLI, after
+logging in. To publish these apps, run the following command.
+
+```sh
+yarn appsemble app create --context development apps/*
+```
+
+The published apps will be displayed on the `App store` page.
+
+### Tests
+
+Tests can be run using the following command.
+
+```sh
+yarn test
+```
+
+The tests are ran using jest, meaning all [jest CLI options][] can be passed.
+
+By default, database tests are run against the database as specified in
+[docker-compose.yml](docker-compose.yml). The database can be overridden by setting the
+`DATABASE_URL` environment variable. Note that this should **not** include the database name.
+Multiple test databases are created at runtime.
+
+```sh
+DATABASE_URL=postgres://admin:password@localhost:5432 yarn test
+```
+
+### Building
+
+The resulting Docker image can be built using the Docker CLI.
+
+```sh
+docker build --tag appsemble .
+```
+
+## Contributing
+
+Please read our [contributing guidelines](./CONTRIBUTING.md).
+
+## Security
+
+Please read our [security policy](./SECURITY.md).
+
+## License
+
+[LGPL-3.0-only](./LICENSE.md) © [Appsemble](https://appsemble.com)
+
+[docker]: https://docker.com
+[docker compose]: https://docs.docker.com/compose
+[jest cli options]: https://jestjs.io/docs/en/cli
+[nodejs]: https://nodejs.org
+[yarn]: https://yarnpkg.com

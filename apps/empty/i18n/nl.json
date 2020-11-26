@@ -1,0 +1,9 @@
+
+{
+  "app": {
+    "description": "Deze app is een kale app met twee pagina's en knoppen die ertussen schakelen.",
+    "name": "Lege app",
+    "pages.example-page-a": "Voorbeeldpagina A",
+    "pages.example-page-b": "Voorbeeldpagina B"
+  }
+}
