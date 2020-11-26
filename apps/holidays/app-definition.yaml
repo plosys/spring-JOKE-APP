@@ -1,0 +1,134 @@
+name: Holidays
+description: A simple app that fetches holiday information for various countries.
+defaultPage: Holidays in Europe
+
+pages:
+  - name: Holidays in Europe
+    icon: globe-europe
+    type: tabs
+    tabs:
+      - name: Netherlands
+        blocks:
+          - type: data-loader
+            version: 0.20.40
+            actions:
+              onLoad:
+                url: https://date.nager.at/Api/v2/NextPublicHolidays/NL
+                type: request
+            events:
+              emit:
+                data: holidays
+          - type: table
+            version: 0.20.40
+            parameters:
+              fields:
+                - value: { prop: date }
+                  label: { translate: date }
+                - value: { prop: name }
+                  label: { string.format: { messageId: name, values: { locale: EN } } }
+                - value: { prop: localName }
+                  label: { string.format: { messageId: name, values: { locale: NL } } }
+            events:
+              listen:
+                data: holidays
+            actions:
+              onClick:
+                type: download
+                filename: holiday.ics
+                remapBefore:
+                  ics:
+                    title: { prop: name }
+                    start: { prop: date }
+                    duration: 1d
+                    description: { prop: localName }
+      - name: Germany
+        blocks:
+          - type: data-loader
+            version: 0.20.40
+            actions:
+              onLoad:
+                url: https://date.nager.at/Api/v2/NextPublicHolidays/DE
+                type: request
+            events:
+              emit:
+                data: holidays
+          - type: table
+            version: 0.20.40
+            parameters:
+              fields:
+                - value: { prop: date }
+                  label: { translate: date }
+                - value: { prop: name }
+                  label: { string.format: { messageId: name, values: { locale: EN } } }
+                - value: { prop: localName }
+                  label: { string.format: { messageId: name, values: { locale: DE } } }
+            events:
+              listen:
+                data: holidays
+            actions:
+              onClick:
+                type: download
+                filename: holiday.ics
+                remapBefore:
+                  ics:
+                    title: { prop: name }
+                    start: { prop: date }
+                    duration: 1d
+                    description: { prop: localName }
+      - name: Spain
+        blocks:
+          - type: data-loader
+            version: 0.20.40
+            actions:
+              onLoad:
+                url: https://date.nager.at/Api/v2/NextPublicHolidays/ES
+                type: request
+            events:
+              emit:
+                data: holidays
+          - type: table
+            version: 0.20.40
+            parameters:
+              fields:
+                - value: { prop: date }
+                  label: { translate: date }
+                - value: { prop: name }
+                  label: { string.format: { messageId: name, values: { locale: EN } } }
+                - value: { prop: localName }
+                  label: { string.format: { messageId: name, values: { locale: ES } } }
+            events:
+              listen:
+                data: holidays
+            actions:
+              onClick:
+                type: download
+                filename: holiday.ics
+                remapBefore:
+                  ics:
+                    title: { prop: name }
+                    start: { prop: date }
+                    duration: 1d
+                    description: { prop: localName }
+
+  - name: Holidays in America
+    icon: globe-americas
+    type: tabs
+    tabs:
+      - name: USA
+        blocks:
+          - type: data-loader
+            version: 0.20.40
+            actions:
+              onLoad:
+                url: https://date.nager.at/Api/v2/NextPublicHolidays/US
+                type: request
+            events:
+              emit:
+                data: holidays
+          - type: table
+            version: 0.20.40
+            parameters:
+              fields:
+                - value: { prop: date }
+                  label: { translate: date }
+ 
