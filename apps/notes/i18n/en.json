@@ -1,0 +1,16 @@
+{
+  "app": {
+    "app.roles.User": "User",
+    "app.roles.User.description": "A user who keeps their own notes.",
+    "description": "Keep personal notes",
+    "name": "Notes",
+    "pages.notes": "Notes"
+  },
+  "messageIds": {
+    "body": "Body",
+    "cancel": "Cancel",
+    "configDelete": "Delete",
+    "confirmDelete": "Are you sure you want to delete the following note?",
+    "title": "Title"
+  }
+}
