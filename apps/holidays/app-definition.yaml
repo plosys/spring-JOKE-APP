@@ -131,4 +131,84 @@ pages:
               fields:
                 - value: { prop: date }
                   label: { translate: date }
- 
+                - value: { prop: name }
+                  label: { string.format: { messageId: name, values: { locale: EN } } }
+            events:
+              listen:
+                data: holidays
+            actions:
+              onClick:
+                type: download
+                filename: holiday.ics
+                remapBefore:
+                  ics:
+                    title: { prop: name }
+                    start: { prop: date }
+                    duration: 1d
+                    description: { prop: localName }
+      - name: Canada
+        blocks:
+          - type: data-loader
+            version: 0.20.40
+            actions:
+              onLoad:
+                url: https://date.nager.at/Api/v2/NextPublicHolidays/CA
+                type: request
+            events:
+              emit:
+                data: holidays
+          - type: table
+            version: 0.20.40
+            parameters:
+              fields:
+                - value: { prop: date }
+                  label: { translate: date }
+                - value: { prop: name }
+                  label: { string.format: { messageId: name, values: { locale: EN } } }
+            events:
+              listen:
+                data: holidays
+            actions:
+              onClick:
+                type: download
+                filename: holiday.ics
+                remapBefore:
+                  ics:
+                    title: { prop: name }
+                    start: { prop: date }
+                    duration: 1d
+                    description: { prop: localName }
+      - name: Mexico
+        blocks:
+          - type: data-loader
+            version: 0.20.40
+            actions:
+              onLoad:
+                url: https://date.nager.at/Api/v2/NextPublicHolidays/MX
+                type: request
+            events:
+              emit:
+                data: holidays
+          - type: table
+            version: 0.20.40
+            parameters:
+              fields:
+                - value: { prop: date }
+                  label: { translate: date }
+                - value: { prop: name }
+                  label: { string.format: { messageId: name, values: { locale: EN } } }
+                - value: { prop: localName }
+                  label: { string.format: { messageId: name, values: { locale: ES } } }
+            events:
+              listen:
+                data: holidays
+            actions:
+              onClick:
+                type: download
+                filename: holiday.ics
+                remapBefore:
+                  ics:
+                    title: { prop: name }
+                    start: { prop: date }
+                    duration: 1d
+                    description: { prop: localName }
