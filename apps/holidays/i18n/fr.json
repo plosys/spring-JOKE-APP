@@ -8,4 +8,11 @@
     "pages.holidays-in-europe.tabs.2": "Espagne",
     "pages.holidays-in-america": "Vacances en Amérique",
     "pages.holidays-in-america.tabs.0": "États-Unis",
-    "pages.holidays-in-ameri
+    "pages.holidays-in-america.tabs.1": "Canada",
+    "pages.holidays-in-america.tabs.2": "Mexique"
+  },
+  "messageIds": {
+    "date": "Date",
+    "name": "Nom ({locale})"
+  }
+}
