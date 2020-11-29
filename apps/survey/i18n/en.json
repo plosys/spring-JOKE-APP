@@ -1,0 +1,36 @@
+{
+  "app": {
+    "description": "An app which asks the user to fill out some questions.",
+    "name": "Survey",
+    "pages.finished": "Finished",
+    "pages.survey": "Survey",
+    "pages.survey.steps.0": "Introduction",
+    "pages.survey.steps.1": "Familiarity",
+    "pages.survey.steps.2": "Appsemble Ratings",
+    "pages.survey.steps.3": "Appsemble Feedback",
+    "pages.survey.steps.4": "Feature Ratings",
+    "pages.survey.steps.5": "Next App With Appsemble",
+    "pages.survey.steps.6": "Your Next app",
+    "pages.survey.steps.7": "Why Not Appsemble",
+    "pages.survey.steps.8": "Anything Else"
+  },
+  "blocks": {
+    "@appsemble/form": {
+      "0.20.40": {
+        "submitLabel": "Next"
+      }
+    }
+  },
+  "messageIds": {
+    "anythingElse": "Is there anything else you’d like to tell us?",
+    "appsembleRating": "How do you rate your experience with Appsemble?",
+    "backToHome": "Back to home",
+    "betterExperience": "Please tell us how we can make your experience better",
+    "buildYourself": "Do you intend to build an app yourself or let someone else build it?",
+    "commonGround": "Become (even) more compatible with common ground",
+    "consideringAppsemble": "Are you considering Appsemble for your next app in the next 6 months?",
+    "definitely": "Definitely",
+    "definitelyNot": "Definitely not",
+    "explanation": "Explanation",
+    "featureImportanceBuildingBlocks": "How important is having many building blocks to choose from?",
+    "featureImportanceCommunitySupport": "
