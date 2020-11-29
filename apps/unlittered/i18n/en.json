@@ -1,0 +1,19 @@
+
+{
+  "app": {
+    "description": "An app in which litter can be reported and displayed on an interactive map.",
+    "name": "Unlittered",
+    "pages.report-litter": "Report litter",
+    "pages.litter-overview": "Litter Overview",
+    "pages.litter-details": "Litter details",
+    "pages.litter-list": "Litter list"
+  },
+  "messageIds": {
+    "date": "Date",
+    "location": "Location",
+    "notes": "Notes",
+    "notesExample": "Example: There is a bicycle in the bushes",
+    "photos": "Photos",
+    "process": "Process"
+  }
+}

@@ -1,0 +1,271 @@
+
+name: Unlittered
+description: An app in which litter can be reported and displayed on an interactive map.
+defaultPage: Report litter
+
+theme:
+  themeColor: '#eb0000'
+  splashColor: '#ffffff'
+  primaryColor: '#eb0000'
+
+resources:
+  litter:
+    roles:
+      - $public # Allow anyone to access the resource’s actions
+    schema:
+      type: object
+      additionalProperties: false
+      required:
+        - notes
+        - process
+      properties:
+        notes:
+          type: string
+          title: Notes
+        photos:
+          type: array
+          items:
+            type: string
+            format: binary
+          title: Photos
+        process:
+          enum:
+            - Bicycle Collection
+            - Maintenance
+            - Biodegradable Waste
+            - Collection
+          title: Process
+        location:
+          type: object
+          title: GeoCoordinates
+          additionalProperties: false
+          required:
+            - latitude
+            - longitude
+          properties:
+            latitude:
+              type: number
+            longitude:
+              type: number
+  litterReply:
+    roles:
+      - $public # Allow anyone to access the resource’s actions
+    references:
+      litterId:
+        resource: litter
+    schema:
+      type: object
+      additionalProperties: false
+      required:
+        - content
+      properties:
+        litterId:
+          type: number
+        content:
+          type: string
+          minLength: 1
+
+pages:
+  - name: Report litter
+    blocks:
+      - type: form
+        version: 0.20.40
+        parameters:
+          fields:
+            - name: location
+              type: geocoordinates
+              label: { translate: location }
+            - type: enum
+              enum:
+                - value: Bicycle Collection
+                - value: Maintenance
+                - value: Biodegradable Waste
+                - value: Collection
+              name: process
+              label: { translate: process }
+            - name: notes
+              type: string
+              label: { translate: notes }
+              multiline: true
+              placeholder: { translate: notesExample }
+            - name: photos
+              type: file
+              label: { translate: photos }
+              requirements:
+                - accept:
+                    - image/jpeg
+              repeated: true
+        actions:
+          onSubmit:
+            type: resource.create
+            resource: litter
+            onSuccess:
+              type: link
+              to: Litter Overview
+
+  - name: Litter Overview
+    blocks:
+      - type: data-loader
+        version: 0.20.40
+        actions:
+          onLoad:
+            type: resource.query
+            resource: litter
+            query:
+              object.from:
+                $orderby: $created desc
+                $top: 50
+        events:
+          emit:
+            data: data
+      - type: map
+        version: 0.20.40
+        parameters:
+          latitude:
+            - prop: location
+            - prop: latitude
+          longitude:
+            - prop: location
+            - prop: longitude
+        actions:
+          onMarkerClick:
+            to: Litter details
+            type: link
+        events:
+          listen:
+            data: data
+      - type: action-button
+        version: 0.20.40
+        parameters:
+          icon: plus
+        actions:
+          onClick:
+            to: Report litter
+            type: link
+
+  - name: Litter details
+    parameters:
+      - id
+    blocks:
+      - type: data-loader
+        version: 0.20.40
+        actions:
+          onLoad:
+            type: resource.get
+            resource: litter
+        events:
+          emit:
+            data: data
+      - type: detail-viewer
+        version: 0.20.40
+        parameters:
+          fields:
+            - value: { prop: location }
+              type: geocoordinates
+              label: { translate: location }
+              latitude: { prop: latitude }
+              longitude: { prop: longitude }
+            - value: { prop: process }
+              label: { translate: process }
+            - value: { prop: notes }
+              label: { translate: notes }
+            - value: { prop: photos }
+              type: file
+              label: { translate: photos }
+              repeated: true
+        events:
+          listen:
+            data: data
+
+  - name: Litter list
+    blocks:
+      - type: timer
+        version: 0.20.40
+        parameters:
+          interval: 5
+        events:
+          emit:
+            interval: refresh
+      - type: filter
+        version: 0.20.40
+        events:
+          emit:
+            filtered: filterResults
+            refreshed: refreshedResults
+          listen:
+            refresh: refresh
+        parameters:
+          highlight: process
+          fields:
+            - name: process
+              type: enum
+              enum:
+                - value: Bicycle Collection
+                - value: Maintenance
+                - value: Biodegradable Waste
+                - value: Collection
+            - name: $created
+              label: { translate: date }
+              type: date-range
+              icon: calendar-alt
+        actions:
+          onLoad:
+            type: resource.query
+            resource: litter
+            query:
+              object.from:
+                $filter: { prop: $filter }
+                $orderby: '$created desc'
+                $top: 50
+      - type: data-notifier
+        version: 0.20.40
+        events:
+          listen:
+            data: refreshedResults
+            seed: filterResults
+          emit:
+            data: updateLitter
+      - type: feed
+        version: 0.20.40
+        events:
+          listen:
+            data: updateLitter
+        parameters:
+          buttonLabel: Details
+          title: { prop: type }
+          subtitle: { prop: proces }
+          heading:
+            string.format:
+              template: '{date, date, long} {date, time, short}'
+              values:
+                date: [{ prop: $created }, { date.parse }]
+          picture: [{ prop: photos }, { prop: 0 }]
+          pictures: [{ prop: photos }]
+          reply:
+            content: { prop: content }
+            author: { prop: author }
+            parentId: litterId
+          marker:
+            longitude: [{ prop: location }, { prop: longitude }]
+            latitude: [{ prop: location }, { prop: latitude }]
+        actions:
+          onButtonClick:
+            type: link
+            to: Litter details
+          onLoadReply:
+            type: resource.query
+            resource: litterReply
+            query:
+              object.from:
+                $filter: { prop: $filter }
+          onSubmitReply:
+            type: resource.create
+            resource: litterReply
+      - type: action-button
+        version: 0.20.40
+        parameters:
+          icon: plus
+        actions:
+          onClick:
+            type: link
+            to: Report litter

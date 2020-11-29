@@ -1,0 +1,19 @@
+
+{
+  "app": {
+    "description": "Program za prijavljivanje i prikazivanje smeća na interaktivnoj karti.",
+    "name": "Čistoća",
+    "pages.report-litter": "Prijavi smeće",
+    "pages.litter-overview": "Pregled smeća",
+    "pages.litter-details": "Detalji o smeću",
+    "pages.litter-list": "Popis smeća"
+  },
+  "messageIds": {
+    "date": "Datum",
+    "location": "Mjesto",
+    "notes": "Napomene",
+    "notesExample": "Primjer: bicikl u grmlju",
+    "photos": "Slike",
+    "process": "Postupak"
+  }
+}
