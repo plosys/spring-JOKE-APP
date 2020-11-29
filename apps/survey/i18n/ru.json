@@ -1,0 +1,26 @@
+{
+  "app": {
+    "description": "",
+    "name": "Опрос",
+    "pages.finished": "Завершено",
+    "pages.survey": "Опрос"
+  },
+  "blocks": {
+    "@appsemble/form": {
+      "0.20.40": {
+        "submitLabel": "Следующий"
+      }
+    }
+  },
+  "messageIds": {
+    "anythingElse": "",
+    "appsembleRating": "Как вы оцениваете свой опыт работы с Appsemble?",
+    "backToHome": "",
+    "betterExperience": "",
+    "buildYourself": "",
+    "commonGround": "",
+    "consideringAppsemble": "",
+    "definitely": "Определенно",
+    "definitelyNot": "",
+    "explanation": "Пояснение",
+    "featureImportanceBu

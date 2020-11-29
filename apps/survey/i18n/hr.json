@@ -49,4 +49,14 @@
     "probablyNot": "Vjerojatno ne",
     "propertyImportanceBuildCosts": "Koliko je važno imati niske jednokratne troškove izgradnje?",
     "propertyImportanceHostCosts": "Koliko je važno imati niske mjesečne troškove hostinga?",
-    "propertyImport
+    "propertyImportanceMaintenanceCosts": "Koliko je važno imati niske troškove održavanja nakon izgradnje?",
+    "propertyImportancePaidSupport": "Koliko je važno imati plaćenu podršku?",
+    "someoneElse": "Netko drugi",
+    "start": "Pokreni",
+    "triedAppsemble": "Jesi li već prije pokušao/la graditi program u Appsembleu?",
+    "videoTutorials": "Video vježbe za izgradnju programa",
+    "whyNot": "Željeli bismo saznati zašto ne razmatraš koristiti Appsemble",
+    "whyNotPlaceholder": "npr. Ne postoji potreba za programom ili radije ne s Appsembleom",
+    "yes": "Da"
+  }
+}
