@@ -1,0 +1,7 @@
+
+parameters:
+  back: { icon: home }
+  forward: false
+actions:
+  onBack:
+    type: link.back
