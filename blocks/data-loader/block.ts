@@ -35,4 +35,9 @@ declare module '@appsemble/sdk' {
 
   interface EventListeners {
     /**
-     * When received, the `onLoad` 
+     * When received, the `onLoad` action will be triggered using the parameters passed through this
+     * event, which in turn triggers the `data` emit event.
+     */
+    refresh: never;
+  }
+}

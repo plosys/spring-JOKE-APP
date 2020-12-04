@@ -1,0 +1,14 @@
+.messageBody {
+  align-items: center;
+  justify-content: space-between;
+  max-height: 80px;
+  transition: 150ms;
+
+  &.hidden {
+    max-height: 0;
+  }
+}
+
+.message {
+  transition: 150ms;
+}
