@@ -121,4 +121,79 @@ declare module '@appsemble/sdk' {
     /**
      * The base URL used to display pictures.
      *
-     * If not defined, the Asset API will be used in
+     * If not defined, the Asset API will be used instead.
+     */
+    pictureBase?: string;
+
+    /**
+     * The title displayed on the card.
+     */
+    title?: Remapper;
+
+    /**
+     * The subtitle displayed on the card.
+     */
+    subtitle?: Remapper;
+
+    /**
+     * The heading displayed on the card.
+     */
+    heading?: Remapper;
+
+    /**
+     * The highlighted picture.
+     */
+    picture?: Remapper;
+
+    /**
+     * A list of pictures that are displayed below the highlighted picture.
+     */
+    pictures?: Remapper;
+
+    /**
+     * The description or content of the card.
+     */
+    description?: Remapper;
+
+    /**
+     * The location marker that is displayed on the card.
+     */
+    marker?: AssetMarkerIcon | FontAwesomeMarkerIcon;
+  }
+
+  interface Actions {
+    /**
+     * Action that gets dispatched when a user clicks on an avatar.
+     */
+    onAvatarClick: never;
+
+    /**
+     * Action that gets dispatched when the button is clicked.
+     *
+     * The button won't display if this is not defined.
+     */
+    onButtonClick: never;
+
+    /**
+     * Action that gets dispatched when submitting a reply.
+     *
+     * When submitting replies, the data will be structured
+     * as an object containing `parentId` and `content`.
+     */
+    onSubmitReply: never;
+
+    /**
+     * Action to retrieve replies, dispatched on every feed item.
+     */
+    onLoadReply: never;
+  }
+
+  interface EventListeners {
+    /**
+     * The event that is triggered when data is received.
+     *
+     * Compatible data that is received will be displayed.
+     */
+    data: never;
+  }
+}
