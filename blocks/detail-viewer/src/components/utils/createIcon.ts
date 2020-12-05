@@ -50,4 +50,21 @@ export async function createIcon({
     const iconUrl = utils.asset(icons.asset);
     const [naturalWidth, naturalHeight] = await getIconSize(iconUrl);
     const width = (size * naturalWidth) / naturalHeight;
-    return
+    return new Icon({
+      iconUrl,
+      iconAnchor: anchor || [width / 2, size / 2],
+      iconSize: [width, size],
+    });
+  }
+
+  const { icon = 'map-marker-alt' } = icons;
+  const html = document.createElement('i');
+  html.className = `${utils.fa(icon)} has-text-${icons.color || 'primary'}`;
+  html.style.fontSize = `${size}px`;
+  return new DivIcon({
+    className: styles.fontawesomeMarker,
+    html,
+    iconAnchor: anchor || [size / 2, KNOWN_MARKER_ICONS.has(icon) ? size : size / 2],
+    iconSize: [size, size],
+  });
+}

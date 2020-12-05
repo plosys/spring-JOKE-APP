@@ -1,0 +1,9 @@
+.root {
+  flex-flow: column;
+  margin: 0 auto;
+  max-width: 480px;
+}
+
+.root > :global(.title) {
+  margin-bottom: 0;
+}
