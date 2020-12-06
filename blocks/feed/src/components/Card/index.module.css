@@ -1,0 +1,52 @@
+
+.avatarIcon {
+  align-items: center;
+  border-radius: 50%;
+  display: flex;
+}
+
+.avatarIcon > * {
+  flex: auto;
+}
+
+.button {
+  margin-top: -10px;
+}
+
+.figure {
+  align-items: center;
+  background-color: hsl(0deg 0% 96%);
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  vertical-align: baseline;
+  width: 100%;
+}
+
+.image {
+  max-height: 16vh;
+  position: relative;
+}
+
+.images {
+  display: flex;
+  justify-content: center;
+}
+
+.location {
+  height: 128px;
+  max-height: 12vh;
+}
+
+.media {
+  align-items: center;
+}
+
+.replies {
+  max-height: 12rem;
+  overflow-y: auto;
+}
+
+.replyButton {
+  border-radius: 50%;
+}
