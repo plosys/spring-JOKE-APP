@@ -15,4 +15,12 @@ parameters:
     - name: postalCode
       type: string
     - name: houseNumber
-     
+      type: string
+    # The following fields will autofill
+    # if the above fields are filled correctly
+    - name: streetname
+      type: string
+    - name: residenceArea
+      type: string
+    - name: neighbourhood
+      type: string
