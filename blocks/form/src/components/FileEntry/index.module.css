@@ -34,4 +34,17 @@
   background-repeat: no-repeat !important;
   background-size: contain;
   border-color: transparent;
-  border-
+  border-radius: 0;
+  position: absolute;
+  right: 5px;
+  top: 5px;
+}
+
+.rounded {
+  border-radius: 11px !important;
+}
+
+.image {
+  height: 100% !important;
+  object-fit: cover;
+}
