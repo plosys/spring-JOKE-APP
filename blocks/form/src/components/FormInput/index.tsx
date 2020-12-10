@@ -20,4 +20,40 @@ type FormInputProps = Omit<InputProps<any, Field>, 'dirty'>;
  * Render any type of form input.
  */
 export function FormInput({ field, onChange, ...props }: FormInputProps): VNode {
-  const [dirty, setDirty] = useState(fal
+  const [dirty, setDirty] = useState(false);
+
+  const handleChange = useCallback(
+    (event: never, value: any) => {
+      setDirty(true);
+      onChange(field.name, value);
+    },
+    [field, onChange],
+  );
+
+  switch (field.type) {
+    case 'date':
+      return <DateInput dirty={dirty} field={field} onChange={handleChange} {...props} />;
+    case 'date-time':
+      return <DateTimeInput dirty={dirty} field={field} onChange={handleChange} {...props} />;
+    case 'enum':
+      return <EnumInput dirty={dirty} field={field} onChange={handleChange} {...props} />;
+    case 'file':
+      return <FileInput dirty={dirty} field={field} onChange={handleChange} {...props} />;
+    case 'geocoordinates':
+      return <GeoCoordinatesInput dirty={dirty} field={field} onChange={handleChange} {...props} />;
+    case 'static':
+      return <StaticField field={field} {...props} />;
+    case 'string':
+      return <StringInput dirty={dirty} field={field} onChange={handleChange} {...props} />;
+    case 'number':
+    case 'integer':
+      return <NumberInput dirty={dirty} field={field} onChange={handleChange} {...props} />;
+    case 'boolean':
+      return <BooleanInput dirty={dirty} field={field} onChange={handleChange} {...props} />;
+    case 'fieldset':
+      return <Fieldset dirty={dirty} field={field} onChange={handleChange} {...props} />;
+    case 'radio':
+      return <RadioInput dirty={dirty} field={field} onChange={handleChange} {...props} />;
+    default:
+  }
+}
