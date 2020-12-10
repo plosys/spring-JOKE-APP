@@ -15,4 +15,10 @@
                 <use id="Mask" fill="#979797" fill-rule="nonzero" xlink:href="#path-1"></use>
                 <g id="Color/Wit" mask="url(#mask-2)" fill="#FFFFFF">
                     <g transform="translate(-4.000000, -4.000000)" id="Rectangle-Copy">
-       
+                        <rect x="0" y="0" width="24" height="24"></rect>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
