@@ -9,4 +9,58 @@ function populateContentNodes(
   placeholders: Record<string, Remapper>,
   remap: (remapper: Remapper, data: any, context?: Record<string, any>) => any,
 ): void {
-  for (cons
+  for (const contentNode of nodes) {
+    const placeholderName = contentNode.dataset.content;
+    if (has(placeholders, placeholderName)) {
+      contentNode.textContent = remap(placeholders[placeholderName], data);
+    }
+  }
+}
+
+bootstrap(
+  ({
+    actions,
+    data,
+    events,
+    parameters: { content, placeholders },
+    shadowRoot,
+    utils: { asset, remap },
+  }) => {
+    const { body, head } = parser.parseFromString(content, 'text/html');
+
+    const contentNodes = body.querySelectorAll<HTMLElement>('[data-content]');
+    const assetNodes = body.querySelectorAll<HTMLElement>('[data-asset]');
+    const clickNodes = body.querySelectorAll<HTMLElement>('[data-click]');
+
+    events.on.data((d) => populateContentNodes(contentNodes, d, placeholders, remap));
+    populateContentNodes(contentNodes, data, placeholders, remap);
+
+    for (const assetNode of assetNodes) {
+      const assetId = assetNode.dataset.asset;
+      assetNode.setAttribute('src', asset(assetId));
+    }
+
+    for (const clickNode of clickNodes) {
+      const { click } = clickNode.dataset;
+      if (!has(actions, click)) {
+        continue;
+      }
+
+      const action = actions[click];
+      if (clickNode.tagName === 'A' && action.type === 'link') {
+        (clickNode as HTMLAnchorElement).href = action.href(data);
+      }
+
+      clickNode.addEventListener(
+        'click',
+        (event) => {
+          event.preventDefault();
+          action(data);
+        },
+        false,
+      );
+    }
+
+    shadowRoot.append(...head.getElementsByTagName('style'), ...body.children);
+  },
+);
