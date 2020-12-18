@@ -12,4 +12,25 @@
   width: 100%;
 }
 
-.
+.header {
+  margin-bottom: 10px;
+}
+
+.header > * {
+  display: inline;
+}
+
+.itemField {
+  word-break: break-word;
+}
+
+.button {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.image {
+  display: inline-block;
+}
