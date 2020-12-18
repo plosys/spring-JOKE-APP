@@ -1,0 +1,19 @@
+
+parameters:
+  latitude:
+    - prop: location
+    - prop: latitude
+  longitude:
+    - prop: location
+    - prop: longitude
+  defaultLocation: [51.476852, 0]
+actions:
+  onMarkerClick:
+    to: Details page
+    type: link
+events:
+  listen:
+    data: data
+    center: center
+    follow: followToggle
+# To better see how to use this block, look at the default 'Unlittered' app.

@@ -67,4 +67,13 @@ bootstrap(({ data: blockData, events, parameters: { base }, ready, utils }) => {
     );
   }
 
-  retu
+  return (
+    <ul className="py-4 px-5">
+      {data.map((item, index) => (
+        <li key={item.id ?? index}>
+          <ListItem item={item} />
+        </li>
+      ))}
+    </ul>
+  );
+});
