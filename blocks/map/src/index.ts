@@ -92,3 +92,36 @@ bootstrap((params) => {
     })
 
     // Start locating the map.
+    .locate({ watch: true, timeout: 10e3, maximumAge: 60e3 });
+
+  let cluster: MarkerClusterGroup;
+
+  if (!parameters.disableClustering) {
+    cluster = new MarkerClusterGroup({
+      chunkedLoading: true,
+      maxClusterRadius: parameters.maxClusterRadius ?? 80,
+    });
+    map.addLayer(cluster);
+  }
+
+  events.on.data((d) => {
+    loadMarkers(d as any, fetched, data, params, cluster || map);
+  });
+
+  events.on.center(() => {
+    map.setView(locationMarker.getLatLng(), 18);
+  });
+
+  events.on.follow((d) => {
+    if (typeof d === 'boolean') {
+      following = d;
+      return;
+    }
+
+    following = !following;
+
+    if (following) {
+      map.setView(locationMarker.getLatLng(), 18);
+    }
+  });
+});
