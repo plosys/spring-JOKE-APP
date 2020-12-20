@@ -1,0 +1,12 @@
+.wrapper {
+  margin: 10px auto;
+  max-width: 640px;
+}
+
+.field {
+  flex: 1 1;
+}
+
+.icon {
+  font-size: calc(min(3em, 10vw));
+}
