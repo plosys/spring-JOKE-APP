@@ -71,4 +71,25 @@ bootstrap(
             ),
           ];
 
-          const 
+          const element =
+            onClick.type === 'link' ? (
+              <a className={className} href={onClick.href(result)} style={style}>
+                {children}
+              </a>
+            ) : (
+              <div className={className} style={style}>
+                {children}
+              </div>
+            );
+          element.addEventListener('click', (event) => {
+            event.preventDefault();
+            onClick(result);
+          });
+          return element;
+        }),
+      );
+    });
+
+    return <div>{wrapper}</div>;
+  },
+);
