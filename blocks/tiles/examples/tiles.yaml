@@ -1,0 +1,13 @@
+
+actions:
+  onClick:
+    type: event
+    event: onClick
+events:
+  listen:
+    data: data
+parameters:
+  icon: { prop: icon }
+  text: { prop: text }
+  color: { prop: color }
+# To better see how to use this block, look at the default 'Soundboard' app.
