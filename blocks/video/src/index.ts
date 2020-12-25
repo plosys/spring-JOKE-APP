@@ -53,4 +53,79 @@ bootstrap(
 
     const setupError = (): void => {
       player?.destroy();
-      playerDiv?.rem
+      playerDiv?.remove();
+      shadowRoot.append(errorNode);
+    };
+
+    const setupPlayer = (newURL: string): void => {
+      const valid = vimeoRegex.test(newURL);
+      if (!valid) {
+        setupError();
+        return;
+      }
+
+      const newPlayerDiv = document.createElement('div');
+      newPlayerDiv.className = styles.container;
+
+      if (width) {
+        newPlayerDiv.style.width = width;
+      }
+      if (maxWidth) {
+        newPlayerDiv.style.maxWidth = maxWidth;
+      }
+      if (height) {
+        newPlayerDiv.style.height = height;
+      }
+      if (maxHeight) {
+        newPlayerDiv.style.maxHeight = maxHeight;
+      }
+
+      playerDiv?.remove();
+      player?.destroy();
+
+      playerDiv = newPlayerDiv;
+      shadowRoot.append(playerDiv);
+      const track = utils.remap(subtitles, data);
+
+      player = new Vimeo(newPlayerDiv, {
+        autoplay,
+        color: theme.primaryColor,
+        byline: false,
+        dnt: true,
+        portrait: false,
+        responsive: true,
+        muted,
+        url: newURL,
+        title: false,
+      });
+
+      if (volume != null) {
+        player.setVolume(volume / 100);
+      }
+
+      if (track && typeof track === 'string') {
+        // This will return an exception in the logs if the language does not exist,
+        // but it is not blocking.
+        player.enableTextTrack(track);
+      }
+
+      currentUrl = newURL;
+      player.on('timeupdate', onTimeUpdate);
+      player.on('ended', onFinish);
+    };
+
+    const hasEvent = events.on.onVideo((d) => {
+      if (typeof d !== 'string') {
+        setupError();
+        return;
+      }
+
+      setupPlayer(d);
+    });
+
+    if (!hasEvent) {
+      const id = utils.remap(url, data) as string;
+      setupPlayer(id);
+    }
+  },
+);
