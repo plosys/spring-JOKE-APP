@@ -1,0 +1,172 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "appsemble.fullname" . }}
+  labels:
+    {{ include "appsemble.labels" . }}
+  annotations:
+    {{ include "appsemble.gitlab" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name | quote }}
+      app.kubernetes.io/name: {{ include "appsemble.name" . }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        app.kubernetes.io/name: {{ include "appsemble.name" . }}
+      annotations:
+        {{ include "appsemble.gitlab" . | indent 10 }}
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ include "appsemble.tag" . }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ['start', '-vv']
+          ports:
+            - name: http
+              containerPort: 9999
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+{{ include "appsemble.postgres" . | indent 12 }}
+{{ include "appsemble.sentry" . | indent 12 }}
+            - name: HOST
+              {{ if .Values.ingress.enabled -}}
+              value: {{ include "appsemble.protocol" $ }}{{ .Values.ingress.host }}
+              {{- else }}
+              value: http://{{ include "appsemble.fullname" . }}
+              {{- end }}
+            {{ if .Values.ingress.enabled -}}
+            - name: APP_DOMAIN_STRATEGY
+              value: kubernetes-ingress
+            - name: INGRESS_CLASS_NAME
+              value: {{ .Values.ingress.className | quote }}
+            - name: INGRESS_ANNOTATIONS
+              value: {{ .Values.ingress.annotations | toJson | quote }}
+            - name: SERVICE_NAME
+              value: {{ include "appsemble.fullname" . }}
+            - name: SERVICE_PORT
+              value: http
+            {{- end }}
+            - name: SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretSecret | quote }}
+                  key: secret
+            - name: AES_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secretSecret | quote }}
+                  key: aes-secret
+            {{- with .Values.smtpSecret }}
+            - name: SMTP_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . | quote }}
+                  key: host
+            - name: SMTP_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . | quote }}
+                  key: port
+            - name: SMTP_SECURE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . | quote }}
+                  key: secure
+            - name: SMTP_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . | quote }}
+                  key: user
+            - name: SMTP_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . | quote }}
+                  key: pass
+            - name: SMTP_FROM
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . | quote }}
+                  key: from
+            {{- end }}
+            {{- with .Values.oauthSecret }}
+            - name: GITHUB_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . | quote }}
+                  key: github-client-id
+                  optional: true
+            - name: GITHUB_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . | quote }}
+                  key: github-client-secret
+                  optional: true
+            - name: GITLAB_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . | quote }}
+                  key: gitlab-client-id
+                  optional: true
+            - name: GITLAB_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . | quote }}
+                  key: gitlab-client-secret
+                  optional: true
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . | quote }}
+                  key: google-client-id
+                  optional: true
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . | quote }}
+                  key: google-client-secret
+                  optional: true
+            {{- end }}
+            {{- with .Values.remote }}
+            - name: REMOTE
+              value: {{ . | quote }}
+            {{- end }}
+            {{- if .Values.proxy }}
+            - name: PROXY
+              value: 'true'
+            {{- end }}
+            {{- with .Values.ingress.issuer }}
+            - name: ISSUER
+              value: {{ . | quote }}
+            {{- end }}
+            {{- with .Values.ingress.clusterIssuer }}
+            - name: CLUSTER_ISSUER
+              value: {{ . | quote }}
+            {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

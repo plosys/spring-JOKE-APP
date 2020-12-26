@@ -1,0 +1,39 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "appsemble.fullname" . }}-cleanup
+  labels:
+    {{ include "appsemble.labels" . }}
+  annotations:
+    helm.sh/hook: pre-delete
+spec:
+  template:
+    metadata:
+      annotations:
+        {{ include "appsemble.gitlab" . | indent 8 }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: {{ include "appsemble.fullname" . }}-cleanup
+          image: "{{ .Values.image.repository }}:{{ include "appsemble.tag" . }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - appsemble
+            - cleanup
+            - -vv
+          env:
+{{ include "appsemble.postgres" . | indent 12 }}
+            - name: APP_DOMAIN_STRATEGY
+              value: kubernetes-ingress
+            - name: SERVICE_NAME
+              value: {{ include "appsemble.fullname" . }}
+            - name: SERVICE_PORT
+              value: {{ .Values.service.port | quote }}
+            - name: HOST
+              {{ if .Values.ingress.enabled -}}
+              value: {{ include "appsemble.protocol" $ }}{{ .Values.ingress.host }}
+              {{- else }}
+              value: http://{{ include "appsemble.fullname" . }}
+              {{- end }}
+{{ end }}

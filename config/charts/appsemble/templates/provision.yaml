@@ -1,0 +1,21 @@
+{{ if .Values.provision }}
+{{ $clientCredentials := split ":" .Values.provision.account.clientCredentials }}
+{{ $userId := uuidv4 }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "appsemble.fullname" . }}-provision
+  labels:
+    {{ include "appsemble.labels" . }}
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: '1'
+    {{ include "appsemble.gitlab" . | indent 4 }}
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: {{ include "appsemble.fullname" . }}-provision
+          image: "bitnami/postgresql:11"
+        
