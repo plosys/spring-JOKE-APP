@@ -1,0 +1,17 @@
+
+{{- if .Values.ingress.enabled -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "appsemble.fullname" . }}
+  labels:
+    {{ include "appsemble.labels" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  # This should match the name of the clusterrole
+  name: {{ include "appsemble.fullname" . }}
+subjects:
+  - kind: ServiceAccount
+    name: default
+{{ end }}

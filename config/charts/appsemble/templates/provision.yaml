@@ -18,4 +18,50 @@ spec:
       containers:
         - name: {{ include "appsemble.fullname" . }}-provision
           image: "bitnami/postgresql:11"
-        
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - psql
+          args:
+            - "--command"
+            - |
+              BEGIN;
+                INSERT INTO "User" (id, name, "primaryEmail", password, timezone, created, updated) VALUES (
+                  {{ $userId | squote }},
+                  {{ .Values.provision.account.name | squote }},
+                  {{ .Values.provision.account.email | squote }},
+                  {{ (.Values.provision.account.password | htpasswd "" | split ":")._1 | squote }},
+                  {{ .Values.provision.account.timezone | squote }},
+                  NOW(),
+                  NOW()
+                );
+                INSERT INTO "EmailAuthorization" (email, verified, created, updated, "UserId") VALUES (
+                  {{ .Values.provision.account.email | squote }},
+                  true,
+                  NOW(),
+                  NOW(),
+                  {{ $userId | squote }}
+                );
+                INSERT INTO "OAuth2ClientCredentials" (id, secret, description, scopes, created, "UserId") VALUES (
+                  {{ $clientCredentials._0 | squote }},
+                  {{ ($clientCredentials._1 | htpasswd "" | split ":")._1 | squote }},
+                  'Used for provisioning the review environment',
+                  'apps:write resources:write assets:write blocks:write organizations:write teams:write',
+                  NOW(),
+                  {{ $userId | squote }}
+                );
+              COMMIT;
+          env:
+            - name: PGHOST
+              value: {{ .Values.postgresql.fullnameOverride }}
+            - name: PGPORT
+              value: {{ .Values.global.postgresql.service.ports.postgresql | quote }}
+            - name: PGDATABASE
+              value: {{ .Values.global.postgresql.auth.database }}
+            - name: PGUSER
+              value: {{ .Values.global.postgresql.auth.username }}
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.global.postgresql.auth.existingSecret }}
+                  key: {{ .Values.global.postgresql.auth.secretKeys.userPasswordKey | quote }}
+{{ end }}
