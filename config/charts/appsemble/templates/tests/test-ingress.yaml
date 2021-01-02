@@ -1,0 +1,18 @@
+
+{{- if .Values.ingress.enabled -}}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "appsemble.fullname" . }}-test-ingress"
+  labels:
+    {{ include "appsemble.labels" . }}
+  annotations:
+    helm.sh/hook: test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "appsemble.protocol" $ }}{{ .Values.ingress.host }}/api/health']
+  restartPolicy: Never
+{{- end -}}

@@ -63,4 +63,8 @@ spec:
                       key: pass
                 - name: SMTP_FROM
                   valueFrom:
-               
+                    secretKeyRef:
+                      name: {{ . | quote }}
+                      key: from
+                {{- end }}
+{{ end }}

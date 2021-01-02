@@ -1,0 +1,78 @@
+
+# yaml-language-server: $schema=values.schema.json
+replicaCount: 1
+
+image:
+  repository: appsemble/appsemble
+  tag: null
+  pullPolicy: IfNotPresent
+
+nameOverride: ''
+fullnameOverride: ''
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations: {}
+  host: ''
+  tls:
+    {}
+    # secretName: chart-example-tls
+    # wildcardSecretName: chart-example-tls-wildcard
+
+resources:
+  {}
+  # limits:
+  #  cpu: 100m
+  #  memory: 128Mi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+smtpSecret: smtp
+
+sentry: null
+
+oauthSecret: null
+
+secretSecret: appsemble
+
+cronjob:
+  jobsHistoryLimit: 3
+
+gitlab:
+  app: null
+  env: null
+
+migrateTo: null
+
+proxy: false
+
+global:
+  postgresql:
+    auth:
+      existingSecret: appsemble-postgresql-secret
+      username: appsemble
+      database: appsemble
+      secretKeys:
+        userPasswordKey: password
+    service:
+      ports:
+        postgresql: 5432
+
+postgresql:
+  fullnameOverride: appsemble-postgresql
+
+postgresSSL: false
+
+remote: null

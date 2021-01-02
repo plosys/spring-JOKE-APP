@@ -1,0 +1,36 @@
+
+version: '3.3'
+
+services:
+  # A persistent database for local development.
+  postgres-dev:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_DB: appsemble
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    ports:
+      - '5432:5432'
+
+  # A database using tmpfs for faster test runs.
+  postgres-test:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_DB: appsemble
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    ports:
+      - '54321:5432'
+    tmpfs:
+      - /var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: info@appsemble.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    ports:
+      - '2345:80'
