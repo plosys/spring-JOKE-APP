@@ -236,4 +236,163 @@ Add a new page:
           - name: email
             type: string
             label: Email Address
-            for
+            format: email
+            requirements:
+              - required: true
+                errorMessage: This field is required
+          - name: description
+            type: string
+            label: Description
+            multiline: true
+            requirements:
+              - maxLength: 500
+```
+
+This page uses the `form` block to enter the data to create a new `person` resource. It takes a
+parameter called `fields` which contains a list of various types of field types. In this case it’s 4
+`string` fields, where the first three are required and have a length requirement, and the last one
+is optional and allows for multi line input.
+
+After saving, the page can be opened from the app’s side menu. When data is entered and the form is
+saved, a new person is registered. The user is then redirected to the _“People”_ page. This page now
+displays the newly created person.
+
+The app should now look like this:
+
+```yaml copy filename="app-definition.yaml"
+name: My App
+description: ''
+defaultPage: People
+
+resources:
+  person:
+    roles: [$public]
+    schema:
+      type: object
+      additionalProperties: false
+      required:
+        - firstName
+        - lastName
+        - email
+      properties:
+        firstName:
+          type: string
+          maxLength: 80
+        lastName:
+          type: string
+          maxLength: 80
+        email:
+          type: string
+          format: email
+        description:
+          type: string
+          maxLength: 500
+
+pages:
+  - name: Register
+    blocks:
+      - type: form
+        version: 0.20.40
+        parameters:
+          fields:
+            - name: firstName
+              type: string
+              label: First Name
+              requirements:
+                - required: true
+                  errorMessage: This field is required
+                - maxLength: 80
+            - name: lastName
+              type: string
+              label: Surname
+              requirements:
+                - required: true
+                  errorMessage: This field is required
+                - maxLength: 80
+            - name: email
+              type: string
+              label: Email Address
+              format: email
+              requirements:
+                - required: true
+                  errorMessage: This field is required
+            - name: description
+              type: string
+              label: Description
+              multiline: true
+              requirements:
+                - maxLength: 500
+
+  - name: People
+    blocks:
+      - type: data-loader
+        version: 0.20.40
+        actions:
+          onLoad:
+            type: resource.query
+            resource: person
+        events:
+          emit:
+            data: people
+      - type: table
+        version: 0.20.40
+        events:
+          listen:
+            data: people
+        parameters:
+          fields:
+            - value: { prop: firstName }
+              label: First Name
+            - value: { prop: lastName }
+              label: Surname
+```
+
+## Detail view
+
+The detail page only displays person’s first name and last name. Often such an overview is handy,
+but it is desired to add the ability to see more details. Another use case might be a form for
+editing the resource, but for now we’ll focus on viewing.
+
+Add a new page:
+
+```yaml indent={2} copy
+- name: Person details
+  parameters:
+    - id
+  blocks:
+    - type: data-loader
+      version: 0.20.40
+      actions:
+        onLoad:
+          type: resource.get
+          resource: person
+      events:
+        emit:
+          data: person
+    - type: detail-viewer
+      version: 0.20.40
+      events:
+        listen:
+          data: person
+      parameters:
+        fields:
+          - type: string
+            value: { prop: firstName }
+            label: First Name
+          - type: string
+            value: { prop: lastName }
+            label: Last Name
+          - type: string
+            value: { prop: email }
+            label: Email Address
+          - type: string
+            value: { prop: description }
+            label: Description
+```
+
+This page loads data of a single person using the `resource.get` action. The person is then
+displayed in the `detail-viewer` block, which looks a very similar to the `table` and `form` blocks.
+
+What is new, is the `parameters` property. Also, when viewing the side menu, the person isn’t there.
+The `id` parameter refers to a parameter in the URL of the page. The `id` is used to determine which
+person data to load. Since the page can’t work wi
