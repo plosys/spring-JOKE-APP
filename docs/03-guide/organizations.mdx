@@ -30,4 +30,34 @@ These roles are the following:
   useful if the user wants to use the app’s API.
 - `API User`: Similar to `API Reader`, but with additional write permissions for the app’s resources
   and assets.
-- `AppEditor`: App editors are allowed to edit existing apps, manage an app’s resources, provid
+- `AppEditor`: App editors are allowed to edit existing apps, manage an app’s resources, provide
+  translations, as well as sending manual push notifications.
+- `Maintainer`: Maintainers can publish new blocks, create new apps, change an app’s settings,
+  create and delete apps, as well as inviting other users to the organization.
+- `Owner`: Owners are allowed to manage members by assigning roles or removing them from the
+  organization, and update the name and icon of the organization.
+
+<table>
+  <thead>
+    <tr>
+      <th>Permissions</th>
+      {Object.keys(roles).map((role) => (
+        <th key={role}>{role}</th>
+      ))}
+    </tr>
+  </thead>
+  <tbody>
+    {Object.keys(Permission)
+      .filter((permission) => isNaN(Number(permission)))
+      .map((permission) => (
+        <tr key={permission}>
+          <td title={messages[permission].defaultMessage}>{permission} </td>
+          {Object.keys(roles).map((role) => (
+            <td key={role} align="center">
+              {roles[role].includes(Permission[permission]) ? '✓' : ''}
+            </td>
+          ))}
+        </tr>
+      ))}
+  </tbody>
+</table>
