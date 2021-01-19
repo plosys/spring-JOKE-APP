@@ -395,4 +395,158 @@ displayed in the `detail-viewer` block, which looks a very similar to the `table
 
 What is new, is the `parameters` property. Also, when viewing the side menu, the person isn’t there.
 The `id` parameter refers to a parameter in the URL of the page. The `id` is used to determine which
-person data to load. Since the page can’t work wi
+person data to load. Since the page can’t work without the context of the `id` value, there is no
+good way to link it from the side menu.
+
+To use this page, it must be linked from a place where the context is known. This is where the
+_“Register”_ page comes in. The `table` block has an optional `onClick` action. This action passes
+along context of a single entity.
+
+Now, when a list item is clicked, the user will be redirected to the person’s detail page.
+
+At this point, the app definition should look like this:
+
+```yaml copy filename="app-definition.yaml"
+name: My App
+description: ''
+defaultPage: People
+
+resources:
+  person:
+    roles: [$public]
+    schema:
+      type: object
+      additionalProperties: false
+      required:
+        - firstName
+        - lastName
+        - email
+      properties:
+        firstName:
+          type: string
+          maxLength: 80
+        lastName:
+          type: string
+          maxLength: 80
+        email:
+          type: string
+          format: email
+        description:
+          type: string
+          maxLength: 500
+
+pages:
+  - name: Register
+    blocks:
+      - type: form
+        version: 0.20.40
+        parameters:
+          fields:
+            - name: firstName
+              type: string
+              label: First Name
+              requirements:
+                - required: true
+                  errorMessage: This field is required
+                - maxLength: 80
+            - name: lastName
+              type: string
+              label: Surname
+              requirements:
+                - required: true
+                  errorMessage: This field is required
+                - maxLength: 80
+            - name: email
+              type: string
+              label: Email Address
+              format: email
+              requirements:
+                - required: true
+                  errorMessage: This field is required
+            - name: description
+              type: string
+              label: Description
+              multiline: true
+              requirements:
+                - maxLength: 500
+        actions:
+          onSubmit:
+            type: resource.create
+            resource: person
+            onSuccess:
+              type: link
+              to: Person details
+
+  - name: People
+    blocks:
+      - type: data-loader
+        version: 0.20.40
+        actions:
+          onLoad:
+            type: resource.query
+            resource: person
+        events:
+          emit:
+            data: people
+      - type: table
+        version: 0.20.40
+        actions:
+          onClick:
+            type: link
+            to: Person details
+        events:
+          listen:
+            data: people
+        parameters:
+          fields:
+            - value: { prop: firstName }
+              label: First Name
+            - value: { prop: lastName }
+              label: Surname
+
+  - name: Person details
+    parameters:
+      - id
+    blocks:
+      - type: data-loader
+        version: 0.20.40
+        actions:
+          onLoad:
+            type: resource.get
+            resource: person
+        events:
+          emit:
+            data: person
+      - type: detail-viewer
+        version: 0.20.40
+        events:
+          listen:
+            data: person
+        parameters:
+          fields:
+            - type: string
+              value: { prop: firstName }
+              label: First Name
+            - type: string
+              value: { prop: lastName }
+              label: Last Name
+            - type: string
+              value: { prop: email }
+              label: Email Address
+            - type: string
+              value: { prop: description }
+              label: Description
+```
+
+## Further reading
+
+If you got to this point, you have seen the basics of creating apps using Appsemble. However, more
+complex apps require more features than creating and viewing resources. The following guides
+continue on the result of the app created in this guide:
+
+- [Resources](resources.md)
+- [Security](security.md)
+- [Notifications](notifications.md)
+- [Theming](theming.md)
+- [DNS](dns.md)
+- [Reference documentation](/docs/reference)
