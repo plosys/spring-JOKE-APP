@@ -1,0 +1,14 @@
+{
+  "app.components.AppSettings.AppSubscriptions.blocked": "Notifikationer er blokeret. Vær venlig at opdatere dine notifikationsindstillinger og forsøg igen.",
+  "app.components.AppSettings.AppSubscriptions.createSubscriptionLabel": "Modtag notifikation når “{resource}” bliver oprettet",
+  "app.components.AppSettings.AppSubscriptions.deleteSubscriptionLabel": "Modtag notifikation når “{resource}” bliver slettet",
+  "app.components.AppSettings.AppSubscriptions.notSubscribed": "Ikke abonneret",
+  "app.components.AppSettings.AppSubscriptions.notifications": "Notifikationer",
+  "app.components.AppSettings.AppSubscriptions.permissionDenied": "Ikke muligt at abonnere. Enten er rettigheder ikke blevet tildelt eller din enhed understøtter ikke notifikationer.",
+  "app.components.AppSettings.AppSubscriptions.resourceSubscriptions": "{resource] abonnementer",
+  "app.components.AppSettings.AppSubscriptions.subscribe": "Abonnér",
+  "app.components.AppSettings.AppSubscriptions.subscribeDescription": "Hvis man abonnerer på en app kan app udvikleren sende notikikationer til deres brugere.",
+  "app.components.AppSettings.AppSubscriptions.subscribeError": "Noget gik galt under forsøget på at abonnere.",
+  "app.components.AppSettings.AppSubscriptions.subscribeSuccessful": "Abonnement aktiveret!",
+  "app.components.AppSettings.AppSubscriptions.subscribed": "Abonneret",
+  "app.components.App
