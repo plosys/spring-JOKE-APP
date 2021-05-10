@@ -1,0 +1,18 @@
+{
+  "app.components.AppSettings.AppSubscriptions.blocked": "Les notifications ont été bloquées. Veuillez mettre à jour vos autorisations de notification et réessayer.",
+  "app.components.AppSettings.AppSubscriptions.createSubscriptionLabel": "Recevoir une notification quand « {resource} » est créé",
+  "app.components.AppSettings.AppSubscriptions.deleteSubscriptionLabel": "Recevoir une notification quand « {resource} » est supprimé",
+  "app.components.AppSettings.AppSubscriptions.notSubscribed": "Non abonné",
+  "app.components.AppSettings.AppSubscriptions.notifications": "Notifications",
+  "app.components.AppSettings.AppSubscriptions.permissionDenied": "Impossible de s’abonner. Soit aucune autorisation n’a été accordée, soit votre appareil ne prend pas en charge les notifications.",
+  "app.components.AppSettings.AppSubscriptions.resourceSubscriptions": "Abonnements {ressources}",
+  "app.components.AppSettings.AppSubscriptions.subscribe": "S’abonner",
+  "app.components.AppSettings.AppSubscriptions.subscribeDescription": "L’abonnement à une application permet aux créateurs d’applications de se connecter avec leurs utilisateurs en envoyant des notifications push.",
+  "app.components.AppSettings.AppSubscriptions.subscribeError": "Une erreur s’est produite lors de la tentative d’abonnement.",
+  "app.components.AppSettings.AppSubscriptions.subscribeSuccessful": "Abonnement réussi !",
+  "app.components.AppSettings.AppSubscriptions.subscribed": "Abonné",
+  "app.components.AppSettings.AppSubscriptions.subscriptions": "Abonnements",
+  "app.components.AppSettings.AppSubscriptions.unsubscribe": "Se désabonner",
+  "app.components.AppSettings.AppSubscriptions.unsubscribeSuccess": "Désabonnement des notifications réussi.",
+  "app.components.AppSettings.AppSubscriptions.updateSubscriptionLabel": "Recevoir une notification quand « {resource} » est mis à jour",
+  "
