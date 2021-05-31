@@ -1,0 +1,6 @@
+{
+  "app.components.AppSettings.AppSubscriptions.blocked": "Notificaties zijn niet toegestaan op je apparaat. Controleer de rechten en probeer het opnieuw.",
+  "app.components.AppSettings.AppSubscriptions.createSubscriptionLabel": "Ontvang een bericht wanneer een “{resource}” wordt aangemaakt",
+  "app.components.AppSettings.AppSubscriptions.deleteSubscriptionLabel": "Ontvang een bericht wanneer een “{resource}” wordt verwijderd",
+  "app.components.AppSettings.AppSubscriptions.notSubscribed": "Niet geabonneerd",
+  "app.components.A
