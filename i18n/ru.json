@@ -1,0 +1,17 @@
+{
+  "app.components.AppSettings.AppSubscriptions.blocked": "Уведомления заблокированы. Обновите свои разрешения на уведомления и повторите попытку.",
+  "app.components.AppSettings.AppSubscriptions.createSubscriptionLabel": "Получать уведомление, когда создаётся «{resource}»",
+  "app.components.AppSettings.AppSubscriptions.deleteSubscriptionLabel": "Получать уведомление, когда «{resource}» будет удалён",
+  "app.components.AppSettings.AppSubscriptions.notSubscribed": "Нет подписки",
+  "app.components.AppSettings.AppSubscriptions.notifications": "Уведомления",
+  "app.components.AppSettings.AppSubscriptions.permissionDenied": "Невозможно подписаться. Либо разрешение не предоставлено, либо ваше устройство не поддерживает уведомления.",
+  "app.components.AppSettings.AppSubscriptions.resourceSubscriptions": "Подписки на {resource}",
+  "app.components.AppSettings.AppSubscriptions.subscribe": "Подписаться",
+  "app.components.AppSettings.AppSubscriptions.subscribeDescription": "Подписка на приложение позволяет создателям приложения связываться со своими пользователями, отправляя push-уведомления.",
+  "app.components.AppSettings.AppSubscriptions.subscribeError": "Что-то пошло не так при попытке подписаться.",
+  "app.components.AppSettings.AppSubscriptions.subscribeSuccessful": "Подписка успешно оформлена!",
+  "app.components.AppSettings.AppSubscriptions.subscribed": "Подписка оформлена",
+  "app.components.AppSettings.AppSubscriptions.subscriptions": "Подписки",
+  "app.components.AppSettings.AppSubscriptions.unsubscribe": "Отписаться",
+  "app.components.AppSettings.AppSubscriptions.unsubscribeSuccess": "Подписка на уведомления успешно отменена.",
+  "app.components.AppSettings.AppSubscriptions.updateSubscriptionLabel": "Получать уведомлени
