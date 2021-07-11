@@ -1,0 +1,18 @@
+
+.checkbox {
+  margin: initial;
+
+  & + label {
+    white-space: nowrap;
+  }
+}
+
+.setting {
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.setting :global(div.field) {
+  flex-direction: column;
+  justify-content: center;
+}

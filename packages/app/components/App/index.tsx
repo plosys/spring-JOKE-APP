@@ -13,4 +13,44 @@ import { ServiceWorkerRegistrationProvider } from '../ServiceWorkerRegistrationP
 import { UserProvider } from '../UserProvider/index.js';
 
 interface AppProps {
-  serviceWorkerRegistrationPromi
+  serviceWorkerRegistrationPromise: Promise<ServiceWorkerRegistration>;
+}
+
+/**
+ * The main entry point of the React app.
+ *
+ * This configures all providers and sets up the global app structure.
+ */
+export function App({ serviceWorkerRegistrationPromise }: AppProps): ReactElement {
+  const appContent = (
+    <AppDefinitionProvider>
+      <AppMessagesProvider>
+        <MessagesProvider>
+          <ErrorHandler fallback={ErrorFallback}>
+            <ServiceWorkerRegistrationProvider
+              serviceWorkerRegistrationPromise={serviceWorkerRegistrationPromise}
+            >
+              <UserProvider>
+                <MenuProvider>
+                  <PermissionRequest />
+                  <AppRoutes />
+                </MenuProvider>
+              </UserProvider>
+            </ServiceWorkerRegistrationProvider>
+          </ErrorHandler>
+        </MessagesProvider>
+      </AppMessagesProvider>
+    </AppDefinitionProvider>
+  );
+
+  return (
+    <BrowserRouter>
+      <PageTracker />
+      <Routes>
+        {/* Simple way to get optional parameters back */}
+        <Route element={appContent} path="/*" />
+        <Route element={appContent} path="/:lang/*" />
+      </Routes>
+    </BrowserRouter>
+  );
+}
