@@ -13,4 +13,31 @@ export function LanguagePreference(): ReactElement {
   const url = `/${lang}/Settings`;
 
   const [preferredLanguage, setPreferredLanguage] = useState(
-    localStorage.ge
+    localStorage.getItem('preferredLanguage') ?? lang,
+  );
+
+  const onLanguageChange = useCallback(
+    (event: ChangeEvent<HTMLSelectElement>, language: string) => {
+      navigate(url.replace(preferredLanguage, language), { replace: true });
+      setPreferredLanguage(language);
+      localStorage.setItem('preferredLanguage', language);
+    },
+    [navigate, preferredLanguage, url],
+  );
+
+  return (
+    <SelectField
+      label={<FormattedMessage {...messages.preferredLanguage} />}
+      name="preferredLanguage"
+      onChange={onLanguageChange}
+      required
+      value={preferredLanguage}
+    >
+      {languages.map((language) => (
+        <option key={language} value={language}>
+          {getLanguageDisplayName(language)}
+        </option>
+      ))}
+    </SelectField>
+  );
+}

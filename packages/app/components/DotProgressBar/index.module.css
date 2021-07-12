@@ -1,0 +1,21 @@
+.dotContainer {
+  position: fixed;
+  right: 0;
+  z-index: 1000;
+}
+
+.dot {
+  background-color: var(--primary-color);
+  border: none;
+  border-radius: 50%;
+  height: 10px;
+  opacity: 0.2;
+  width: 10px;
+}
+
+.dot.previous {
+  opacity: 0.5;
+}
+
+.dot.active {
+  opacity: 1;
