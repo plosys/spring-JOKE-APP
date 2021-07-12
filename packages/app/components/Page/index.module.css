@@ -1,0 +1,10 @@
+
+.root {
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+}
+
+.hasBottomNavigation > :last-child {
+  padding-bottom: 7rem;
+}
