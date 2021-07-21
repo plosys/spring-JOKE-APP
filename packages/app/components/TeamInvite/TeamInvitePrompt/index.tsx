@@ -75,4 +75,9 @@ export function TeamInvitePrompt(): ReactElement {
       </p>
       <div className="is-flex is-justify-content-center">
         <AsyncButton color="primary" disabled={isAccepted} onClick={accept}>
-          <FormattedMessage {...messages
+          <FormattedMessage {...messages.accept} />
+        </AsyncButton>
+      </div>
+    </Content>
+  );
+}
