@@ -36,4 +36,77 @@ export function TabsPage({
     <>
       <Tabs centered onChange={onChange} size="medium" value={pathname}>
         {page.tabs.map(({ name }, index) => {
- 
+          const translatedName = getAppMessage({
+            id: `${prefix}.tabs.${index}`,
+            defaultMessage: name,
+          }).format() as string;
+
+          const value = `${['', lang, pageId, normalize(translatedName)].join('/')}${
+            wildcard.includes('/') ? wildcard.slice(wildcard.indexOf('/')) : ''
+          }`;
+
+          return (
+            <Tab href={value} key={name} value={value}>
+              {translatedName}
+            </Tab>
+          );
+        })}
+      </Tabs>
+      <MetaSwitch title={pageName}>
+        {page.tabs.map(({ blocks, name }, index) => {
+          const translatedName = getAppMessage({
+            id: `${prefix}.tabs.${index}`,
+            defaultMessage: name,
+          }).format() as string;
+
+          return (
+            <Route
+              element={
+                <TabContent
+                  key={prefix}
+                  {...blockListProps}
+                  blocks={blocks}
+                  name={translatedName}
+                  page={page}
+                  prefix={`${prefix}.tabs.${index}.blocks`}
+                  prefixIndex={`${prefixIndex}.tabs.${index}.blocks`}
+                />
+              }
+              key={name}
+              path={`/${normalize(translatedName)}${String(
+                (page.parameters || []).map((param) => `/:${param}`),
+              )}`}
+            />
+          );
+        })}
+        {/* Redirect from a matching sub URL to the actual URL */}
+        {page.tabs.map(({ name }, index) => {
+          const translatedName = getAppMessage({
+            id: `${prefix}.tabs.${index}`,
+            defaultMessage: name,
+          }).format() as string;
+
+          const exactPath = `/${lang}/${pageId}/${normalize(translatedName)}${
+            wildcard.includes('/') ? wildcard.slice(wildcard.indexOf('/')) : ''
+          }`;
+
+          return <Route element={<Navigate to={exactPath} />} key={exactPath} path="/*" />;
+        })}
+
+        <Route
+          element={
+            <Navigate
+              to={`/${lang}/${pageId}/${normalize(
+                getAppMessage({
+                  id: `${prefix}.tabs.0`,
+                  defaultMessage: page.tabs[0].name,
+                }).format() as string,
+              )}`}
+            />
+          }
+          path="/*"
+        />
+      </MetaSwitch>
+    </>
+  );
+}
