@@ -14,4 +14,28 @@ export const dialog: ActionCreator<'dialog'> = ({
             (error) => {
               reject(error);
               close();
-   
+              return error;
+            },
+          ],
+          'dialog.ok': () => [
+            (result) => {
+              resolve(result);
+              close();
+              return result;
+            },
+          ],
+        },
+        blocks,
+        closable,
+        data,
+        close() {
+          close();
+          reject(new Error('closed'));
+        },
+        fullscreen,
+        prefix,
+        prefixIndex,
+        title,
+      });
+    }),
+];
