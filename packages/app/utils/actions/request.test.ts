@@ -143,4 +143,131 @@ describe('request', () => {
       request = req;
       return [200, { hello: 'data' }, {}];
     });
-    con
+    const action = createTestAction({
+      definition: { type: 'request', method: 'post', body: { static: { remapped: 'data' } } },
+      prefix: 'pages.test.blocks.0.actions.onClick',
+      prefixIndex: 'pages.0.blocks.0.actions.onClick',
+    });
+    await action({ hello: 'post' });
+    expect(request.data).toBe('{"remapped":"data"}');
+  });
+
+  it('should support disabling the proxy', async () => {
+    mock.onAny(/.*/).reply((req) => {
+      request = req;
+      return [200, 'Example content', {}];
+    });
+    const action = createTestAction({
+      definition: { type: 'request', proxy: false, url: 'https://example.com' },
+      prefix: 'pages.test.blocks.0.actions.onClick',
+      prefixIndex: 'pages.0.blocks.0.actions.onClick',
+    });
+    const result = await action({ hello: 'get' });
+    expect(request.method).toBe('get');
+    expect(request.url).toBe('https://example.com');
+    expect(request.params).toBeUndefined();
+    expect(request.data).toBeUndefined();
+    expect(result).toBe('Example content');
+  });
+
+  it('should allow for using context in url remappers', async () => {
+    mock.onAny(/.*/).reply((req) => {
+      request = req;
+      return [200, 'Example content', {}];
+    });
+
+    const action = createTestAction({
+      definition: {
+        type: 'request',
+        url: {
+          'string.format': {
+            template: 'https://example.{domain}',
+            values: {
+              domain: { context: 'test' },
+            },
+          },
+        },
+        proxy: false,
+      },
+      prefix: 'pages.test.blocks.0.actions.onClick',
+      prefixIndex: 'pages.0.blocks.0.actions.onClick',
+    });
+
+    const result = await action(null, { test: 'nl' });
+    expect(request.method).toBe('get');
+    expect(request.url).toBe('https://example.nl');
+    expect(request.params).toBeUndefined();
+    expect(request.data).toBeUndefined();
+    expect(result).toBe('Example content');
+  });
+
+  it('should allow for using context in query remappers', async () => {
+    mock.onAny(/.*/).reply((req) => {
+      request = req;
+      return [200, 'Example content', {}];
+    });
+
+    const action = createTestAction({
+      definition: {
+        type: 'request',
+        url: 'https://example.com',
+        proxy: false,
+        query: {
+          'object.from': {
+            example: { context: 'test' },
+          },
+        },
+      },
+      prefix: 'pages.test.blocks.0.actions.onClick',
+      prefixIndex: 'pages.0.blocks.0.actions.onClick',
+    });
+
+    const result = await action(null, { test: 'foo' });
+    expect(request.method).toBe('get');
+    expect(request.url).toBe('https://example.com');
+    expect(request.params).toStrictEqual({ example: 'foo' });
+    expect(request.data).toBeUndefined();
+    expect(result).toBe('Example content');
+  });
+
+  it('should allow for using context in body remappers', async () => {
+    mock.onAny(/.*/).reply((req) => {
+      request = req;
+      return [200, 'Example content', {}];
+    });
+
+    const action = createTestAction({
+      definition: {
+        type: 'request',
+        url: 'https://example.com',
+        method: 'post',
+        proxy: false,
+        body: { context: 'test' },
+      },
+      prefix: 'pages.test.blocks.0.actions.onClick',
+      prefixIndex: 'pages.0.blocks.0.actions.onClick',
+    });
+
+    const result = await action(null, { test: { foo: 'bar', baz: 1234 } });
+    expect(request.method).toBe('post');
+    expect(request.url).toBe('https://example.com');
+    expect(request.params).toBeUndefined();
+    expect(request.data).toBe('{"foo":"bar","baz":1234}');
+    expect(result).toBe('Example content');
+  });
+
+  it('should support deserializing an XML response', async () => {
+    mock.onAny(/.*/).reply((req) => {
+      request = req;
+      return [
+        200,
+        `<?xml version="1.0" encoding="UTF-8" ?>
+        <feed xmlns="http://www.w3.org/2005/Atom">
+          <title>Release notes from appsemble</title>
+          <updated>2021-03-31T17:09:00+02:00</updated>
+          <entry>
+            <id>tag:github.com,2008:Repository/226361784/0.18.5</id>
+            <updated>2021-03-31T17:09:00+02:00</updated>
+            <title>Merge branch &#39;release-0.18.5&#39; into &#39;main&#39;</title>
+            {/* eslint-disable-next-line react/forbid-elements */}
+            <content type="html">&lt;p&gt;Release version 0.18.5&lt;/p&gt; &lt;p&gt;See merge request appsemble/appsemble!1747&lt;/p&
