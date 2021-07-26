@@ -210,3 +210,149 @@ describe('storage.subtract', () => {
       });
       const data = {
         key: 'key',
+        data: { text: 'test' },
+      };
+      writeStorage(storageType, 'key', [data, data, data], appStorage);
+
+      const result = await action({
+        key: 'key',
+      });
+
+      const newStorage = await readStorage(storageType, 'key', appStorage);
+
+      expect(result).toStrictEqual({ key: 'key' });
+      expect(newStorage).toHaveLength(2);
+    },
+  );
+
+  it('should convert array to single object when there is only one entry left', async () => {
+    const action = createTestAction({
+      definition: {
+        type: 'storage.subtract',
+        key: { prop: 'key' },
+        storage: 'localStorage',
+      },
+      appStorage,
+    });
+    const data = {
+      key: 'key',
+      data: { text: 'test' },
+    };
+    writeStorage('localStorage', 'key', [data, data], appStorage);
+
+    await action({
+      key: 'key',
+    });
+
+    const result = await readStorage('localStorage', 'key', appStorage);
+
+    expect(result).toStrictEqual(data);
+  });
+
+  it('should remove storage entry when it subtracts the last entry', async () => {
+    const action = createTestAction({
+      definition: {
+        type: 'storage.subtract',
+        key: { prop: 'key' },
+        storage: 'localStorage',
+      },
+      appStorage,
+    });
+    const data = {
+      key: 'key',
+      data: { text: 'test' },
+    };
+    writeStorage('localStorage', 'key', data, appStorage);
+
+    await action({
+      key: 'key',
+    });
+    let result;
+
+    try {
+      result = await readStorage('localStorage', 'key', appStorage);
+    } catch (error) {
+      result = (error as Error).message;
+    }
+
+    expect(result).toBe('Could not find data at this key.');
+  });
+});
+
+describe('storage.update', () => {
+  it.each`
+    storageType
+    ${'localStorage'}
+    ${'sessionStorage'}
+    ${'indexedDB'}
+    ${'appStorage'}
+  `(
+    'should update the specified item in the dataset using $storageType',
+    async ({ storageType }) => {
+      const action = createTestAction({
+        definition: {
+          type: 'storage.update',
+          key: { prop: 'key' },
+          item: { prop: 'item' },
+          value: { prop: 'value' },
+          storage: storageType,
+        },
+        appStorage,
+      });
+      const data = {
+        key: 'key',
+        data: { text: 'test' },
+      };
+      writeStorage(storageType, 'key', [data, data], appStorage);
+
+      await action({
+        key: 'key',
+        item: 1,
+        value: {
+          key: 'key',
+          data: { text: 'test works' },
+        },
+      });
+
+      const result = await readStorage(storageType, 'key', appStorage);
+
+      expect((result as Object[])[1]).toStrictEqual({
+        key: 'key',
+        data: { text: 'test works' },
+      });
+    },
+  );
+
+  it('should update the only item in storage', async () => {
+    const action = createTestAction({
+      definition: {
+        type: 'storage.update',
+        key: { prop: 'key' },
+        item: { prop: 'item' },
+        value: { prop: 'value' },
+        storage: 'localStorage',
+      },
+      appStorage,
+    });
+    const data = {
+      key: 'key',
+      data: { text: 'test' },
+    };
+    writeStorage('localStorage', 'key', data, appStorage);
+
+    await action({
+      key: 'key',
+      value: {
+        key: 'key',
+        data: { text: 'test works' },
+      },
+    });
+
+    const result = await readStorage('localStorage', 'key', appStorage);
+
+    expect(result).toStrictEqual({
+      key: 'key',
+      data: { text: 'test works' },
+    });
+  });
+});
