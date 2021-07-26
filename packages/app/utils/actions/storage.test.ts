@@ -1,0 +1,212 @@
+
+import { IDBPDatabase } from 'idb';
+
+import { createTestAction } from '../makeActions.js';
+import { AppStorage } from '../storage.js';
+import { getDB, readStorage, writeStorage } from './storage.js';
+
+let db: IDBPDatabase;
+let appStorage: AppStorage;
+
+beforeEach(async () => {
+  db = await getDB();
+  db.put('storage', 'This is default test data!', 'data');
+  localStorage.setItem(
+    'appsemble-42-data',
+    JSON.stringify('This is default test data from localStorage!'),
+  );
+  sessionStorage.setItem(
+    'appsemble-42-data',
+    JSON.stringify('This is default test data from sessionStorage!'),
+  );
+  appStorage = new AppStorage();
+  appStorage.set('data', 'This is default test data from appStorage!');
+});
+
+describe('storage.read', () => {
+  it.each`
+    storageType         | expectedResult
+    ${'localStorage'}   | ${'This is default test data from localStorage!'}
+    ${'sessionStorage'} | ${'This is default test data from sessionStorage!'}
+    ${'indexedDB'}      | ${'This is default test data!'}
+    ${'appStorage'}     | ${'This is default test data from appStorage!'}
+  `('should read from $storageType', async ({ expectedResult, storageType }) => {
+    const action = createTestAction({
+      definition: { type: 'storage.read', key: { prop: 'test' }, storage: storageType },
+      appStorage,
+    });
+    const result = await action({ test: 'data' });
+    expect(result).toBe(expectedResult);
+  });
+
+  it('should return undefined for unknown keys in the store', async () => {
+    const action = createTestAction({
+      definition: { type: 'storage.read', key: { prop: 'test' } },
+      appStorage,
+    });
+    const result = await action({ test: 'bla' });
+    expect(result).toBeUndefined();
+  });
+
+  it('should throw error when key is not valid', async () => {
+    const action = createTestAction({
+      definition: { type: 'storage.read', key: { prop: 'key' }, storage: 'localStorage' },
+      appStorage,
+    });
+    let result;
+
+    try {
+      result = await action({ key: 'invalid key' });
+    } catch (error) {
+      result = (error as Error).message;
+    }
+
+    expect(result).toBe('Could not find data at this key.');
+  });
+});
+
+describe('storage.write', () => {
+  it.each`
+    storageType
+    ${'localStorage'}
+    ${'sessionStorage'}
+    ${'indexedDB'}
+    ${'appStorage'}
+  `('should store data using $storageType', async ({ storageType }) => {
+    const action = createTestAction({
+      definition: {
+        type: 'storage.write',
+        key: { prop: 'key' },
+        value: { prop: 'data' },
+        storage: storageType,
+      },
+      appStorage,
+    });
+    const data = {
+      key: 'key',
+      data: { this: 'is', 0: 'some', arbitrary: { data: 'storage' } },
+      date: '2022-11-18T13:08:03.128Z',
+    };
+    const result = await action({
+      key: 'key',
+      data,
+    });
+    const storageData = await readStorage(storageType, 'key', appStorage);
+    expect(result).toStrictEqual({ key: 'key', data });
+    expect(storageData).toStrictEqual(data);
+  });
+});
+
+describe('storage.delete', () => {
+  it.each`
+    storageType         | expectedResult
+    ${'localStorage'}   | ${'Could not find data at this key.'}
+    ${'sessionStorage'} | ${'Could not find data at this key.'}
+    ${'indexedDB'}      | ${undefined}
+    ${'appStorage'}     | ${'Could not find data at this key.'}
+  `(
+    'should delete an existing item entirely using $storageType',
+    async ({ expectedResult, storageType }) => {
+      const action = createTestAction({
+        definition: {
+          type: 'storage.delete',
+          key: { prop: 'key' },
+          storage: storageType,
+        },
+        appStorage,
+      });
+      await action({ key: 'data' });
+      let result;
+
+      try {
+        result = await readStorage(storageType, 'data', appStorage);
+      } catch (error) {
+        result = (error as Error).message;
+      }
+
+      expect(result).toBe(expectedResult);
+    },
+  );
+});
+
+describe('storage.append', () => {
+  it.each`
+    storageType
+    ${'localStorage'}
+    ${'sessionStorage'}
+    ${'indexedDB'}
+    ${'appStorage'}
+  `('should add a new item to an existing dataset using $storageType', async ({ storageType }) => {
+    const action = createTestAction({
+      definition: {
+        type: 'storage.append',
+        key: { prop: 'key' },
+        value: { prop: 'data' },
+        storage: storageType,
+      },
+      appStorage,
+    });
+    const data = {
+      key: 'key',
+      data: { text: 'test' },
+    };
+    writeStorage(storageType, 'key', [data, data], appStorage);
+
+    const result = await action({
+      key: 'key',
+      data,
+    });
+
+    const newStorage = await readStorage(storageType, 'key', appStorage);
+
+    expect(result).toStrictEqual({ key: 'key', data });
+    expect((newStorage as Object[])[1]).toStrictEqual({ key: 'key', data: data.data });
+  });
+
+  it('should turn existing dataset with a single object into an array with new value', async () => {
+    const action = createTestAction({
+      definition: {
+        type: 'storage.append',
+        key: { prop: 'key' },
+        value: { prop: 'data' },
+        storage: 'localStorage',
+      },
+      appStorage,
+    });
+    const data = {
+      key: 'key',
+      data: { text: 'test' },
+    };
+
+    const result = await action({
+      key: 'key',
+      data,
+    });
+
+    const newStorage = await readStorage('localStorage', 'key', appStorage);
+
+    expect(result).toStrictEqual({ key: 'key', data });
+    expect(Array.isArray(newStorage)).toBe(true);
+  });
+});
+
+describe('storage.subtract', () => {
+  it.each`
+    storageType
+    ${'localStorage'}
+    ${'sessionStorage'}
+    ${'indexedDB'}
+    ${'appStorage'}
+  `(
+    'should remove the last item from an existing dataset using $storageType',
+    async ({ storageType }) => {
+      const action = createTestAction({
+        definition: {
+          type: 'storage.subtract',
+          key: { prop: 'key' },
+          storage: storageType,
+        },
+        appStorage,
+      });
+      const data = {
+        key: 'key',

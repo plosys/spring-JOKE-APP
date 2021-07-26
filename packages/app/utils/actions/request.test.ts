@@ -270,4 +270,90 @@ describe('request', () => {
             <updated>2021-03-31T17:09:00+02:00</updated>
             <title>Merge branch &#39;release-0.18.5&#39; into &#39;main&#39;</title>
             {/* eslint-disable-next-line react/forbid-elements */}
-            <content type="html">&lt;p&gt;Release version 0.18.5&lt;/p&gt; &lt;p&gt;See merge request appsemble/appsemble!1747&lt;/p&
+            <content type="html">&lt;p&gt;Release version 0.18.5&lt;/p&gt; &lt;p&gt;See merge request appsemble/appsemble!1747&lt;/p&gt;</content>
+          </entry>
+          <entry>
+            <id>tag:github.com,2008:Repository/226361784/0.18.4</id>
+            <updated>2021-03-24T17:40:15+01:00</updated>
+            <title>Merge branch &#39;release-0.18.4&#39; into &#39;main&#39;</title>
+            {/* eslint-disable-next-line react/forbid-elements */}
+            <content type="html">&lt;p&gt;Release version 0.18.4&lt;/p&gt; &lt;p&gt;See merge request appsemble/appsemble!1734&lt;/p&gt;</content>
+          </entry>
+        </feed>`,
+        { 'content-type': 'application/xml' },
+      ];
+    });
+    const action = createTestAction({
+      definition: {
+        type: 'request',
+        proxy: false,
+        url: 'https://example.com',
+        schema: {
+          type: 'object',
+          xml: { name: 'feed' },
+          properties: {
+            title: { type: 'string' },
+            updated: { type: 'string' },
+            entries: {
+              type: 'array',
+              items: {
+                type: 'object',
+                xml: { name: 'entry' },
+                properties: {
+                  id: { type: 'string' },
+                  updated: { type: 'string' },
+                  title: { type: 'string' },
+                  content: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+      },
+      prefix: 'pages.test.blocks.0.actions.onClick',
+      prefixIndex: 'pages.0.blocks.0.actions.onClick',
+    });
+    const result = await action({ hello: 'get' });
+    expect(result).toStrictEqual({
+      title: 'Release notes from appsemble',
+      updated: '2021-03-31T17:09:00+02:00',
+      entries: [
+        {
+          content:
+            '<p>Release version 0.18.5</p> <p>See merge request appsemble/appsemble!1747</p>',
+          id: 'tag:github.com,2008:Repository/226361784/0.18.5',
+          title: "Merge branch 'release-0.18.5' into 'main'",
+          updated: '2021-03-31T17:09:00+02:00',
+        },
+        {
+          content:
+            '<p>Release version 0.18.4</p> <p>See merge request appsemble/appsemble!1734</p>',
+          id: 'tag:github.com,2008:Repository/226361784/0.18.4',
+          title: "Merge branch 'release-0.18.4' into 'main'",
+          updated: '2021-03-24T17:40:15+01:00',
+        },
+      ],
+    });
+  });
+
+  it('should set parameter as end of URL when presented as a single string', async () => {
+    mock.onAny(/.*/).reply((req) => {
+      request = req;
+      return [200, { hello: 'data' }, {}];
+    });
+    const action = createTestAction({
+      definition: {
+        type: 'request',
+        method: 'get',
+        url: 'https://example.com/api',
+        query: 0,
+        proxy: false,
+      },
+    });
+    const result = await action({ hello: 'get' });
+    expect(request.method).toBe('get');
+    expect(request.url).toBe('https://example.com/api/0');
+    expect(request.params).toBeNull();
+    expect(result).toStrictEqual({ hello: 'data' });
+  });
+});
