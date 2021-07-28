@@ -35,4 +35,15 @@ describe('getDefaultPageName', () => {
 
   it('should prioritize the role’s default page', () => {
     const result = getDefaultPageName(true, 'User', {
-      defaultPage: '
+      defaultPage: 'TestPage',
+      security: {
+        default: { role: 'User' },
+        roles: {
+          Foo: { defaultPage: 'FooPage' },
+          User: { inherits: ['Foo'], defaultPage: 'RolePage' },
+        },
+      },
+    });
+    expect(result).toBe('RolePage');
+  });
+});
