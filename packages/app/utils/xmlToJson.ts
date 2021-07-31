@@ -73,4 +73,7 @@ export function xmlToJson(xml: string, schema: OpenAPIV3.SchemaObject): JsonValu
   const doc = parser.parseFromString(xml, 'application/xml');
   const [errorNode] = doc.getElementsByTagName('parsererror');
   if (errorNode) {
-    throw new Error(errorNode.te
+    throw new Error(errorNode.textContent);
+  }
+  return processNode(doc as any, schema);
+}

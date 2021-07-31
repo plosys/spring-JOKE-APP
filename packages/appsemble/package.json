@@ -1,0 +1,35 @@
+{
+  "name": "appsemble",
+  "version": "0.20.40",
+  "description": "A simple wrapper for @appsemble/cli",
+  "keywords": [
+    "app",
+    "apps",
+    "appsemble",
+    "cli",
+    "framework",
+    "low-code",
+    "lowcode"
+  ],
+  "homepage": "https://appsemble.app",
+  "bugs": "https://gitlab.com/appsemble/appsemble/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/appsemble/appsemble.git",
+    "directory": "packages/appsemble"
+  },
+  "license": "LGPL-3.0-only",
+  "author": "Appsemble <info@appsemble.com> (https://appsemble.com)",
+  "type": "module",
+  "bin": "./index.js",
+  "files": [
+    "*.js"
+  ],
+  "scripts": {
+    "prepack": "tsc --noEmit false",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest"
+  },
+  "dependencies": {
+    "@appsemble/cli": "0.20.40"
+  }
+}
