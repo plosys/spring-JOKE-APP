@@ -154,4 +154,162 @@ Will not render if undefined.",
             "type": "string",
           },
           "outlined": {
-            "description": "Whether the button should display its colors in
+            "description": "Whether the button should display its colors in the outlines.",
+            "type": "boolean",
+          },
+          "rounded": {
+            "description": "Whether the button should be rounded.",
+            "type": "boolean",
+          },
+          "size": {
+            "$ref": "#/definitions/BulmaSize",
+            "description": "The size of the button. By default the size is ‘normal’.",
+          },
+          "title": {
+            "description": "The title for the button.
+
+Describe what the button does. This helps with accessibility for people using screen readers.",
+            "format": "remapper",
+          },
+        },
+        "type": "object",
+      },
+    },
+    "properties": {
+      "buttons": {
+        "description": "The list of buttons.",
+        "items": {
+          "$ref": "#/definitions/Button",
+        },
+        "type": "array",
+      },
+    },
+    "required": [
+      "buttons",
+    ],
+    "type": "object",
+  },
+}
+`;
+
+exports[`getBlockConfigFromTypeScript official blocks chart 1`] = `
+{
+  "actions": {
+    "onClick": {
+      "description": "This action is launched whenever a user clicks on the chart canvas.
+
+Returns the data of the clicked data in the format of \`label\`, \`data\`.
+
+Returns an empty object if the user clicks outside of a data entry.",
+    },
+  },
+  "events": {
+    "emit": undefined,
+    "listen": {
+      "add": {
+        "description": "Add new data to the chart.
+
+Refer to the block description for more information on the supported data format.",
+      },
+      "replace": {
+        "description": "Replace all current data with the new data.
+
+Refer to the block description for more information on the supported data format.",
+      },
+    },
+  },
+  "messages": undefined,
+  "parameters": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "definitions": {
+      "Color": {
+        "description": "A hexadecimal color.",
+        "pattern": "^#[a-fA-F\\d]{6}$",
+        "type": "string",
+      },
+      "Font": {
+        "additionalProperties": false,
+        "properties": {
+          "size": {
+            "description": "The size of the label's font in px.",
+            "type": "number",
+          },
+        },
+        "required": [
+          "size",
+        ],
+        "type": "object",
+      },
+      "LabelOptions": {
+        "additionalProperties": false,
+        "properties": {
+          "font": {
+            "$ref": "#/definitions/Font",
+            "description": "Options for the font style for the labels on the horizontal axis.",
+          },
+          "maxWidth": {
+            "description": "The maximum length (words) of the labels on the horizontal axis.",
+            "type": "number",
+          },
+        },
+        "required": [
+          "font",
+          "maxWidth",
+        ],
+        "type": "object",
+      },
+      "YAxis": {
+        "additionalProperties": false,
+        "properties": {
+          "colors": {
+            "default": [
+              "#ededed",
+            ],
+            "description": "By default a grey tone is used.",
+            "items": {
+              "$ref": "#/definitions/Color",
+            },
+            "minItems": 1,
+            "type": "array",
+          },
+          "max": {
+            "description": "The maximum value to render on the vertical axis.
+
+If not specified, the maximum value is determined automatically based on the values given.",
+            "type": "number",
+          },
+          "min": {
+            "default": 0,
+            "description": "The minimal value to render on the vertical axis.",
+            "type": "number",
+          },
+          "step": {
+            "description": "If specified, the Y-axis of the chart will be incremented by this fixed amount.
+
+By default it’s detected automatically.",
+            "type": "number",
+          },
+        },
+        "type": "object",
+      },
+    },
+    "properties": {
+      "backgroundColors": {
+        "description": "The background colors to use for each dataset by default.
+
+If the length of this array exceeds the number of labels, the pattern will be repeated.
+
+By default the primary color of the theme will be used.",
+        "items": {
+          "format": "remapper",
+        },
+        "minItems": 1,
+        "type": "array",
+      },
+      "labelOptions": {
+        "$ref": "#/definitions/LabelOptions",
+        "description": "Configuration options for the labels on the horizontal axis.",
+      },
+      "labels": {
+        "description": "The labels to display a
