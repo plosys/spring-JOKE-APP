@@ -1,54 +1,61 @@
+
 import { Argv } from 'yargs';
 
 import { resolveAppIdAndRemote } from '../../lib/app.js';
 import { authenticate } from '../../lib/authentication.js';
-import { deleteTeam } from '../../lib/team.js';
+import { updateTeam } from '../../lib/team.js';
 import { BaseArguments } from '../../types.js';
 
-interface DeleteTeamArguments extends BaseArguments {
+interface UpdateTeamArguments extends BaseArguments {
   appId: number;
   id: number;
+  name: string;
+  annotation: string[];
   context: string;
   app: string;
 }
 
-export const command = 'delete';
-export const description = 'Delete an existing team from an app.';
+export const command = 'update';
+export const description = 'Update an existing team for an app.';
 
 export function builder(yargs: Argv): Argv<any> {
   return yargs
     .option('id', {
-      describe: 'The ID of the team to delete.',
+      describe: 'The ID of the team to update.',
       demandOption: true,
+    })
+    .option('name', {
+      describe: 'The new name of the team.',
+    })
+    .option('annotation', {
+      type: 'array',
+      describe: 'The new list of annotations. The format is key=value.',
     })
     .option('app-id', {
       describe: 'The ID of the app to delete the team from.',
       type: 'number',
-    })
-    .option('app', {
-      describe: 'The path to the app.',
-      demandOption: 'context',
-    })
-    .option('context', {
-      describe: 'If specified, use the specified context from .appsemblerc.yaml',
-      demandOption: 'app',
+      demandOption: true,
     });
 }
 
 export async function handler({
+  annotation,
   app,
   appId,
   clientCredentials,
   context,
   id,
+  name,
   remote,
-}: DeleteTeamArguments): Promise<void> {
+}: UpdateTeamArguments): Promise<void> {
   const [resolvedAppId, resolvedRemote] = await resolveAppIdAndRemote(app, context, remote, appId);
 
   await authenticate(resolvedRemote, 'teams:write', clientCredentials);
-  await deleteTeam({
+  await updateTeam({
     id,
     appId: resolvedAppId,
+    name,
+    annotations: annotation,
     remote: resolvedRemote,
   });
 }
