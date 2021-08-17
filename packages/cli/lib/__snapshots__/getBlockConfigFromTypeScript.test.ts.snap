@@ -312,4 +312,184 @@ By default the primary color of the theme will be used.",
         "description": "Configuration options for the labels on the horizontal axis.",
       },
       "labels": {
-        "description": "The labels to display a
+        "description": "The labels to display at the bottom of the chart.",
+        "items": {
+          "format": "remapper",
+        },
+        "minItems": 1,
+        "type": "array",
+      },
+      "type": {
+        "default": "line",
+        "description": "The chart type to render by default.",
+        "enum": [
+          "bar",
+          "line",
+        ],
+        "type": "string",
+      },
+      "yAxis": {
+        "$ref": "#/definitions/YAxis",
+        "description": "Configuration options for the vertical axis.",
+      },
+    },
+    "required": [
+      "type",
+      "yAxis",
+    ],
+    "type": "object",
+  },
+}
+`;
+
+exports[`getBlockConfigFromTypeScript official blocks control-buttons 1`] = `
+{
+  "actions": {
+    "onBack": {
+      "description": "This action gets triggered then the back button is clicked.
+
+It will be called with the page data.",
+    },
+    "onForward": {
+      "description": "This action gets triggered then the back button is clicked.
+
+It will be called with the page data.",
+    },
+  },
+  "events": undefined,
+  "messages": {
+    "back": {
+      "description": "The label that’s used on the back button.",
+    },
+    "forward": {
+      "description": "The label that’s used on the forward button.",
+    },
+  },
+  "parameters": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "definitions": {
+      "Button": {
+        "additionalProperties": false,
+        "properties": {
+          "icon": {
+            "description": "A [Font Awesome icon](https://fontawesome.com/icons?m=free) name to render on the button.
+
+By default a cared pointing left or right respectively will be rendered.",
+            "format": "fontawesome",
+            "type": "string",
+          },
+        },
+        "type": "object",
+      },
+    },
+    "properties": {
+      "back": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/Button",
+          },
+          {
+            "const": false,
+            "type": "boolean",
+          },
+        ],
+        "description": "The configuration for the back button.
+
+Set to \`false\` to hide back button.",
+      },
+      "forward": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/Button",
+          },
+          {
+            "const": false,
+            "type": "boolean",
+          },
+        ],
+        "description": "The configuration for the forward button.
+
+Set to \`false\` to hide forward button.",
+      },
+    },
+    "type": "object",
+  },
+}
+`;
+
+exports[`getBlockConfigFromTypeScript official blocks data-loader 1`] = `
+{
+  "actions": {
+    "onLoad": {
+      "description": "Action that gets dispatched when a new filter gets applied.
+
+This also gets called during the initial load.",
+    },
+  },
+  "events": {
+    "emit": {
+      "data": {
+        "description": "Event that gets emitted once the \`onLoad\` action has finished.
+
+It can be triggered again by sending a \`refresh\` event.",
+      },
+    },
+    "listen": {
+      "refresh": {
+        "description": "When received, the \`onLoad\` action will be triggered using the parameters passed through this
+event, which in turn triggers the \`data\` emit event.",
+      },
+    },
+  },
+  "messages": {
+    "loadErrorMessage": {
+      "description": "The error message that should be shown when data failed to load.",
+    },
+  },
+  "parameters": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+      "skipInitialLoad": {
+        "description": "By default the \`onLoad\` action is triggered immediately.
+
+By setting this to \`true\`, this won’t happen.",
+        "type": "boolean",
+      },
+    },
+    "type": "object",
+  },
+}
+`;
+
+exports[`getBlockConfigFromTypeScript official blocks data-notifier 1`] = `
+{
+  "actions": undefined,
+  "events": {
+    "emit": {
+      "data": {
+        "description": "Event that gets emitted when new data is available.",
+      },
+    },
+    "listen": {
+      "data": {
+        "description": "The event to listen on for new data.",
+      },
+      "seed": {
+        "description": "Set and emit the initial data.
+
+This is useful for example in combination with the \`filter\` block.",
+      },
+    },
+  },
+  "messages": {
+    "buttonLabel": {
+      "description": "The label to display on the refresh button of the notification.",
+    },
+    "newMessage": {
+      "description": "The message to display when new data is available.
+
+This will be called with the \`count\` parameter, which refers to the amount of new items.",
+    },
+    
