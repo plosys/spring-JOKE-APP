@@ -492,4 +492,162 @@ This is useful for example in combination with the \`filter\` block.",
 
 This will be called with the \`count\` parameter, which refers to the amount of new items.",
     },
-    
+    "updatedMessage": {
+      "description": "The message to display when existing data has been changed.
+
+This will be called with the \`count\` parameter, which refers to the amount of changed items.",
+    },
+  },
+  "parameters": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "definitions": {
+      "BulmaColor": {
+        "description": "A color known to Bulma.",
+        "enum": [
+          "danger",
+          "dark",
+          "info",
+          "link",
+          "primary",
+          "success",
+          "warning",
+          "white",
+        ],
+        "type": "string",
+      },
+    },
+    "properties": {
+      "color": {
+        "$ref": "#/definitions/BulmaColor",
+        "default": "dark",
+        "description": "The Bulma color to use for the message and the refresh button.",
+      },
+      "id": {
+        "default": "id",
+        "description": "The property used to identify resources when comparing them in case of array data.",
+        "type": "string",
+      },
+    },
+    "type": "object",
+  },
+}
+`;
+
+exports[`getBlockConfigFromTypeScript official blocks detail-viewer 1`] = `
+{
+  "actions": undefined,
+  "events": {
+    "emit": undefined,
+    "listen": {
+      "data": {
+        "description": "The event that is triggered when data is received.
+
+Compatible data that is received will be displayed.",
+      },
+    },
+  },
+  "messages": undefined,
+  "parameters": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "definitions": {
+      "AssetMarkerIcon": {
+        "additionalProperties": false,
+        "description": "A marker based on an existing asset.",
+        "properties": {
+          "anchor": {
+            "description": "The anchor X and Y offset used for positioning the image.
+
+By default, the center of the icon will be used to mark the location. For many icons, it may be desirable to customize this. For example, for a symmetric pin which has a width of 10, and a height of 16, you’ll probably want to set this to \`[5, 16]\`
+
+The following special cases for [Font Awesome icon](https://fontawesome.com/icons?m=free) are treated in a special way, since they are often used to represent a location:
+
+- \`map-marker\`
+- \`map-marker-alt\`
+- \`map-pin\`
+- \`thumbtrack\`",
+            "items": {
+              "type": "number",
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array",
+          },
+          "asset": {
+            "description": "The id of an asset to use.",
+            "type": "string",
+          },
+          "size": {
+            "default": 28,
+            "description": "The height of marker icons in pixels.",
+            "type": "number",
+          },
+        },
+        "required": [
+          "asset",
+        ],
+        "type": "object",
+      },
+      "BulmaColor": {
+        "description": "A color known to Bulma.",
+        "enum": [
+          "danger",
+          "dark",
+          "info",
+          "link",
+          "primary",
+          "success",
+          "warning",
+          "white",
+        ],
+        "type": "string",
+      },
+      "Field": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/FileField",
+          },
+          {
+            "$ref": "#/definitions/GeoCoordinatesField",
+          },
+          {
+            "$ref": "#/definitions/StringField",
+          },
+        ],
+        "description": "All supported types of fields.",
+      },
+      "FieldGroup": {
+        "additionalProperties": false,
+        "description": "A group of fields that is repeated for each item in it value.",
+        "properties": {
+          "fields": {
+            "description": "The list of fields to repeat.",
+            "items": {
+              "$ref": "#/definitions/Field",
+            },
+            "type": "array",
+          },
+          "label": {
+            "description": "The label that is presented to the user. No label will be displayed if this is not defined.",
+            "format": "remapper",
+          },
+          "value": {
+            "description": "The Remapper used to retrieve the data.",
+            "format": "remapper",
+          },
+        },
+        "required": [
+          "fields",
+        ],
+        "type": "object",
+      },
+      "FileField": {
+        "additionalProperties": false,
+        "description": "Displays files as images.",
+        "properties": {
+          "label": {
+            "description": "The label that is presented to the user. No label will be displayed if this is not defined.",
+            "format": "remapper",
+          },
+          
