@@ -650,4 +650,127 @@ The following special cases for [Font Awesome icon](https://fontawesome.com/icon
             "description": "The label that is presented to the user. No label will be displayed if this is not defined.",
             "format": "remapper",
           },
-          
+          "repeated": {
+            "description": "Display one or multiple files.",
+            "type": "boolean",
+          },
+          "repeatedName": {
+            "description": "The name of the property of the data to fetch from within each item.
+
+If not set, the item itself is used as the url.",
+            "format": "remapper",
+          },
+          "type": {
+            "const": "file",
+            "description": "The name of the type of the field.",
+            "type": "string",
+          },
+          "value": {
+            "description": "The Remapper used to retrieve the data.",
+            "format": "remapper",
+          },
+        },
+        "required": [
+          "type",
+        ],
+        "type": "object",
+      },
+      "FontAwesomeMarkerIcon": {
+        "additionalProperties": false,
+        "description": "A marker based on a [Font Awesome icon](https://fontawesome.com/icons?m=free).",
+        "properties": {
+          "anchor": {
+            "description": "The anchor X and Y offset used for positioning the image.
+
+By default, the center of the icon will be used to mark the location. For many icons, it may be desirable to customize this. For example, for a symmetric pin which has a width of 10, and a height of 16, you’ll probably want to set this to \`[5, 16]\`
+
+The following special cases for [Font Awesome icon](https://fontawesome.com/icons?m=free) are treated in a special way, since they are often used to represent a location:
+
+- \`map-marker\`
+- \`map-marker-alt\`
+- \`map-pin\`
+- \`thumbtrack\`",
+            "items": {
+              "type": "number",
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array",
+          },
+          "color": {
+            "$ref": "#/definitions/BulmaColor",
+            "default": "primary",
+            "description": "The color to apply to the icon.",
+          },
+          "icon": {
+            "description": "A [Font Awesome icon](https://fontawesome.com/icons?m=free) name to use.",
+            "format": "fontawesome",
+            "type": "string",
+          },
+          "size": {
+            "default": 28,
+            "description": "The height of marker icons in pixels.",
+            "type": "number",
+          },
+        },
+        "type": "object",
+      },
+      "GeoCoordinatesField": {
+        "additionalProperties": false,
+        "description": "Displays a map with a marker.",
+        "properties": {
+          "label": {
+            "description": "The label that is presented to the user. No label will be displayed if this is not defined.",
+            "format": "remapper",
+          },
+          "latitude": {
+            "description": "The name of the field used to access the longitude value.
+
+If \`fields[].name\` is set it is retrieved relatively, otherwise it is fetched from the root of the data.",
+            "format": "remapper",
+          },
+          "longitude": {
+            "description": "The name of the field used to access the latitude value.
+
+If \`fields[].name\` is set it is retrieved relatively, otherwise it is fetched from the root of the data.",
+            "format": "remapper",
+          },
+          "type": {
+            "const": "geocoordinates",
+            "description": "The name of the type of the field.",
+            "type": "string",
+          },
+          "value": {
+            "description": "The path to base the longitude and latitude fields from.
+
+If \`fields[].latitude\` and \`fields[].longitude\` are not set it defaults to \`fields[].name.lat\` and \`fields[].name.lng\`.",
+            "format": "remapper",
+          },
+        },
+        "required": [
+          "type",
+        ],
+        "type": "object",
+      },
+      "StringField": {
+        "additionalProperties": false,
+        "description": "Displays the content as regular text.
+
+If the content is an object it will be converted using \`JSON.stringify()\`.",
+        "properties": {
+          "label": {
+            "description": "The label that is presented to the user. No label will be displayed if this is not defined.",
+            "format": "remapper",
+          },
+          "type": {
+            "const": "string",
+            "description": "The name of the type of the field.",
+            "type": "string",
+          },
+          "value": {
+            "description": "The Remapper used to retrieve the data.",
+            "format": "remapper",
+          },
+        },
+        "type": "object",
+      },
