@@ -1076,4 +1076,156 @@ exports[`getBlockConfigFromTypeScript official blocks filter 1`] = `
       "filtered": {
         "description": "This event is emitted when new data is available because of a user interaction with filters.",
       },
-      "
+      "refreshed": {
+        "description": "This event is emitted when new data is available because of a refresh event.",
+      },
+    },
+    "listen": {
+      "refresh": {
+        "description": "Force reload data using the current filters.",
+      },
+    },
+  },
+  "messages": {
+    "clearLabel": {
+      "description": "The label of the clear button.",
+    },
+    "modalTitle": {
+      "description": "The title of the modal.",
+    },
+    "submitLabel": {
+      "description": "The label of the filter button.",
+    },
+  },
+  "parameters": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "definitions": {
+      "AbstractField<"date",string>": {
+        "additionalProperties": false,
+        "properties": {
+          "defaultValue": {
+            "description": "The filter to apply by default.",
+            "type": "string",
+          },
+          "icon": {
+            "description": "Name of the [Font Awesome icon](https://fontawesome.com/icons?m=free) to be displayed next to the label.",
+            "format": "fontawesome",
+            "type": "string",
+          },
+          "label": {
+            "description": "The label displayed next to the field.",
+            "format": "remapper",
+          },
+          "name": {
+            "description": "The name of the field to filter on.",
+            "type": "string",
+          },
+          "type": {
+            "const": "date",
+            "description": "The type of the filter field.",
+            "type": "string",
+          },
+        },
+        "required": [
+          "name",
+          "type",
+        ],
+        "type": "object",
+      },
+      "ButtonOption": {
+        "additionalProperties": false,
+        "properties": {
+          "icon": {
+            "description": "An icon to render on the button.",
+            "format": "fontawesome",
+            "type": "string",
+          },
+          "label": {
+            "description": "User-facing label describing the option.",
+            "format": "remapper",
+          },
+          "value": {
+            "description": "The value that gets submitted when filtering.",
+            "type": "string",
+          },
+        },
+        "required": [
+          "value",
+          "icon",
+        ],
+        "type": "object",
+      },
+      "ButtonsField": {
+        "additionalProperties": false,
+        "properties": {
+          "defaultValue": {
+            "description": "The filter to apply by default.",
+            "items": {
+              "type": "string",
+            },
+            "type": "array",
+          },
+          "icon": {
+            "description": "Name of the [Font Awesome icon](https://fontawesome.com/icons?m=free) to be displayed next to the label.",
+            "format": "fontawesome",
+            "type": "string",
+          },
+          "label": {
+            "description": "The label displayed next to the field.",
+            "format": "remapper",
+          },
+          "name": {
+            "description": "The name of the field to filter on.",
+            "type": "string",
+          },
+          "options": {
+            "description": "A list of button options.",
+            "items": {
+              "$ref": "#/definitions/ButtonOption",
+            },
+            "type": "array",
+          },
+          "type": {
+            "const": "buttons",
+            "description": "The type of the filter field.",
+            "type": "string",
+          },
+        },
+        "required": [
+          "name",
+          "options",
+          "type",
+        ],
+        "type": "object",
+      },
+      "DateField": {
+        "$ref": "#/definitions/AbstractField%3C%22date%22%2Cstring%3E",
+      },
+      "DateRangeField": {
+        "additionalProperties": false,
+        "properties": {
+          "defaultValue": {
+            "description": "The filter to apply by default.",
+            "items": {
+              "type": "string",
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array",
+          },
+          "fromLabel": {
+            "description": "The label to render on the \`from\` field.",
+            "format": "remapper",
+          },
+          "icon": {
+            "description": "Name of the [Font Awesome icon](https://fontawesome.com/icons?m=free) to be displayed next to the label.",
+            "format": "fontawesome",
+            "type": "string",
+          },
+          "label": {
+            "description": "The label displayed next to the field.",
+            "format": "remapper",
+          },
+          "name": {
+       
