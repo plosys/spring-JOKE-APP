@@ -1389,4 +1389,144 @@ exports[`getBlockConfigFromTypeScript official blocks form 1`] = `
       "description": "A custom action that gets dispatched when checking form requirements.",
     },
     "onPrevious": {
-      "desc
+      "description": "Action that gets dispatched when the previous button is clicked.",
+    },
+    "onSubmit": {
+      "description": "Action that gets dispatched when the form is submitted.",
+    },
+  },
+  "events": {
+    "emit": {
+      "change": {
+        "description": "This event is emitted every time a change is made to the form.
+
+The data received in the entire form data.",
+      },
+    },
+    "listen": {
+      "$any": {
+        "description": "Custom event listeners that can be used to receive data for specific types of form fields.",
+      },
+      "data": {
+        "description": "An event that can be used to receive data.
+
+Compatible data that is received will be displayed and mapped to the fields as defined in the
+\`fields\` parameter.
+
+\`keepData\` will retain the previous set of values if set to \`true\`
+
+\`initialValues\` as a mapping of key-value pairs
+will be merged with the new fields’ default values.",
+      },
+      "fields": {
+        "description": "An event that can be used to dynamically replace the form’s fields.
+
+Include an array of fields in \`fields\` to replace the current list of fields in the block.",
+      },
+    },
+  },
+  "messages": {
+    "confirmLabel": {
+      "description": undefined,
+    },
+    "fieldErrorLabel": {
+      "description": undefined,
+    },
+    "formRequirementError": {
+      "description": undefined,
+    },
+    "invalidLabel": {
+      "description": undefined,
+    },
+    "optionalLabel": {
+      "description": undefined,
+    },
+    "previousLabel": {
+      "description": undefined,
+    },
+    "submitError": {
+      "description": undefined,
+    },
+    "submitLabel": {
+      "description": undefined,
+    },
+  },
+  "parameters": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "definitions": {
+      "AcceptRequirement": {
+        "additionalProperties": false,
+        "properties": {
+          "accept": {
+            "description": "The list of accepted [MIME-types](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Complete_list_of_MIME_types).",
+            "items": {
+              "type": "string",
+            },
+            "type": "array",
+          },
+          "errorMessage": {
+            "description": "The error message that is displayed when the requirement is not met.",
+            "format": "remapper",
+          },
+        },
+        "required": [
+          "accept",
+        ],
+        "type": "object",
+      },
+      "ActionEnumField": {
+        "additionalProperties": false,
+        "description": "A dropdown list containing a list of values based on the output of an action.",
+        "properties": {
+          "action": {
+            "description": "This action will be fired to fetch dynamic enum options.
+
+The action should return an array of objects that contain the \`label\` and \`value\` property.",
+            "format": "action",
+            "type": "string",
+          },
+          "defaultValue": {
+            "$ref": "#/definitions/JsonValue",
+            "description": "The default value of the field.",
+          },
+          "disabled": {
+            "default": false,
+            "description": "Whether the field should always be be disabled.",
+            "format": "remapper",
+          },
+          "icon": {
+            "description": "Name of the [Font Awesome icon](https://fontawesome.com/icons?m=free) to be displayed next to the label.",
+            "format": "fontawesome",
+            "type": "string",
+          },
+          "inline": {
+            "const": true,
+            "description": "Combines fields on the same row.
+
+Fields are combined in order if set to true.",
+            "type": "boolean",
+          },
+          "label": {
+            "description": "The label displayed next to the field.",
+            "format": "remapper",
+          },
+          "loadError": {
+            "default": "Error loading options",
+            "description": "This message is displayed if the options failed to load.",
+            "format": "remapper",
+          },
+          "name": {
+            "description": "The name used when storing this field.",
+            "type": "string",
+          },
+          "placeholder": {
+            "description": "The placeholder to display when the field is empty.",
+            "format": "remapper",
+          },
+          "readOnly": {
+            "default": false,
+            "description": "Whether the field should be read-only.",
+            "format": "remapper",
+          },
+          "r
