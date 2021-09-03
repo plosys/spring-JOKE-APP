@@ -1808,4 +1808,146 @@ Replaces the optional label if the field is optional. Won’t display if the fie
             "format": "remapper",
           },
           "type": {
-            
+            "const": "date",
+            "description": "The type of the field.",
+            "type": "string",
+          },
+        },
+        "required": [
+          "name",
+          "type",
+        ],
+        "type": "object",
+      },
+      "DateTimeField": {
+        "additionalProperties": false,
+        "description": "A date/time picker that results in an exact date and time.",
+        "properties": {
+          "confirm": {
+            "default": false,
+            "description": "Whether the confirm button should be shown",
+            "type": "boolean",
+          },
+          "dateFormat": {
+            "description": "The remapper used for formatting the date value’s label.
+
+The date value can be accessed using the \`root\` remapper.",
+            "format": "remapper",
+          },
+          "disabled": {
+            "default": false,
+            "description": "Whether the field should always be be disabled.",
+            "format": "remapper",
+          },
+          "icon": {
+            "description": "Name of the [Font Awesome icon](https://fontawesome.com/icons?m=free) to be displayed next to the label.",
+            "format": "fontawesome",
+            "type": "string",
+          },
+          "label": {
+            "description": "The label displayed next to the field.",
+            "format": "remapper",
+          },
+          "minuteIncrement": {
+            "default": 5,
+            "description": "The minute increment when pressing the up or down arrows on the time picker.",
+            "minimum": 1,
+            "type": "number",
+          },
+          "name": {
+            "description": "The name used when storing this field.",
+            "type": "string",
+          },
+          "placeholder": {
+            "description": "The placeholder to display when the field is empty.",
+            "format": "remapper",
+          },
+          "readOnly": {
+            "default": false,
+            "description": "Whether the field should be read-only.",
+            "format": "remapper",
+          },
+          "requirements": {
+            "description": "All requirements that are applicable to this type of field.",
+            "items": {
+              "$ref": "#/definitions/DateTimeRequirement",
+            },
+            "type": "array",
+          },
+          "show": {
+            "description": "Displays field only if condition is true.
+
+If not specified, the field will display.",
+            "format": "remapper",
+          },
+          "startOfWeek": {
+            "default": 1,
+            "description": "The day to display as the first day of the week.
+
+0 means sunday, 1 means monday, etc.",
+            "enum": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+            ],
+            "type": "number",
+          },
+          "tag": {
+            "description": "The label that is shown to the right of the label.
+
+Replaces the optional label if the field is optional. Won’t display if the field has no label of its own.",
+            "format": "remapper",
+          },
+          "type": {
+            "const": "date-time",
+            "description": "The type of the field.",
+            "type": "string",
+          },
+        },
+        "required": [
+          "name",
+          "type",
+        ],
+        "type": "object",
+      },
+      "DateTimeRequirement": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/EnabledDayRequirement",
+          },
+          {
+            "$ref": "#/definitions/RangeRequirement",
+          },
+          {
+            "$ref": "#/definitions/RequiredRequirement",
+          },
+          {
+            "$ref": "#/definitions/TimeRangeRequirement",
+          },
+        ],
+        "description": "All requirements applicable to date-time fields.",
+      },
+      "EnabledDayRequirement": {
+        "additionalProperties": false,
+        "description": "A requirement that can be used to disable specific days.",
+        "properties": {
+          "errorMessage": {
+            "description": "The error message that is displayed when the requirement is not met.",
+            "format": "remapper",
+          },
+          "friday": {
+            "default": true,
+            "description": "Whether Fridays should be selectable.",
+            "type": "boolean",
+          },
+          "monday": {
+            "default": true,
+            "description": "Whether Mondays should be selectable.",
+            "type": "boolean",
+          },
+          "saturday": {
+            "
