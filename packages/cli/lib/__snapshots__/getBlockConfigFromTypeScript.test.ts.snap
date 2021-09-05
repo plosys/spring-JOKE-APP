@@ -2361,4 +2361,136 @@ Replaces the optional label if the field is optional. Won’t display if the fie
 This can be used to set the location to something that is more relevant to the user.",
             "items": {
               "type": "number",
-          
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array",
+          },
+          "defaultValue": {
+            "$ref": "#/definitions/Record%3Cstring%2Cnumber%3E",
+            "description": "The default value of the field.",
+          },
+          "disabled": {
+            "default": false,
+            "description": "Whether the field should always be be disabled.",
+            "format": "remapper",
+          },
+          "icon": {
+            "description": "Name of the [Font Awesome icon](https://fontawesome.com/icons?m=free) to be displayed next to the label.",
+            "format": "fontawesome",
+            "type": "string",
+          },
+          "label": {
+            "description": "The label displayed next to the field.",
+            "format": "remapper",
+          },
+          "locationError": {
+            "default": "Couldn’t find your location. Are location services enabled?",
+            "description": "The error message to display when the location couldn’t be determined.",
+            "format": "remapper",
+          },
+          "name": {
+            "description": "The name used when storing this field.",
+            "type": "string",
+          },
+          "placeholder": {
+            "description": "The placeholder to display when the field is empty.",
+            "format": "remapper",
+          },
+          "readOnly": {
+            "default": false,
+            "description": "Whether the field should be read-only.",
+            "format": "remapper",
+          },
+          "show": {
+            "description": "Displays field only if condition is true.
+
+If not specified, the field will display.",
+            "format": "remapper",
+          },
+          "tag": {
+            "description": "The label that is shown to the right of the label.
+
+Replaces the optional label if the field is optional. Won’t display if the field has no label of its own.",
+            "format": "remapper",
+          },
+          "type": {
+            "const": "geocoordinates",
+            "description": "The type of the field.",
+            "type": "string",
+          },
+        },
+        "required": [
+          "name",
+          "type",
+        ],
+        "type": "object",
+      },
+      "HiddenField": {
+        "additionalProperties": false,
+        "description": "A hidden field. This is useful for submitting default values the user may not change.",
+        "properties": {
+          "defaultValue": {
+            "$ref": "#/definitions/JsonValue",
+            "description": "The default value of the field.",
+          },
+          "disabled": {
+            "default": false,
+            "description": "Whether the field should always be be disabled.",
+            "format": "remapper",
+          },
+          "icon": {
+            "description": "Name of the [Font Awesome icon](https://fontawesome.com/icons?m=free) to be displayed next to the label.",
+            "format": "fontawesome",
+            "type": "string",
+          },
+          "label": {
+            "description": "The label displayed next to the field.",
+            "format": "remapper",
+          },
+          "name": {
+            "description": "The name used when storing this field.",
+            "type": "string",
+          },
+          "placeholder": {
+            "description": "The placeholder to display when the field is empty.",
+            "format": "remapper",
+          },
+          "readOnly": {
+            "default": false,
+            "description": "Whether the field should be read-only.",
+            "format": "remapper",
+          },
+          "show": {
+            "description": "Displays field only if condition is true.
+
+If not specified, the field will display.",
+            "format": "remapper",
+          },
+          "tag": {
+            "description": "The label that is shown to the right of the label.
+
+Replaces the optional label if the field is optional. Won’t display if the field has no label of its own.",
+            "format": "remapper",
+          },
+          "type": {
+            "const": "hidden",
+            "description": "The type of the field.",
+            "type": "string",
+          },
+        },
+        "required": [
+          "name",
+          "type",
+        ],
+        "type": "object",
+      },
+      "JsonValue": {
+        "anyOf": [
+          {
+            "items": {
+              "$ref": "#/definitions/JsonValue",
+            },
+            "type": "array",
+          },
+          {
