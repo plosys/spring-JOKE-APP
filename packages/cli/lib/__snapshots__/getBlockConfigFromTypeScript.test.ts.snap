@@ -1950,4 +1950,143 @@ Replaces the optional label if the field is optional. Won’t display if the fie
             "type": "boolean",
           },
           "saturday": {
-            "
+            "default": true,
+            "description": "Whether Saturdays should be selectable.",
+            "type": "boolean",
+          },
+          "sunday": {
+            "default": true,
+            "description": "Whether Sundays should be selectable.",
+            "type": "boolean",
+          },
+          "thursday": {
+            "default": true,
+            "description": "Whether Thursdays should be selectable.",
+            "type": "boolean",
+          },
+          "tuesday": {
+            "default": true,
+            "description": "Whether Tuesdays should be selectable.",
+            "type": "boolean",
+          },
+          "wednesday": {
+            "default": true,
+            "description": "Whether Wednesdays should be selectable.",
+            "type": "boolean",
+          },
+        },
+        "type": "object",
+      },
+      "EnumField": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/ActionEnumField",
+          },
+          {
+            "$ref": "#/definitions/EventEnumField",
+          },
+          {
+            "$ref": "#/definitions/SyncEnumField",
+          },
+        ],
+      },
+      "EventEnumField": {
+        "additionalProperties": false,
+        "description": "A dropdown list containing a list of values based on the output of an event.",
+        "properties": {
+          "defaultValue": {
+            "$ref": "#/definitions/JsonValue",
+            "description": "The default value of the field.",
+          },
+          "disabled": {
+            "default": false,
+            "description": "Whether the field should always be be disabled.",
+            "format": "remapper",
+          },
+          "event": {
+            "description": "Wait until an event has been fired containing the list of options.
+
+The event should return an array of objects that contain the \`label\` and \`value\` property.",
+            "format": "event-listener",
+            "type": "string",
+          },
+          "icon": {
+            "description": "Name of the [Font Awesome icon](https://fontawesome.com/icons?m=free) to be displayed next to the label.",
+            "format": "fontawesome",
+            "type": "string",
+          },
+          "inline": {
+            "const": true,
+            "description": "Combines fields on the same row.
+
+Fields are combined in order if set to true.",
+            "type": "boolean",
+          },
+          "label": {
+            "description": "The label displayed next to the field.",
+            "format": "remapper",
+          },
+          "loadError": {
+            "default": "Error loading options",
+            "description": "This message is displayed if the options failed to load.",
+            "format": "remapper",
+          },
+          "name": {
+            "description": "The name used when storing this field.",
+            "type": "string",
+          },
+          "placeholder": {
+            "description": "The placeholder to display when the field is empty.",
+            "format": "remapper",
+          },
+          "readOnly": {
+            "default": false,
+            "description": "Whether the field should be read-only.",
+            "format": "remapper",
+          },
+          "requirements": {
+            "description": "The requirements that are used to validate the field with.
+
+These are evaluated in the order they are defined in.",
+            "items": {
+              "$ref": "#/definitions/RequiredRequirement",
+            },
+            "type": "array",
+          },
+          "show": {
+            "description": "Displays field only if condition is true.
+
+If not specified, the field will display.",
+            "format": "remapper",
+          },
+          "tag": {
+            "description": "The label that is shown to the right of the label.
+
+Replaces the optional label if the field is optional. Won’t display if the field has no label of its own.",
+            "format": "remapper",
+          },
+          "type": {
+            "const": "enum",
+            "description": "The type of the field.",
+            "type": "string",
+          },
+        },
+        "required": [
+          "event",
+          "name",
+          "type",
+        ],
+        "type": "object",
+      },
+      "Field": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/BooleanField",
+          },
+          {
+            "$ref": "#/definitions/DateField",
+          },
+          {
+            "$ref": "#/definitions/DateTimeField",
+          },
+    
