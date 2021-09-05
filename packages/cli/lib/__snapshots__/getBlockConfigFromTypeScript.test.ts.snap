@@ -2225,4 +2225,140 @@ Replaces the optional label if the field is optional. Won’t display if the fie
             "format": "remapper",
           },
           "icon": {
-            "description": "Name of the [Font Awesome icon](https://fontawesome
+            "description": "Name of the [Font Awesome icon](https://fontawesome.com/icons?m=free) to be displayed next to the label.",
+            "format": "fontawesome",
+            "type": "string",
+          },
+          "inline": {
+            "const": true,
+            "description": "Combines fields on the same row.
+
+Fields are combined in order if set to true.",
+            "type": "boolean",
+          },
+          "label": {
+            "description": "The label displayed next to the field.",
+            "format": "remapper",
+          },
+          "maxHeight": {
+            "description": "The maximum height of uploaded images.",
+            "type": "number",
+          },
+          "maxWidth": {
+            "description": "The maximum width of uploaded images.",
+            "type": "number",
+          },
+          "name": {
+            "description": "The name used when storing this field.",
+            "type": "string",
+          },
+          "placeholder": {
+            "description": "The placeholder to display when the field is empty.",
+            "format": "remapper",
+          },
+          "quality": {
+            "description": "The quality modifier to use when uploading images, in percentages.",
+            "type": "number",
+          },
+          "readOnly": {
+            "default": false,
+            "description": "Whether the field should be read-only.",
+            "format": "remapper",
+          },
+          "repeated": {
+            "default": false,
+            "description": "Boolean value representing whether to accept one file or multiple files.",
+            "type": "boolean",
+          },
+          "requirements": {
+            "description": "The requirements that are used to validate the field with.
+
+These are evaluated in the order they are defined in.",
+            "items": {
+              "$ref": "#/definitions/FileRequirement",
+            },
+            "type": "array",
+          },
+          "show": {
+            "description": "Displays field only if condition is true.
+
+If not specified, the field will display.",
+            "format": "remapper",
+          },
+          "tag": {
+            "description": "The label that is shown to the right of the label.
+
+Replaces the optional label if the field is optional. Won’t display if the field has no label of its own.",
+            "format": "remapper",
+          },
+          "type": {
+            "const": "file",
+            "description": "The type of the field.",
+            "type": "string",
+          },
+        },
+        "required": [
+          "name",
+          "type",
+        ],
+        "type": "object",
+      },
+      "FileRequirement": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/AcceptRequirement",
+          },
+          {
+            "$ref": "#/definitions/LengthRequirement",
+          },
+          {
+            "$ref": "#/definitions/RequiredRequirement",
+          },
+        ],
+        "description": "All requirements applicable to file fields.",
+      },
+      "FormRequirement": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "description": "The name of the action to trigger when the requirement is checked.",
+            "format": "action",
+            "type": "string",
+          },
+          "alwaysValidate": {
+            "description": "Whether the field should always be validated even if the previous value was valid and hasn’t changed.",
+            "type": "boolean",
+          },
+          "errorMessage": {
+            "description": "The error message that is displayed when the requirement is not met.",
+            "format": "remapper",
+          },
+          "isValid": {
+            "description": "The list of fields that must be valid before running the requirement action.",
+            "items": {
+              "type": "string",
+            },
+            "type": "array",
+          },
+        },
+        "required": [
+          "isValid",
+          "action",
+        ],
+        "type": "object",
+      },
+      "GeoCoordinatesField": {
+        "additionalProperties": false,
+        "description": "A location picker used to select a location.",
+        "properties": {
+          "defaultLocation": {
+            "default": [
+              51.476852,
+              0,
+            ],
+            "description": "The location (latitude, longitude) to default to when the user’s location cannot be found.
+
+This can be used to set the location to something that is more relevant to the user.",
+            "items": {
+              "type": "number",
+          
