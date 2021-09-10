@@ -2494,3 +2494,138 @@ Replaces the optional label if the field is optional. Won’t display if the fie
             "type": "array",
           },
           {
+            "type": "boolean",
+          },
+          {
+            "type": "number",
+          },
+          {
+            "type": "string",
+          },
+          {
+            "additionalProperties": {
+              "$ref": "#/definitions/JsonValue",
+            },
+            "type": "object",
+          },
+          {
+            "type": "null",
+          },
+        ],
+      },
+      "LengthRequirement": {
+        "additionalProperties": false,
+        "description": "A requirement used to enforce the length or amount of items in the input.",
+        "properties": {
+          "errorMessage": {
+            "description": "The error message that is displayed when the requirement is not met.",
+            "format": "remapper",
+          },
+          "maxLength": {
+            "description": "The maximum length.",
+            "minimum": 1,
+            "type": "number",
+          },
+          "minLength": {
+            "description": "The minimum length.",
+            "minimum": 1,
+            "type": "number",
+          },
+        },
+        "type": "object",
+      },
+      "MinMaxRequirement": {
+        "additionalProperties": false,
+        "description": "Minimum and maximum form requirements for number fields.",
+        "properties": {
+          "errorMessage": {
+            "description": "The error message that is displayed when the requirement is not met.",
+            "format": "remapper",
+          },
+          "max": {
+            "description": "The maximum value of the field.",
+            "type": "number",
+          },
+          "min": {
+            "description": "The minimum value of the field.",
+            "type": "number",
+          },
+        },
+        "type": "object",
+      },
+      "NumberField": {
+        "additionalProperties": false,
+        "description": "A number entry field.",
+        "properties": {
+          "bottomLabels": {
+            "description": "If \`display\` is set to \`slider\`, these labels are displayed evenly spaced below the slider.",
+            "items": {
+              "format": "remapper",
+            },
+            "minItems": 2,
+            "type": "array",
+          },
+          "defaultValue": {
+            "description": "The default value of the field.",
+            "type": "number",
+          },
+          "disabled": {
+            "default": false,
+            "description": "Whether the field should always be be disabled.",
+            "format": "remapper",
+          },
+          "display": {
+            "const": "slider",
+            "description": "How to display the numeric field.
+
+By default a \`number\` input field is displayed.",
+            "type": "string",
+          },
+          "icon": {
+            "description": "Name of the [Font Awesome icon](https://fontawesome.com/icons?m=free) to be displayed next to the label.",
+            "format": "fontawesome",
+            "type": "string",
+          },
+          "inline": {
+            "const": true,
+            "description": "Combines fields on the same row.
+
+Fields are combined in order if set to true.",
+            "type": "boolean",
+          },
+          "label": {
+            "description": "The label displayed next to the field.",
+            "format": "remapper",
+          },
+          "name": {
+            "description": "The name used when storing this field.",
+            "type": "string",
+          },
+          "placeholder": {
+            "description": "The placeholder to display when the field is empty.",
+            "format": "remapper",
+          },
+          "readOnly": {
+            "default": false,
+            "description": "Whether the field should be read-only.",
+            "format": "remapper",
+          },
+          "requirements": {
+            "description": "The requirements that are used to validate the field with.
+
+These are evaluated in the order they are defined in.",
+            "items": {
+              "$ref": "#/definitions/NumberRequirement",
+            },
+            "type": "array",
+          },
+          "show": {
+            "description": "Displays field only if condition is true.
+
+If not specified, the field will display.",
+            "format": "remapper",
+          },
+          "tag": {
+            "description": "The label that is shown to the right of the label.
+
+Replaces the optional label if the field is optional. Won’t display i
