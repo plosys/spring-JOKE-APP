@@ -2772,4 +2772,143 @@ Replaces the optional label if the field is optional. Won’t display if the fie
           "type": "number",
         },
         "type": "object",
-   
+      },
+      "RegexRequirement": {
+        "additionalProperties": false,
+        "description": "Requirement that matches using a given regex.",
+        "properties": {
+          "errorMessage": {
+            "description": "The error message that is displayed when the requirement is not met.",
+            "format": "remapper",
+          },
+          "flags": {
+            "default": "g",
+            "description": "The flags to use for the regex.
+
+Supported values: \`g\`, \`m\`, \`i\`, \`y\`, \`u\`, \`s\`",
+            "pattern": "^[gimsuy]+$",
+            "type": "string",
+          },
+          "regex": {
+            "description": "The regex to match with. Must be a valid JavaScript regex.",
+            "type": "string",
+          },
+        },
+        "required": [
+          "regex",
+        ],
+        "type": "object",
+      },
+      "RequiredRequirement": {
+        "additionalProperties": false,
+        "description": "Requirement used to mark the field as required.",
+        "properties": {
+          "errorMessage": {
+            "description": "The error message that is displayed when the requirement is not met.",
+            "format": "remapper",
+          },
+          "required": {
+            "description": "Whether the field is required.
+
+We recommend passing a boolean value e.g. \`true\`.
+
+Another option is to pass a remapper returning a boolean value. This way you can conditionally control if the field is required.",
+            "format": "remapper",
+          },
+        },
+        "required": [
+          "required",
+        ],
+        "type": "object",
+      },
+      "StaticField": {
+        "additionalProperties": false,
+        "description": "A field that displays static content.
+
+This field does not contain a name or a value.",
+        "properties": {
+          "content": {
+            "description": "The content to display.",
+            "format": "remapper",
+          },
+          "disabled": {
+            "default": false,
+            "description": "Whether the field should always be be disabled.",
+            "format": "remapper",
+          },
+          "icon": {
+            "description": "Name of the [Font Awesome icon](https://fontawesome.com/icons?m=free) to be displayed next to the label.",
+            "format": "fontawesome",
+            "type": "string",
+          },
+          "inline": {
+            "const": true,
+            "description": "Combines fields on the same row.
+
+Fields are combined in order if set to true.",
+            "type": "boolean",
+          },
+          "label": {
+            "description": "The label displayed next to the field.",
+            "format": "remapper",
+          },
+          "name": {
+            "description": "The name used when storing this field.",
+            "type": "string",
+          },
+          "placeholder": {
+            "description": "The placeholder to display when the field is empty.",
+            "format": "remapper",
+          },
+          "readOnly": {
+            "default": false,
+            "description": "Whether the field should be read-only.",
+            "format": "remapper",
+          },
+          "show": {
+            "description": "Displays field only if condition is true.
+
+If not specified, the field will display.",
+            "format": "remapper",
+          },
+          "tag": {
+            "description": "The label that is shown to the right of the label.
+
+Replaces the optional label if the field is optional. Won’t display if the field has no label of its own.",
+            "format": "remapper",
+          },
+          "type": {
+            "const": "static",
+            "description": "The type of the field.",
+            "type": "string",
+          },
+        },
+        "required": [
+          "content",
+          "name",
+          "type",
+        ],
+        "type": "object",
+      },
+      "StepRequirement": {
+        "additionalProperties": false,
+        "description": "Requirement used to indicate how big a step should be for the field.
+
+Note that for \`integer\` type fields are rounded _down_.",
+        "properties": {
+          "errorMessage": {
+            "description": "The error message that is displayed when the requirement is not met.",
+            "format": "remapper",
+          },
+          "step": {
+            "description": "The amount to increment or decrement when using the stepper buttons of the field.",
+            "type": "number",
+          },
+        },
+        "required": [
+          "step",
+        ],
+        "type": "object",
+      },
+      "StringField": {
+        "addition
