@@ -3167,4 +3167,171 @@ Replaces the optional label if the field is optional. Won’t display if the fie
         "default": false,
         "description": "Whether or not space should be reserved for the help text.
 
-If this is set to \`true\`
+If this is set to \`true\`, any help text appearing will cause the form input to jump around due to layout changes.",
+        "type": "boolean",
+      },
+      "disableDefault": {
+        "default": false,
+        "description": "Whether or not to disable populating fields with default data values.
+
+If this is set to \`true\`, the default values for the fields won't contain data from [page storage](../../../docs/guide/storage#app-storage).",
+        "type": "boolean",
+      },
+      "disabled": {
+        "default": false,
+        "description": "If this remapper yields true, the submit button will be disabled.",
+        "format": "remapper",
+      },
+      "fields": {
+        "description": "A list of objects describing each field that can be entered in the form.",
+        "items": {
+          "$ref": "#/definitions/Field",
+        },
+        "minItems": 1,
+        "type": "array",
+      },
+      "previous": {
+        "description": "Whether the previous button should be shown.",
+        "type": "boolean",
+      },
+      "requirements": {
+        "description": "A list of requirements that are checked across all of the form data.",
+        "items": {
+          "$ref": "#/definitions/FormRequirement",
+        },
+        "type": "array",
+      },
+      "skipInitialLoad": {
+        "description": "By default the form block will wait until event data is received.
+
+By setting this to \`true\`, this won’t happen.",
+        "type": "boolean",
+      },
+    },
+    "type": "object",
+  },
+}
+`;
+
+exports[`getBlockConfigFromTypeScript official blocks html 1`] = `
+{
+  "actions": {
+    "$any": {
+      "description": "Any custom action.
+These can be used on \`<button>\`, \`<a>\`, and \`<input>\` elements using \`data-click\`.
+
+If no corresponding \`data-click\` attribute can be found
+the action will be considered unused and invalid.",
+    },
+  },
+  "events": {
+    "emit": undefined,
+    "listen": {
+      "data": {
+        "description": "Data that can be used in the placeholder remappers.
+
+All elements specifying \`data-content\` will be updated each time this event is received.",
+      },
+    },
+  },
+  "messages": undefined,
+  "parameters": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "definitions": {
+      "Record<string,Remapper>": {
+        "additionalProperties": {
+          "format": "remapper",
+        },
+        "type": "object",
+      },
+    },
+    "properties": {
+      "content": {
+        "description": "The HTML to render.",
+        "type": "string",
+      },
+      "placeholders": {
+        "$ref": "#/definitions/Record%3Cstring%2CRemapper%3E",
+        "description": "The placeholders that are injected on elements with the \`data-content\` property.",
+      },
+    },
+    "required": [
+      "content",
+    ],
+    "type": "object",
+  },
+}
+`;
+
+exports[`getBlockConfigFromTypeScript official blocks image 1`] = `
+{
+  "actions": undefined,
+  "events": undefined,
+  "messages": undefined,
+  "parameters": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+      "alignment": {
+        "default": "left",
+        "description": "The alignment of the text content.",
+        "enum": [
+          "center",
+          "left",
+          "right",
+        ],
+        "type": "string",
+      },
+      "alt": {
+        "description": "The alt text of the image.",
+        "format": "remapper",
+      },
+      "rounded": {
+        "description": "Is image rounded.",
+        "type": "boolean",
+      },
+      "url": {
+        "description": "The Url of the image.
+
+Note that this is ignored if the onImage event listener is set.",
+        "format": "remapper",
+      },
+    },
+    "required": [
+      "url",
+    ],
+    "type": "object",
+  },
+}
+`;
+
+exports[`getBlockConfigFromTypeScript official blocks list 1`] = `
+{
+  "actions": {
+    "onClick": {
+      "description": "Action that gets triggered when clicking on a list item.
+
+If defined, an indicator will show up to show that the list item has a click action.",
+    },
+  },
+  "events": {
+    "emit": undefined,
+    "listen": {
+      "data": {
+        "description": "The event that is triggered when data is received.
+
+Compatible data that is received will be displayed. Must be a set of data.",
+      },
+    },
+  },
+  "messages": {
+    "error": {
+      "description": "The text that is shown when something went wrong with fetching the data.",
+    },
+    "noData": {
+      "description": "The text that is shown when no data was found.",
+    },
+  },
+  "parameters": {
+    "$schema": "http://json-s
