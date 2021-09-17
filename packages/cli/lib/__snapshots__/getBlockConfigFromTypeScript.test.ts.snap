@@ -2911,4 +2911,124 @@ Note that for \`integer\` type fields are rounded _down_.",
         "type": "object",
       },
       "StringField": {
-        "addition
+        "additionalProperties": false,
+        "description": "Fields with the type of [\`string\`](#StringField) support requirements. This is an array of requirements that are used to validate the value the user inputs. Each requirement can be provided with its own custom error message, allowing for better feedback towards users.
+
+For example, the [\`regex\`](#RegexRequirement) requirement type allows you to validate a field using [Regular Expressions](https://learnxinyminutes.com/docs/pcre/). So for example if you want a string field that requires a field to be an email address that ends with “@appsemble.com”, you could enforce this like so:
+
+\`\`\`yaml type: string requirements:   - regex: \\w+@appsemble\\.com     errorMessage: Value does not end with “@appsemble.com” \`\`\`",
+        "properties": {
+          "defaultValue": {
+            "description": "The default value of the field.",
+            "type": "string",
+          },
+          "disabled": {
+            "default": false,
+            "description": "Whether the field should always be be disabled.",
+            "format": "remapper",
+          },
+          "format": {
+            "description": "The format to use for validation.",
+            "enum": [
+              "email",
+              "password",
+              "url",
+            ],
+            "type": "string",
+          },
+          "icon": {
+            "description": "Name of the [Font Awesome icon](https://fontawesome.com/icons?m=free) to be displayed next to the label.",
+            "format": "fontawesome",
+            "type": "string",
+          },
+          "inline": {
+            "const": true,
+            "description": "Combines fields on the same row.
+
+Fields are combined in order if set to true.",
+            "type": "boolean",
+          },
+          "label": {
+            "description": "The label displayed next to the field.",
+            "format": "remapper",
+          },
+          "multiline": {
+            "default": false,
+            "description": "Whether the string field should be multiline or not.",
+            "type": "boolean",
+          },
+          "name": {
+            "description": "The name used when storing this field.",
+            "type": "string",
+          },
+          "placeholder": {
+            "description": "The placeholder to display when the field is empty.",
+            "format": "remapper",
+          },
+          "readOnly": {
+            "default": false,
+            "description": "Whether the field should be read-only.",
+            "format": "remapper",
+          },
+          "requirements": {
+            "description": "The requirements that are used to validate the field with.
+
+These are evaluated in the order they are defined in.",
+            "items": {
+              "$ref": "#/definitions/StringRequirement",
+            },
+            "type": "array",
+          },
+          "show": {
+            "description": "Displays field only if condition is true.
+
+If not specified, the field will display.",
+            "format": "remapper",
+          },
+          "tag": {
+            "description": "The label that is shown to the right of the label.
+
+Replaces the optional label if the field is optional. Won’t display if the field has no label of its own.",
+            "format": "remapper",
+          },
+          "type": {
+            "const": "string",
+            "description": "The type of the field.",
+            "type": "string",
+          },
+        },
+        "required": [
+          "name",
+          "type",
+        ],
+        "type": "object",
+      },
+      "StringRequirement": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/LengthRequirement",
+          },
+          {
+            "$ref": "#/definitions/RegexRequirement",
+          },
+          {
+            "$ref": "#/definitions/RequiredRequirement",
+          },
+        ],
+        "description": "All requirements applicable to string fields.",
+      },
+      "SyncEnumField": {
+        "additionalProperties": false,
+        "description": "A dropdown list containing a list of predetermined values.",
+        "properties": {
+          "defaultValue": {
+            "$ref": "#/definitions/JsonValue",
+            "description": "The default value of the field.",
+          },
+          "disabled": {
+            "default": false,
+            "description": "Whether the field should always be be disabled.",
+            "format": "remapper",
+          },
+          "enum": {
+  
