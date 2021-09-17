@@ -3334,4 +3334,136 @@ Compatible data that is received will be displayed. Must be a set of data.",
     },
   },
   "parameters": {
-    "$schema": "http://json-s
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "definitions": {
+      "Field": {
+        "additionalProperties": false,
+        "description": "An object representing how a data field should be displayed.",
+        "properties": {
+          "icon": {
+            "description": "The [Font Awesome icon](https://fontawesome.com/icons?m=free) to display in front of the label.
+
+Will not render if undefined.",
+            "format": "fontawesome",
+            "type": "string",
+          },
+          "label": {
+            "description": "The label to display.
+
+Will not render if undefined.",
+            "format": "remapper",
+          },
+          "value": {
+            "description": "The name of the field to read from to determine the value to show.
+
+No value will be rendered if undefined.",
+            "format": "remapper",
+          },
+        },
+        "type": "object",
+      },
+    },
+    "properties": {
+      "base": {
+        "description": "An optional name of the field that contains the data.
+
+If not defined, received data will be treated as an array.",
+        "type": "string",
+      },
+      "fields": {
+        "description": "A list of fields to display.",
+        "items": {
+          "$ref": "#/definitions/Field",
+        },
+        "type": "array",
+      },
+      "header": {
+        "description": "The header text to display above the list of fields.
+
+Will not render if undefined.",
+        "format": "remapper",
+      },
+      "icon": {
+        "description": "The icon that displays in front of the header.
+
+Will not render if undefined.",
+        "format": "fontawesome",
+        "type": "string",
+      },
+      "image": {
+        "description": "The image that is shown to the left of the list item.
+
+This can be either a full image path or an asset id.",
+        "format": "remapper",
+      },
+    },
+    "type": "object",
+  },
+}
+`;
+
+exports[`getBlockConfigFromTypeScript official blocks map 1`] = `
+{
+  "actions": {
+    "onMarkerClick": {
+      "description": "Action that gets dispatched when a marker is clicked.",
+    },
+  },
+  "events": {
+    "emit": {
+      "move": {
+        "description": "Event that gets emitted when moving the map around.
+
+Will apply [OData filters](https://www.odata.org) to limit the range of items fetched. This
+will be skipped if the move emit event is not defined.",
+      },
+    },
+    "listen": {
+      "center": {
+        "description": "An event that can be triggered to center the map’s position to the user’s current location.",
+      },
+      "data": {
+        "description": "The event that is triggered when data is received.
+
+Compatible data that is received will be displayed. Must be a set of data.",
+      },
+      "follow": {
+        "description": "Toggles whether or not the map should follow the user’s location. Defaults to not following.
+
+If the value is exactly \`true\` or \`false\`, the following state will be set to that value.
+Otherwise, it will toggle between following and not following.",
+      },
+    },
+  },
+  "messages": {
+    "locationError": {
+      "description": "The error message to display when the location couldn’t be determined.",
+    },
+  },
+  "parameters": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "definitions": {
+      "AssetMarkerIcon": {
+        "additionalProperties": false,
+        "description": "A marker based on an existing asset.",
+        "properties": {
+          "activeRatio": {
+            "default": 1,
+            "description": "Enlarge an active marker with this ratio.
+
+This modifier is applied if a marker matches the block data which may be received by the block context. For example, this is applied if a marker matches the data that was passed in from a link action.",
+            "type": "number",
+          },
+          "anchor": {
+            "description": "The anchor X and Y offset used for positioning the image.
+
+By default, the center of the icon will be used to mark the location. For many icons, it may be desirable to customize this. For example, for a symmetric pin which has a width of 10, and a height of 16, you’ll probably want to set this to \`[5, 16]\`
+
+The following special cases for [Font Awesome icon](https://fontawesome.com/icons?m=free) are treated in a special way, since they are often used to represent a location:
+
+- \`map-marker\`
+- \`map-marker-alt\`
+- \`map-pin\`
+- \`thu
