@@ -3031,4 +3031,140 @@ Replaces the optional label if the field is optional. Won’t display if the fie
             "format": "remapper",
           },
           "enum": {
-  
+            "description": "The list of available choices.",
+            "items": {
+              "$ref": "#/definitions/Choice",
+            },
+            "type": "array",
+          },
+          "icon": {
+            "description": "Name of the [Font Awesome icon](https://fontawesome.com/icons?m=free) to be displayed next to the label.",
+            "format": "fontawesome",
+            "type": "string",
+          },
+          "inline": {
+            "const": true,
+            "description": "Combines fields on the same row.
+
+Fields are combined in order if set to true.",
+            "type": "boolean",
+          },
+          "label": {
+            "description": "The label displayed next to the field.",
+            "format": "remapper",
+          },
+          "name": {
+            "description": "The name used when storing this field.",
+            "type": "string",
+          },
+          "placeholder": {
+            "description": "The placeholder to display when the field is empty.",
+            "format": "remapper",
+          },
+          "readOnly": {
+            "default": false,
+            "description": "Whether the field should be read-only.",
+            "format": "remapper",
+          },
+          "requirements": {
+            "description": "The requirements that are used to validate the field with.
+
+These are evaluated in the order they are defined in.",
+            "items": {
+              "$ref": "#/definitions/RequiredRequirement",
+            },
+            "type": "array",
+          },
+          "show": {
+            "description": "Displays field only if condition is true.
+
+If not specified, the field will display.",
+            "format": "remapper",
+          },
+          "tag": {
+            "description": "The label that is shown to the right of the label.
+
+Replaces the optional label if the field is optional. Won’t display if the field has no label of its own.",
+            "format": "remapper",
+          },
+          "type": {
+            "const": "enum",
+            "description": "The type of the field.",
+            "type": "string",
+          },
+        },
+        "required": [
+          "enum",
+          "name",
+          "type",
+        ],
+        "type": "object",
+      },
+      "TimeRangeRequirement": {
+        "additionalProperties": false,
+        "description": "A requirement used to enforce the range of available times.",
+        "properties": {
+          "errorMessage": {
+            "description": "The error message that is displayed when the requirement is not met.",
+            "format": "remapper",
+          },
+          "maxTime": {
+            "default": "23:59",
+            "description": "The maximum time that can be selected.",
+            "examples": [
+              "15:20",
+            ],
+            "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$",
+            "type": "string",
+          },
+          "minTime": {
+            "default": "00:00",
+            "description": "The minimum time that can be selected.",
+            "examples": [
+              "15:20",
+            ],
+            "pattern": "^([01]\\d|2[0-3]):([0-5]\\d)$",
+            "type": "string",
+          },
+        },
+        "required": [
+          "minTime",
+          "maxTime",
+        ],
+        "type": "object",
+      },
+    },
+    "properties": {
+      "autofill": {
+        "additionalProperties": false,
+        "description": "This allows you to add automatic form completion through external API's.",
+        "properties": {
+          "delay": {
+            "default": 1000,
+            "description": "Set how many \`milliseconds\` it must take between keystrokes to be able to send a request.",
+            "type": "number",
+          },
+          "params": {
+            "$ref": "#/definitions/Record%3Cstring%2CRemapper%3E",
+            "description": "Set the search parameters given some predefined mapper keys.",
+          },
+          "response": {
+            "$ref": "#/definitions/Record%3Cstring%2CRemapper%3E",
+            "description": "Set the field values given some predefined mapper keys.",
+          },
+          "route": {
+            "description": "The api route (url) to request data from.",
+            "type": "string",
+          },
+        },
+        "required": [
+          "route",
+          "response",
+        ],
+        "type": "object",
+      },
+      "dense": {
+        "default": false,
+        "description": "Whether or not space should be reserved for the help text.
+
+If this is set to \`true\`
