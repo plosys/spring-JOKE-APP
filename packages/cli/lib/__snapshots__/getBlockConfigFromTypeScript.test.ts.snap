@@ -3466,4 +3466,146 @@ The following special cases for [Font Awesome icon](https://fontawesome.com/icon
 - \`map-marker\`
 - \`map-marker-alt\`
 - \`map-pin\`
-- \`thu
+- \`thumbtrack\`",
+            "items": {
+              "type": "number",
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array",
+          },
+          "asset": {
+            "description": "The id of an asset to use.",
+            "type": "string",
+          },
+          "size": {
+            "default": 28,
+            "description": "The height of marker icons in pixels.",
+            "type": "number",
+          },
+        },
+        "required": [
+          "asset",
+        ],
+        "type": "object",
+      },
+      "BulmaColor": {
+        "description": "A color known to Bulma.",
+        "enum": [
+          "danger",
+          "dark",
+          "info",
+          "link",
+          "primary",
+          "success",
+          "warning",
+          "white",
+        ],
+        "type": "string",
+      },
+      "FontAwesomeMarkerIcon": {
+        "additionalProperties": false,
+        "description": "A marker based on a [Font Awesome icon](https://fontawesome.com/icons?m=free).",
+        "properties": {
+          "activeRatio": {
+            "default": 1,
+            "description": "Enlarge an active marker with this ratio.
+
+This modifier is applied if a marker matches the block data which may be received by the block context. For example, this is applied if a marker matches the data that was passed in from a link action.",
+            "type": "number",
+          },
+          "anchor": {
+            "description": "The anchor X and Y offset used for positioning the image.
+
+By default, the center of the icon will be used to mark the location. For many icons, it may be desirable to customize this. For example, for a symmetric pin which has a width of 10, and a height of 16, you’ll probably want to set this to \`[5, 16]\`
+
+The following special cases for [Font Awesome icon](https://fontawesome.com/icons?m=free) are treated in a special way, since they are often used to represent a location:
+
+- \`map-marker\`
+- \`map-marker-alt\`
+- \`map-pin\`
+- \`thumbtrack\`",
+            "items": {
+              "type": "number",
+            },
+            "maxItems": 2,
+            "minItems": 2,
+            "type": "array",
+          },
+          "color": {
+            "$ref": "#/definitions/BulmaColor",
+            "default": "primary",
+            "description": "The color to apply to the icon.",
+          },
+          "icon": {
+            "description": "A [Font Awesome icon](https://fontawesome.com/icons?m=free) name to use.",
+            "format": "fontawesome",
+            "type": "string",
+          },
+          "size": {
+            "default": 28,
+            "description": "The height of marker icons in pixels.",
+            "type": "number",
+          },
+        },
+        "type": "object",
+      },
+    },
+    "properties": {
+      "defaultLocation": {
+        "default": [
+          51.476852,
+          0,
+        ],
+        "description": "The location (latitude, longitude) to default to when the user’s location cannot be found.
+
+This can be used to set the location to something that is more relevant to the user.",
+        "items": {
+          "type": "number",
+        },
+        "maxItems": 2,
+        "minItems": 2,
+        "type": "array",
+      },
+      "disableClustering": {
+        "description": "Whether clustering should be disabled.
+
+By default markers are clustered if they are too close to each other.",
+        "type": "boolean",
+      },
+      "filterLatitudeName": {
+        "default": "lat",
+        "description": "The name of the latitude property in the resource.
+
+These are used for filtering purposes.",
+        "type": "string",
+      },
+      "filterLongitudeName": {
+        "default": "lng",
+        "description": "The name of the longitude property in the resource.
+
+These are used for filtering purposes.",
+        "type": "string",
+      },
+      "icons": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/AssetMarkerIcon",
+          },
+          {
+            "$ref": "#/definitions/FontAwesomeMarkerIcon",
+          },
+        ],
+        "description": "Custom icon configuration.",
+      },
+      "latitude": {
+        "description": "The remapper used to retrieve the latitude.",
+        "format": "remapper",
+      },
+      "longitude": {
+        "description": "The remapper used to retrieve the longitude.",
+        "format": "remapper",
+      },
+      "maxClusterRadius": {
+        "default": 80,
+        "description": "The maximum radius that a cluster wil
