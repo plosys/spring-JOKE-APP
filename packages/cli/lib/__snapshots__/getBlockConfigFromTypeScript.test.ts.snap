@@ -3608,4 +3608,181 @@ These are used for filtering purposes.",
       },
       "maxClusterRadius": {
         "default": 80,
-        "description": "The maximum radius that a cluster wil
+        "description": "The maximum radius that a cluster will cover from the central marker (in pixels).
+
+Decreasing will make more, smaller clusters. One can also use a function that accepts the current map zoom and returns the maximum cluster radius in pixels.",
+        "minimum": 1,
+        "type": "number",
+      },
+    },
+    "required": [
+      "latitude",
+      "longitude",
+    ],
+    "type": "object",
+  },
+}
+`;
+
+exports[`getBlockConfigFromTypeScript official blocks markdown 1`] = `
+{
+  "actions": undefined,
+  "events": {
+    "emit": undefined,
+    "listen": {
+      "data": {
+        "description": "Data that can be used to populate \`content\` with dynamic content.
+
+If defined, a loader will be shown until this event is triggered.",
+      },
+    },
+  },
+  "messages": undefined,
+  "parameters": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+      "alignment": {
+        "default": "left",
+        "description": "The alignment of the text content.",
+        "enum": [
+          "center",
+          "left",
+          "right",
+        ],
+        "type": "string",
+      },
+      "centered": {
+        "description": "Whether or not the content should be centered.",
+        "type": "boolean",
+      },
+      "content": {
+        "description": "A string containing the [markdown content](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet) to display.",
+        "format": "remapper",
+      },
+    },
+    "required": [
+      "content",
+    ],
+    "type": "object",
+  },
+}
+`;
+
+exports[`getBlockConfigFromTypeScript official blocks qr-scan 1`] = `
+{
+  "actions": undefined,
+  "events": {
+    "emit": {
+      "foundQr": {
+        "description": "Event that gets emitted once the qr scanner has identified and resolved a QR code.
+
+foundQr event only holds the string of the QR.",
+      },
+    },
+    "listen": undefined,
+  },
+  "messages": undefined,
+  "parameters": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+      "drawQr": {
+        "default": false,
+        "description": "If true, the block will draw a rectangle around the QR code when it’s found.",
+        "type": "boolean",
+      },
+      "height": {
+        "description": "Video element height",
+        "type": "number",
+      },
+      "width": {
+        "description": "Video element width",
+        "type": "number",
+      },
+    },
+    "type": "object",
+  },
+}
+`;
+
+exports[`getBlockConfigFromTypeScript official blocks stats 1`] = `
+{
+  "actions": undefined,
+  "events": {
+    "emit": undefined,
+    "listen": {
+      "data": {
+        "description": "On what event to listen for incoming data to display.",
+      },
+    },
+  },
+  "messages": undefined,
+  "parameters": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "definitions": {
+      "Field": {
+        "additionalProperties": false,
+        "description": "An object describing what a stats field looks like.",
+        "properties": {
+          "icon": {
+            "description": "The [Font Awesome icon](https://fontawesome.com/icons?m=free) to render.",
+            "format": "fontawesome",
+            "type": "string",
+          },
+          "label": {
+            "description": "The label to render.",
+            "format": "remapper",
+          },
+          "value": {
+            "description": "The value of the property to render.",
+            "format": "remapper",
+          },
+        },
+        "required": [
+          "value",
+          "icon",
+        ],
+        "type": "object",
+      },
+    },
+    "properties": {
+      "fields": {
+        "description": "A list of objects describing what the stats should look like.",
+        "items": {
+          "$ref": "#/definitions/Field",
+        },
+        "type": "array",
+      },
+    },
+    "required": [
+      "fields",
+    ],
+    "type": "object",
+  },
+}
+`;
+
+exports[`getBlockConfigFromTypeScript official blocks table 1`] = `
+{
+  "actions": {
+    "$any": {
+      "description": "Custom action mapping.",
+    },
+    "onClick": {
+      "description": "The default action that is triggered when clicking on a row.
+
+This does not trigger if the field has a different action specified.",
+    },
+  },
+  "events": {
+    "emit": undefined,
+    "listen": {
+      "data": {
+        "description": "Listener for data used to display data in the table.",
+      },
+    },
+  },
+  "messages": {
+    "emptyMessage": {
