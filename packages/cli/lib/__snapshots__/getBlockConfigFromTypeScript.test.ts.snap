@@ -4067,4 +4067,183 @@ Should be an array of data.",
         "items": {
           "anyOf": [
             {
-           
+              "$ref": "#/definitions/Button",
+            },
+            {
+              "$ref": "#/definitions/Dropdown",
+            },
+            {
+              "$ref": "#/definitions/Field",
+            },
+            {
+              "$ref": "#/definitions/RepeatedField",
+            },
+          ],
+        },
+        "type": "array",
+      },
+    },
+    "required": [
+      "fields",
+    ],
+    "type": "object",
+  },
+}
+`;
+
+exports[`getBlockConfigFromTypeScript official blocks tiles 1`] = `
+{
+  "actions": {
+    "onClick": {
+      "description": "This action is triggered when a tile is clicked.",
+    },
+  },
+  "events": {
+    "emit": undefined,
+    "listen": {
+      "data": {
+        "description": "On what event to listen for incoming data to display.",
+      },
+    },
+  },
+  "messages": {
+    "loadError": {
+      "description": "This message is displayed if there was a problem loading the message.",
+    },
+  },
+  "parameters": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "description": "This color is used to fill the background of the tile.
+
+Takes either a hex color or a [Bulma color](https://bulma.io/documentation/helpers/color-helpers)",
+        "format": "remapper",
+      },
+      "icon": {
+        "description": "The [Font Awesome icon](https://fontawesome.com/icons?m=free) to render.
+
+This is ignored if an asset can be resolved.",
+        "format": "remapper",
+      },
+      "image": {
+        "description": "This can be used to render an image. This can be either an asset ID or name, or a full URL.
+
+This takes precedence over an icon.",
+        "format": "remapper",
+      },
+      "text": {
+        "description": "The label to render.",
+        "format": "remapper",
+      },
+    },
+    "type": "object",
+  },
+}
+`;
+
+exports[`getBlockConfigFromTypeScript official blocks timer 1`] = `
+{
+  "actions": undefined,
+  "events": {
+    "emit": {
+      "interval": {
+        "description": "The event to emit on an interval",
+      },
+    },
+    "listen": undefined,
+  },
+  "messages": undefined,
+  "parameters": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+      "interval": {
+        "description": "The time between the emitted events in seconds.",
+        "type": "number",
+      },
+    },
+    "required": [
+      "interval",
+    ],
+    "type": "object",
+  },
+}
+`;
+
+exports[`getBlockConfigFromTypeScript official blocks video 1`] = `
+{
+  "actions": {
+    "onFinish": {
+      "description": "The action that is dispatched when the video has finished playing.",
+    },
+  },
+  "events": {
+    "emit": undefined,
+    "listen": {
+      "onVideo": {
+        "description": "The event to listen on for new data.
+
+The result must be either a video URL or an object containing a property \`url\`.",
+      },
+    },
+  },
+  "messages": {
+    "loadErrorMessage": {
+      "description": "The error message that should be shown when video failed to load.",
+    },
+  },
+  "parameters": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "properties": {
+      "autoplay": {
+        "description": "Whether the video should autoplay.
+
+Note that this does not work on every platform due to platform restrictions.",
+        "type": "boolean",
+      },
+      "height": {
+        "description": "The height of the player.",
+        "type": "string",
+      },
+      "maxHeight": {
+        "description": "The max height of the player.",
+        "type": "string",
+      },
+      "maxWidth": {
+        "description": "The max width of the player.",
+        "type": "string",
+      },
+      "muted": {
+        "description": "Whether the player should default to being muted.",
+        "type": "boolean",
+      },
+      "subtitles": {
+        "description": "If defined, the subtitle track to enable by default.",
+        "format": "remapper",
+      },
+      "url": {
+        "description": "The URL of the video.
+
+Note that this is ignored if the onVideo event listener is set.",
+        "format": "remapper",
+      },
+      "volume": {
+        "description": "The volume in percentages the video should default to.",
+        "maximum": 100,
+        "minimum": 0,
+        "type": "number",
+      },
+      "width": {
+        "description": "The width of the player.",
+        "type": "string",
+      },
+    },
+    "type": "object",
+  },
+}
+`;
+
+exp
