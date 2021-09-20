@@ -3922,4 +3922,149 @@ If this isn’t specified, no label will be shown. If no fields have a label, th
           },
           "dropdown": {
             "additionalProperties": false,
-            "proper
+            "properties": {
+              "alignment": {
+                "default": "right",
+                "description": "How the dropdown should be aligned.",
+                "enum": [
+                  "left",
+                  "right",
+                ],
+                "type": "string",
+              },
+              "icon": {
+                "description": "The icon to show in the dropdown button.",
+                "format": "fontawesome",
+                "type": "string",
+              },
+              "label": {
+                "description": "The text to show in the dropdown button.",
+                "format": "remapper",
+              },
+              "options": {
+                "description": "The list of options to display. Must have at least 1 option.",
+                "items": {
+                  "$ref": "#/definitions/DropdownOption",
+                },
+                "minItems": 1,
+                "type": "array",
+              },
+            },
+            "required": [
+              "options",
+            ],
+            "type": "object",
+          },
+          "label": {
+            "description": "An optional label used in the header of the table.
+
+If this isn’t specified, no label will be shown. If no fields have a label, the table header row won’t be shown.",
+            "format": "remapper",
+          },
+        },
+        "required": [
+          "dropdown",
+        ],
+        "type": "object",
+      },
+      "DropdownOption": {
+        "additionalProperties": false,
+        "properties": {
+          "icon": {
+            "description": "The icon to show in the option.",
+            "format": "fontawesome",
+            "type": "string",
+          },
+          "label": {
+            "description": "The text to show in the option.",
+            "format": "remapper",
+          },
+          "onClick": {
+            "description": "The action that will be called when selecting this option.",
+            "format": "action",
+            "type": "string",
+          },
+        },
+        "required": [
+          "onClick",
+        ],
+        "type": "object",
+      },
+      "Field": {
+        "additionalProperties": false,
+        "description": "Represents a column that should be displayed in the table.",
+        "properties": {
+          "alignment": {
+            "description": "Whether the content of the cell should be aligned left, right, or centered",
+            "enum": [
+              "center",
+              "left",
+              "right",
+            ],
+            "type": "string",
+          },
+          "label": {
+            "description": "An optional label used in the header of the table.
+
+If this isn’t specified, no label will be shown. If no fields have a label, the table header row won’t be shown.",
+            "format": "remapper",
+          },
+          "onClick": {
+            "description": "The name of the action to trigger when clicking on this field.",
+            "format": "action",
+            "type": "string",
+          },
+          "value": {
+            "description": "The value of the field.",
+            "format": "remapper",
+          },
+        },
+        "required": [
+          "value",
+        ],
+        "type": "object",
+      },
+      "RepeatedField": {
+        "additionalProperties": false,
+        "description": "Repeated fields based on an input array.
+
+Only one repeated field is allowed, only the first RepeatedField is considered.",
+        "properties": {
+          "repeat": {
+            "description": "The list of fields that should be repeated for each array item.",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Button",
+                },
+                {
+                  "$ref": "#/definitions/Dropdown",
+                },
+                {
+                  "$ref": "#/definitions/Field",
+                },
+              ],
+            },
+            "type": "array",
+          },
+          "value": {
+            "description": "The value to use as the base of the repeated field.
+
+Should be an array of data.",
+            "format": "remapper",
+          },
+        },
+        "required": [
+          "repeat",
+          "value",
+        ],
+        "type": "object",
+      },
+    },
+    "properties": {
+      "fields": {
+        "description": "A list of fields to display.",
+        "items": {
+          "anyOf": [
+            {
+           
