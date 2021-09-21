@@ -404,3 +404,393 @@ export async function writeAppMessages(
 
           return [key, oldMessages.messageIds[key]];
         }
+
+        if (verify.includes(parse(filepath).name)) {
+          throw new AppsembleError(`Missing translation: messageIds.${key}`);
+        }
+
+        return [key, ''];
+      }),
+    );
+
+    const newAppMessages = Object.fromEntries(
+      Object.keys(extractedMessages.app).map((key) => {
+        if (has(oldMessages.app, key) && oldMessages.app[key]) {
+          if (typeof oldMessages.app[key] !== 'string') {
+            throw new AppsembleError(`Invalid translation key: app.${key}`);
+          }
+
+          return [key, oldMessages.app[key]];
+        }
+
+        if (filepath === defaultLangFile) {
+          return [key, extractedMessages.app[key]];
+        }
+
+        if (verify.includes(parse(filepath).name)) {
+          throw new AppsembleError(`Missing translation: app.${key}`);
+        }
+
+        return [key, ''];
+      }),
+    );
+
+    const appMessagePrefixes = Object.keys(newAppMessages);
+    for (const [key, message] of Object.entries(oldMessages.app)) {
+      const match = /^(pages\.\d+(\..+)?)\.blocks\.\d+.+/.exec(key);
+      if (!match) {
+        continue;
+      }
+      if (appMessagePrefixes.includes(match[1])) {
+        newAppMessages[key] = message;
+      }
+    }
+
+    const coreMessages = oldMessages.core ?? {};
+    for (const [key, value] of Object.entries(coreMessages)) {
+      if (!value || typeof value !== 'string') {
+        throw new AppsembleError(`Invalid translation key: core.${key}`);
+      }
+    }
+
+    const blockMessages: AppsembleMessages['blocks'] = {};
+    if (oldMessages.blocks) {
+      for (const key of Object.keys(oldMessages.blocks)) {
+        if (!has(blockMessageKeys, key)) {
+          throw new AppsembleError(
+            `Invalid translation key: blocks.${key}\nThis block is not used in the app`,
+          );
+        }
+      }
+    }
+
+    for (const [blockName] of Object.entries(blockMessageKeys)) {
+      if (oldMessages.blocks?.[blockName]) {
+        blockMessages[blockName] = {};
+
+        for (const [version, oldValues] of Object.entries(oldMessages.blocks[blockName])) {
+          if (!has(blockMessageKeys[blockName], version)) {
+            throw new AppsembleError(
+              `Invalid translation key: blocks.${blockName}.${version}
+This block version is not used in the app`,
+            );
+          }
+
+          for (const [oldValueKey, oldValue] of Object.entries(
+            oldMessages.blocks[blockName][version],
+          )) {
+            if (typeof oldValue !== 'string') {
+              throw new AppsembleError(
+                `Invalid translation key: blocks.${blockName}.${version}.${oldValueKey}`,
+              );
+            }
+
+            if (verify.includes(parse(filepath).name) && !oldValue) {
+              throw new AppsembleError(
+                `Missing translation: blocks.${blockName}.${version}.${oldValueKey}`,
+              );
+            }
+          }
+
+          blockMessages[blockName][version] = oldValues;
+        }
+      }
+    }
+
+    const result = {
+      app: newAppMessages,
+      ...(Object.keys(newMessageIds).length && { messageIds: newMessageIds }),
+      ...(Object.keys(blockMessages).length && { blocks: blockMessages }),
+      ...(Object.keys(coreMessages).length && { core: coreMessages }),
+    };
+
+    await writeData(filepath, result);
+  }
+}
+
+/**
+ * Update an existing app.
+ *
+ * @param argv The command line options used for updating the app.
+ */
+export async function updateApp({
+  clientCredentials,
+  context,
+  force,
+  path,
+  ...options
+}: UpdateAppParams): Promise<void> {
+  const file = await stat(path);
+  const formData = new FormData();
+  let appsembleContext: AppsembleContext;
+
+  if (file.isFile()) {
+    const [, data] = await readData(path);
+    formData.append('yaml', data);
+  } else {
+    [appsembleContext] = await traverseAppDirectory(path, context, formData);
+  }
+
+  const remote = appsembleContext.remote ?? options.remote;
+  const id = appsembleContext.id ?? options.id;
+  const template = appsembleContext.template ?? options.template ?? false;
+  const visibility = appsembleContext.visibility ?? options.visibility;
+  const iconBackground = appsembleContext.iconBackground ?? options.iconBackground;
+  const icon = options.icon ?? appsembleContext.icon;
+  const maskableIcon = options.maskableIcon ?? appsembleContext.maskableIcon;
+  const sentryDsn = appsembleContext.sentryDsn ?? options.sentryDsn;
+  const sentryEnvironment = appsembleContext.sentryEnvironment ?? options.sentryEnvironment;
+  const googleAnalyticsId = appsembleContext.googleAnalyticsId ?? options.googleAnalyticsId;
+  logger.info(`App id: ${id}`);
+  logger.verbose(`App remote: ${remote}`);
+  logger.verbose(`App is template: ${inspect(template, { colors: true })}`);
+  logger.verbose(`App visibility: ${visibility}`);
+  logger.verbose(`Icon background: ${iconBackground}`);
+  logger.verbose(`Force update: ${inspect(force, { colors: true })}`);
+  if (!id) {
+    throw new AppsembleError('The app id must be passed as a command line flag or in the context');
+  }
+  formData.append('force', String(force));
+  formData.append('template', String(template));
+  formData.append('visibility', visibility);
+  formData.append('iconBackground', iconBackground);
+  if (icon) {
+    const realIcon = typeof icon === 'string' ? createReadStream(icon) : icon;
+    logger.info(`Using icon from ${(realIcon as ReadStream).path ?? 'stdin'}`);
+    formData.append('icon', realIcon);
+  }
+  if (maskableIcon) {
+    const realIcon =
+      typeof maskableIcon === 'string' ? createReadStream(maskableIcon) : maskableIcon;
+    logger.info(`Using maskable icon from ${(realIcon as ReadStream).path ?? 'stdin'}`);
+    formData.append('maskableIcon', realIcon);
+  }
+  if (sentryDsn) {
+    logger.info(
+      `Using custom Sentry DSN ${sentryEnvironment ? `with environment ${sentryEnvironment}` : ''}`,
+    );
+    formData.append('sentryDsn', sentryDsn);
+    if (sentryEnvironment) {
+      formData.append('sentryEnvironment', sentryEnvironment);
+    }
+  }
+  if (googleAnalyticsId) {
+    logger.info('Using Google Analytics');
+    formData.append('googleAnalyticsID', googleAnalyticsId);
+  }
+
+  await authenticate(remote, 'apps:write', clientCredentials);
+  const { data } = await axios.patch<App>(`/api/apps/${id}`, formData, { baseURL: remote });
+
+  if (file.isDirectory()) {
+    // After uploading the app, upload block styles and messages if they are available
+    await traverseBlockThemes(path, data.id, remote, force);
+    await uploadMessages(path, data.id, remote, force);
+  }
+
+  const { host, protocol } = new URL(remote);
+  logger.info(`Successfully updated app ${data.definition.name}! 🙌`);
+  logger.info(`App URL: ${protocol}//${data.path}.${data.OrganizationId}.${host}`);
+  logger.info(`App store page: ${new URL(`/apps/${data.id}`, remote)}`);
+}
+
+/**
+ * Create a new App.
+ *
+ * @param options The options to use for creating an app.
+ */
+export async function createApp({
+  clientCredentials,
+  context,
+  dryRun,
+  modifyContext,
+  path,
+  resources,
+  ...options
+}: CreateAppParams): Promise<void> {
+  const file = await stat(path);
+  const formData = new FormData();
+  let appsembleContext: AppsembleContext;
+  let rc: AppsembleRC;
+  let yaml: string;
+  let filename = relative(process.cwd(), path);
+
+  if (file.isFile()) {
+    // Assuming file is App YAML
+    const [, data] = await readData(path);
+    yaml = data;
+    formData.append('yaml', data);
+  } else {
+    [appsembleContext, rc, yaml] = await traverseAppDirectory(path, context, formData);
+    filename = join(filename, 'app-definition.yaml');
+  }
+
+  const remote = appsembleContext.remote ?? options.remote;
+  const organizationId = appsembleContext.organization ?? options.organization;
+  const template = appsembleContext.template ?? options.template ?? false;
+  const visibility = appsembleContext.visibility ?? options.visibility;
+  const iconBackground = appsembleContext.iconBackground ?? options.iconBackground;
+  const icon = options.icon ?? appsembleContext.icon;
+  const maskableIcon = options.maskableIcon ?? appsembleContext.maskableIcon;
+  const sentryDsn = appsembleContext.sentryDsn ?? options.sentryDsn;
+  const sentryEnvironment = appsembleContext.sentryEnvironment ?? options.sentryEnvironment;
+  const googleAnalyticsId = appsembleContext.googleAnalyticsId ?? options.googleAnalyticsId;
+  logger.verbose(`App remote: ${remote}`);
+  logger.verbose(`App organization: ${organizationId}`);
+  logger.verbose(`App is template: ${inspect(template, { colors: true })}`);
+  logger.verbose(`App visibility: ${visibility}`);
+  logger.verbose(`Icon background: ${iconBackground}`);
+  if (!organizationId) {
+    throw new AppsembleError(
+      'An organization id must be passed as a command line flag or in the context',
+    );
+  }
+  formData.append('OrganizationId', organizationId);
+  formData.append('template', String(template));
+  formData.append('visibility', visibility);
+  formData.append('iconBackground', iconBackground);
+  if (icon) {
+    const realIcon = typeof icon === 'string' ? createReadStream(icon) : icon;
+    logger.info(`Using icon from ${(realIcon as ReadStream).path ?? 'stdin'}`);
+    formData.append('icon', realIcon);
+  }
+  if (maskableIcon) {
+    const realIcon =
+      typeof maskableIcon === 'string' ? createReadStream(maskableIcon) : maskableIcon;
+    logger.info(`Using maskable icon from ${(realIcon as ReadStream).path ?? 'stdin'}`);
+    formData.append('maskableIcon', realIcon);
+  }
+  if (sentryDsn) {
+    logger.info(
+      `Using custom Sentry DSN ${sentryEnvironment ? `with environment ${sentryEnvironment}` : ''}`,
+    );
+    formData.append('sentryDsn', sentryDsn);
+    if (sentryEnvironment) {
+      formData.append('sentryEnvironment', sentryEnvironment);
+    }
+  }
+  if (googleAnalyticsId) {
+    logger.info('Using Google Analytics');
+    formData.append('googleAnalyticsID', googleAnalyticsId);
+  }
+
+  await authenticate(
+    remote,
+    resources ? 'apps:write resources:write' : 'apps:write',
+    clientCredentials,
+  );
+  let data: App;
+  try {
+    ({ data } = await axios.post<App>('/api/apps', formData, {
+      baseURL: remote,
+      params: { dryRun: dryRun || undefined },
+    }));
+  } catch (error) {
+    if (!axios.isAxiosError(error)) {
+      throw error;
+    }
+    if ((error.response?.data as { message?: string })?.message !== 'App validation failed') {
+      throw error;
+    }
+    throw new AppsembleError(
+      printAxiosError(filename, yaml, (error.response.data as any).data.errors),
+    );
+  }
+
+  if (dryRun) {
+    logger.info('Skipped uploading block themes and app messages.');
+    logger.info('Successfully ran dry run. The app should be valid when creating it.');
+    return;
+  }
+
+  if (file.isDirectory() && !dryRun) {
+    // After uploading the app, upload block styles and messages if they are available
+    await traverseBlockThemes(path, data.id, remote, false);
+    await uploadMessages(path, data.id, remote, false);
+
+    if (resources && existsSync(join(path, 'resources'))) {
+      const resourcePath = join(path, 'resources');
+      try {
+        const resourceFiles = await readdir(resourcePath, { withFileTypes: true });
+        for (const resource of resourceFiles) {
+          if (resource.isFile()) {
+            const { name } = parse(resource.name);
+            await createResource({
+              appId: data.id,
+              path: join(resourcePath, resource.name),
+              remote,
+              resourceName: name,
+            });
+          } else if (resource.isDirectory()) {
+            const subDirectoryResources = await readdir(join(resourcePath, resource.name), {
+              withFileTypes: true,
+            });
+
+            for (const subResource of subDirectoryResources.filter((s) => s.isFile())) {
+              await createResource({
+                appId: data.id,
+                path: join(resourcePath, resource.name, subResource.name),
+                remote,
+                resourceName: resource.name,
+              });
+            }
+          }
+        }
+      } catch (error: unknown) {
+        logger.error('Something went wrong when creating resources:');
+        logger.error(error);
+      }
+    }
+  }
+
+  if (modifyContext && appsembleContext && context && !dryRun) {
+    rc.context[context].id = data.id;
+    await writeData(join(path, '.appsemblerc.yaml'), rc);
+
+    logger.info(`Updated .appsemblerc: Set context.${context}.id to ${data.id}`);
+  }
+
+  const { host, protocol } = new URL(remote);
+  logger.info(`Successfully created app ${data.definition.name}! 🙌`);
+  logger.info(`App URL: ${protocol}//${data.path}.${data.OrganizationId}.${host}`);
+  logger.info(`App store page: ${new URL(`/apps/${data.id}`, remote)}`);
+}
+
+/**
+ * Resolve the app’s ID and remote based on the app context.
+ *
+ * @param appPath The path to the app.
+ * @param name Which context to use in the AppsembleRC file.
+ * @param defaultRemote The remote to fall back to.
+ * @param defaultAppId The app ID to fall back to.
+ * @returns The resolved app ID and remote.
+ */
+export async function resolveAppIdAndRemote(
+  appPath: string,
+  name: string,
+  defaultRemote: string,
+  defaultAppId: number,
+): Promise<[number, string]> {
+  let id = defaultAppId;
+  let resolvedRemote = defaultRemote;
+
+  if (appPath) {
+    const rcPath = join(appPath, '.appsemblerc.yaml');
+    const [rc] = await readData<AppsembleRC>(rcPath);
+    const context = rc.context?.[name];
+
+    if (!defaultAppId) {
+      id = context?.id;
+    }
+
+    if (context.remote) {
+      resolvedRemote = context.remote;
+    }
+  }
+
+  if (id == null) {
+    throw new AppsembleError(`App ID was not found in context.${name}.id nor in --app-id`);
+  }
+
+  return [id, coerceRemote(resolvedRemote)];
+}
