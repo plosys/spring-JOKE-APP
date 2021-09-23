@@ -163,4 +163,120 @@ describe('getBlockConfigFromTypeScript', () => {
   it('should throw if duplicate Parameters are found', () => {
     expect(() =>
       getBlockConfigFromTypeScript({
-        web
+        webpack: '',
+        output: '',
+        dir: resolveFixture('getBlockConfigFromTypeScript/duplicateParameters'),
+        name: '',
+        version: '1.33.7',
+      }),
+    ).toThrow(
+      new AppsembleError(
+        "Found duplicate interface 'Parameters' in 'getBlockConfigFromTypeScript/duplicateParameters/index.ts:31'",
+      ),
+    );
+  });
+
+  it('should handle fontawesome icons', () => {
+    const result = getBlockConfigFromTypeScript({
+      webpack: '',
+      output: '',
+      dir: resolveFixture('getBlockConfigFromTypeScript/fontawesomeParameters'),
+      name: '',
+      version: '1.33.7',
+    });
+
+    expect(result).toStrictEqual({
+      actions: undefined,
+      events: undefined,
+      messages: undefined,
+      parameters: {
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        additionalProperties: false,
+        properties: {
+          icon: { description: 'This is an icon.', format: 'fontawesome', type: 'string' },
+        },
+        type: 'object',
+      },
+    });
+  });
+
+  it('should handle TypeScript pre emit diagnostics', () => {
+    function fn(): void {
+      getBlockConfigFromTypeScript({
+        name: '',
+        layout: 'float',
+        version: '1.33.7',
+        webpack: '',
+        output: '',
+        dir: resolveFixture('getBlockConfigFromTypeScript/tsError'),
+      });
+    }
+    expect(fn).toThrow(AppsembleError);
+    expect(fn).toThrow(/'unused' is declared but its value is never read/);
+  });
+
+  it('should extract comments', () => {
+    const result = getBlockConfigFromTypeScript({
+      name: '',
+      layout: 'float',
+      version: '1.33.7',
+      webpack: '',
+      output: '',
+      dir: resolveFixture('getBlockConfigFromTypeScript/comments'),
+    });
+
+    expect(result).toStrictEqual({
+      actions: {
+        comment: {
+          description: 'Valid action comment',
+        },
+        duplicate: {
+          description: 'Expected comment',
+        },
+        line: {
+          description: undefined,
+        },
+      },
+      events: {
+        emit: {
+          testEmit: {
+            description: 'Test event emitter.',
+          },
+        },
+        listen: {
+          testListener: {
+            description: 'Test event listener.',
+          },
+        },
+      },
+      messages: undefined,
+      parameters: {
+        $schema: 'http://json-schema.org/draft-07/schema#',
+        additionalProperties: false,
+        properties: {
+          param: {},
+        },
+        required: ['param'],
+        type: 'object',
+      },
+    });
+  });
+
+  describe('official blocks', () => {
+    const blocksDir = new URL('../../../blocks/', import.meta.url);
+
+    it.each(readdirSync(blocksDir))('%s', (name) => {
+      const dir = fileURLToPath(new URL(name, blocksDir));
+
+      const result = getBlockConfigFromTypeScript({
+        name,
+        version: '',
+        output: '',
+        webpack: undefined,
+        dir,
+      });
+
+      expect(result).toMatchSnapshot();
+    });
+  });
+});
