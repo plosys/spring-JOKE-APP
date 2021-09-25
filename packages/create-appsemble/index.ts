@@ -14,4 +14,13 @@ yargs()
   })
   .option('quiet', {
     alias: 'q',
-    describe: 'Decrease verb
+    describe: 'Decrease verbosity',
+    type: 'count',
+  })
+  .middleware([configureLogger])
+  .command(block as unknown as CommandModule)
+  .demandCommand(1)
+  .fail(handleError)
+  .help()
+  .completion()
+  .parse(process.argv.slice(2));
