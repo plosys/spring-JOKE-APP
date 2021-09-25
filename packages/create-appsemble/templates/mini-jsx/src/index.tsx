@@ -42,4 +42,20 @@ bootstrap(({ events, parameters: { fields }, utils: { fa, formatMessage, remap }
           const remappedLabel = remap(label, data) as string;
 
           return (
-         
+            <div className={styles.field}>
+              <i className={`${fa(icon)} ${styles.icon}`} />
+              {/* Bulma classes are supported. See https://bulma.io/documentation */}
+              <div className={`has-text-weight-bold ${styles.value}`}>
+                {remap(value, data) as string}
+              </div>
+              {remappedLabel ? <div>{remappedLabel}</div> : null}
+            </div>
+          );
+        }),
+      );
+    }
+  });
+
+  // If a DOM node is returned by the bootstrap function, it will be rendered in the shadow root.
+  return <div>{wrapper}</div>;
+});
