@@ -1,0 +1,8 @@
+
+{
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@appsemble/sdk": "0.20.40"
+  }
+}
