@@ -35,4 +35,8 @@ describe.skip('Person', () => {
     cy.get('@td').click();
 
     cy.contains(firstName).should('exist');
-    cy.contains(lastN
+    cy.contains(lastName).should('exist');
+    cy.contains(email).should('exist');
+    cy.contains(description).should('exist');
+  });
+});
