@@ -28,4 +28,23 @@ describe('/apps/:appId', () => {
 
   it('should link to the notification sender', () => {
     cy.contains('Notifications').click();
-    cy.contains('Push noti
+    cy.contains('Push notifications are currently not enabled in this app.').should('exist');
+  });
+
+  it('should link to the snapshots page', () => {
+    cy.contains('Snapshots').click();
+    cy.contains('Snapshots').should('exist');
+    cy.get('ul').last().children().should('have.length.gte', 1);
+  });
+
+  it('should link to the app settings', () => {
+    cy.get('.menu > .menu-list').last().contains('Settings').click();
+    cy.contains('App lock').should('exist');
+    cy.contains('Dangerous actions').should('exist');
+  });
+
+  it('should link to the app secrets', () => {
+    cy.contains('Secrets').click();
+    cy.contains('Appsemble Login').should('exist');
+  });
+});
