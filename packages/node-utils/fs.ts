@@ -87,4 +87,61 @@ export async function writeData(
   const sorted = sort ? sortKeys(data, { deep: true, compare: compare || undefined }) : data;
   let buffer: string;
   try {
-    const { default: prettier 
+    const { default: prettier } = await import('prettier');
+    const { inferredParser } = await prettier.getFileInfo(path, { resolveConfig: true });
+    const prettierOptions = await prettier.resolveConfig(path, { editorconfig: true });
+    prettierOptions.parser = inferredParser;
+    buffer =
+      inferredParser === 'yaml' ? stringify(sorted) : `${JSON.stringify(sorted, undefined, 2)}\n`;
+    buffer = prettier.format(buffer, prettierOptions);
+  } catch {
+    const ext = extname(path);
+    buffer =
+      ext === '.yml' || ext === '.yaml'
+        ? stringify(sorted)
+        : `${JSON.stringify(sorted, undefined, 2)}\n`;
+  }
+  await mkdir(dirname(path), { recursive: true });
+  await writeFile(path, buffer);
+  return buffer;
+}
+
+interface OpenDirSafeOptions {
+  allowMissing?: boolean;
+  recursive?: boolean;
+}
+
+/**
+ * Read the contents of a directory.
+ *
+ * @param directory The path of the directory to open.
+ * @param onFile A callback which will get called for every file. This will be called with the full
+ * file path as its first argument and its `Dirent` object as the second argument.
+ * @param options Additional options.
+ */
+export async function opendirSafe(
+  directory: string,
+  onFile: (fullpath: string, stat: Dirent) => Promisable<void>,
+  options: OpenDirSafeOptions = {},
+): Promise<void> {
+  let stats: Stats;
+  try {
+    stats = await stat(directory);
+  } catch (err: unknown) {
+    if (options.allowMissing && isErrno(err, 'ENOENT')) {
+      return;
+    }
+    throw new AppsembleError(`Expected ${directory} to be a directory`);
+  }
+  if (!stats.isDirectory()) {
+    throw new AppsembleError(`Expected ${directory} to be a directory`);
+  }
+  const dir = await opendir(directory);
+  for await (const file of dir) {
+    const fullPath = join(directory, file.name);
+    await onFile(fullPath, file);
+    if (options.recursive && file.isDirectory()) {
+      await opendirSafe(fullPath, onFile, options);
+    }
+  }
+}
