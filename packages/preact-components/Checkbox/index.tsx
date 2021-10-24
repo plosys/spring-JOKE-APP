@@ -100,4 +100,22 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           checked={value}
           className={classNames(isSwitch ? 'switch' : 'is-checkradio', {
             [`is-${color}`]: color,
-            [`is-${size
+            [`is-${size}`]: size,
+            'is-rtl': rtl,
+            'is-outlined': switchOptions?.outlined,
+            'is-thin': switchOptions?.thin,
+            'is-rounded': switchOptions?.rounded,
+          })}
+          id={id}
+          name={name}
+          onChange={handleChange}
+          ref={ref}
+          type="checkbox"
+        />
+        <label className={classNames({ 'is-danger': error })} htmlFor={id}>
+          {label}
+        </label>
+      </span>
+    );
+  },
+);
