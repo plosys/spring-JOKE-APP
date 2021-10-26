@@ -16,4 +16,29 @@ export const SelectField = forwardRef<HTMLSelectElement, SelectFieldProps>(
       className,
       help,
       label,
-      requ
+      required,
+      icon,
+      name,
+      id = name,
+      tag,
+      optionalLabel,
+      inline,
+      ...props
+    },
+    ref,
+  ) => (
+    <FormComponent
+      className={className}
+      help={help}
+      icon={icon}
+      id={id}
+      inline={inline}
+      label={label}
+      optionalLabel={optionalLabel}
+      required={required}
+      tag={tag}
+    >
+      <Select fullWidth={fullWidth} id={id} name={name} ref={ref} required={required} {...props} />
+    </FormComponent>
+  ),
+);
