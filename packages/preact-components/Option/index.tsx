@@ -25,4 +25,8 @@ export interface OptionProps {
 /**
  * An option for a `<Select />` component.
  *
- * @see Sel
+ * @see Select
+ */
+export function Option({ hidden, ...props }: OptionProps): VNode {
+  return <option className={hidden ? 'is-hidden' : null} {...props} />;
+}
