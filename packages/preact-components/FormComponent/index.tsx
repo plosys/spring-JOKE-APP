@@ -108,3 +108,72 @@ export const FormComponent = forwardRef<HTMLDivElement, FormComponentProps>(
     {
       addon,
       children,
+      className,
+      control,
+      disableHelp,
+      error,
+      help,
+      helpExtra,
+      icon,
+      id,
+      inline,
+      label,
+      optionalLabel = '(Optional)',
+      required,
+      tag,
+    },
+    ref,
+  ) => {
+    const helpContent = (
+      <span className={classNames(`help ${styles.help}`, { 'is-danger': error })}>
+        {isValidElement(error) || typeof error === 'string' || Number.isFinite(error)
+          ? error
+          : help}
+      </span>
+    );
+
+    const controls = (
+      <div
+        className={classNames(`control ${styles.control}`, {
+          'has-icons-left': icon,
+          'has-icons-right': control,
+        })}
+      >
+        {children}
+        {icon ? <Icon className="is-left" icon={icon} /> : null}
+        {control ? cloneElement(control, { className: 'is-right' }) : null}
+      </div>
+    );
+
+    return (
+      <div className={classNames('field', className, { [styles.inline]: inline })} ref={ref}>
+        {label ? (
+          <label className="label" htmlFor={id}>
+            {label}
+            {!required || tag ? (
+              <span className="is-pulled-right has-text-weight-normal">{tag || optionalLabel}</span>
+            ) : null}
+          </label>
+        ) : null}
+        {addon ? (
+          <div className="field is-marginless has-addons">
+            {controls}
+            <label className="control" htmlFor={id}>
+              {addon}
+            </label>
+          </div>
+        ) : (
+          controls
+        )}
+        {disableHelp ? null : helpExtra ? (
+          <div className={`is-flex ${styles.helpWrapper}`}>
+            {helpContent}
+            <span className={`help ml-1 ${styles.counter}`}>{helpExtra}</span>
+          </div>
+        ) : (
+          helpContent
+        )}
+      </div>
+    );
+  },
+);
