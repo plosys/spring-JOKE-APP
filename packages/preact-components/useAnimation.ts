@@ -41,4 +41,55 @@ interface Classes {
   closed?: string;
 
   /**
-   * The class to use when the elemen
+   * The class to use when the element is open.
+   *
+   * Typically this has the following CSS:
+   *
+   * ```css
+   * .closing {
+   *   opacity: 0;
+   * }
+   * ```
+   */
+  closing?: string;
+}
+
+/**
+ * Use a delayed value based on a boolean state.
+ *
+ * This can be used to realize a CSS transition.
+ *
+ * @param isActive Whether the value should be active eventually.
+ * @param duration The duraction of the CSS transition.
+ * @param classes The CSS classes to use for each state.
+ * @returns The CSS class that indicates the state of the animation.
+ */
+export function useAnimation(
+  isActive: boolean,
+  duration: number,
+  { closed, closing, open, opening }: Classes,
+): string | undefined {
+  const [isOpen, setOpen] = useState(isActive);
+
+  useEffect(() => {
+    if (isActive) {
+      setOpen(true);
+      return;
+    }
+
+    // The timeout must match the CSS transition length.
+    const timeout = setTimeout(setOpen, duration, false);
+    return () => clearTimeout(timeout);
+  }, [duration, isActive]);
+
+  if (isActive) {
+    if (isOpen) {
+      return open;
+    }
+    return opening;
+  }
+  if (isOpen) {
+    return closing;
+  }
+  return closed;
+}
