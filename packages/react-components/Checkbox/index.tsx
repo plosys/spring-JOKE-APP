@@ -94,4 +94,15 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           checked={value}
           className={classNames(isSwitch ? 'switch' : 'is-checkradio', { 'is-rtl': rtl })}
           id={id}
-          na
+          name={name}
+          onChange={handleChange}
+          ref={mergedRef}
+          type="checkbox"
+        />
+        <label className={classNames({ 'is-danger': error })} htmlFor={id}>
+          {label}
+        </label>
+      </span>
+    );
+  },
+);

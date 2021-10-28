@@ -1,0 +1,18 @@
+
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`should render its children if no errors are thrown 1`] = `
+<div>
+  <p>
+    Test
+  </p>
+</div>
+`;
+
+exports[`should render its fallback when errors are thrown 1`] = `
+<div>
+  <p>
+    Something went wrong!
+  </p>
+</div>
+`;
