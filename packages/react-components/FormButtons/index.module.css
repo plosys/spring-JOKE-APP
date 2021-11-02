@@ -1,0 +1,12 @@
+
+.root {
+  display: flex;
+}
+
+.one {
+  justify-content: flex-end;
+}
+
+.multiple {
+  justify-content: space-between;
+}

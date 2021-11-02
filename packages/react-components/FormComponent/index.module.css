@@ -1,0 +1,16 @@
+.control {
+  flex: 1;
+}
+
+.help {
+  /* This matches the line height of help content, which is inherited from body. */
+  min-height: 1.5em;
+}
+
+.helpWrapper {
+  justify-content: space-between;
+}
+
+.counter {
+  flex: 0 0 auto;
+}

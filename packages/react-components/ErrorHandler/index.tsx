@@ -59,4 +59,4 @@ class ErrorBoundary extends Component<ErrorHandlerProps, ErrorHandlerState> {
   }
 }
 
-export const ErrorHandl
+export const ErrorHandler = ErrorBoundary;
