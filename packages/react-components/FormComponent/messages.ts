@@ -1,3 +1,5 @@
 import { defineMessages } from 'react-intl';
 
-export con
+export const messages = defineMessages({
+  optional: 'Optional',
+});
