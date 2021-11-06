@@ -28,4 +28,14 @@ interface IconButtonProps extends ComponentPropsWithoutRef<'button'> {
  *
  * The button type is set to `button` by default.
  */
-export function IconButton({ className, color, icon, ...props }: IconButtonProps): ReactElem
+export function IconButton({ className, color, icon, ...props }: IconButtonProps): ReactElement {
+  return (
+    <button
+      className={classNames('icon', styles.root, className, { [`has-text-${color}`]: color })}
+      type="button"
+      {...props}
+    >
+      <i className={fa(icon)} />
+    </button>
+  );
+}
