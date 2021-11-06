@@ -35,4 +35,40 @@ interface MenuButtonItemProps {
   /**
    * Click handler for the menu item.
    */
-  onClic
+  onClick: MouseEventHandler<HTMLButtonElement>;
+
+  /**
+   * Whether the menu item should be active.
+   */
+  active: boolean;
+}
+
+/**
+ * Render a Bulma menu item styled navigation link.
+ *
+ * https://bulma.io/documentation/components/menu
+ */
+export function MenuButton({
+  active,
+  children,
+  icon,
+  iconColor,
+  isChild,
+  onClick,
+  title,
+}: MenuButtonItemProps): ReactElement {
+  return (
+    <button
+      className={classNames(`is-flex is-align-items-center ${styles.root}`, {
+        'is-active': active,
+        'pl-2': !isChild,
+      })}
+      onClick={onClick}
+      title={title}
+      type="button"
+    >
+      {icon ? <Icon className="mr-1" color={iconColor} icon={icon} size="medium" /> : null}
+      <span className={styles.text}>{children}</span>
+    </button>
+  );
+}
