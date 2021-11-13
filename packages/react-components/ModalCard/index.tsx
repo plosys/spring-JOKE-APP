@@ -12,7 +12,7 @@ import {
 import { useAnimation } from '../index.js';
 import styles from './index.module.css';
 
-interface ModalProps<T extends ElementType> {
+interface ModalCardProps<T extends ElementType> {
   /**
    * The child elements to render on the modal.
    */
@@ -54,6 +54,11 @@ interface ModalProps<T extends ElementType> {
   cardClassName?: string;
 
   /**
+   * The CSS class applied to the card.
+   */
+  wrapperClassName?: string;
+
+  /**
    * The CSS class applied to the body.
    */
   className?: string;
@@ -67,16 +72,20 @@ interface ModalProps<T extends ElementType> {
 /**
  * Render an aria compliant modal overlay.
  */
-export function Modal<T extends ElementType = 'div'>({
+export function ModalCard<T extends ElementType = 'div'>({
+  cardClassName,
   children = null,
   className,
   closable = true,
   closeButtonLabel,
   component: Component = 'div' as T,
+  footer = null,
   isActive,
   onClose,
+  title,
+  wrapperClassName,
   ...props
-}: ModalProps<T> & Omit<ComponentPropsWithoutRef<T>, keyof ModalProps<T>>): ReactElement {
+}: ModalCardProps<T> & Omit<ComponentPropsWithoutRef<T>, keyof ModalCardProps<T>>): ReactElement {
   const openClass = useAnimation(isActive, 300, {
     opening: styles.opening,
     open: styles.open,
@@ -97,25 +106,7 @@ export function Modal<T extends ElementType = 'div'>({
   }
 
   return (
-    <div className={`is-active modal ${styles.root} ${openClass}`}>
+    <div className={classNames(`is-active modal ${styles.root} ${openClass}`, wrapperClassName)}>
       <div
         className="modal-background"
-        onClick={closable ? onClose : null}
-        onKeyDown={closable ? onKeyDown : null}
-        role="presentation"
-      />
-      {/* @ts-expect-error This construct should work */}
-      <Component className={classNames('modal-content', className)} {...props}>
-        {children}
-      </Component>
-      {closable ? (
-        <button
-          aria-label={closeButtonLabel}
-          className="modal-close is-large"
-          onClick={onClose}
-          type="button"
-        />
-      ) : null}
-    </div>
-  );
-}
+        
