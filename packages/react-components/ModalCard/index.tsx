@@ -109,4 +109,26 @@ export function ModalCard<T extends ElementType = 'div'>({
     <div className={classNames(`is-active modal ${styles.root} ${openClass}`, wrapperClassName)}>
       <div
         className="modal-background"
-        
+        onClick={closable ? onClose : null}
+        onKeyDown={closable ? onKeyDown : null}
+        role="presentation"
+      />
+      {/* @ts-expect-error This should be fine */}
+      <Component className={classNames('modal-card', cardClassName)} {...props}>
+        <div className="modal-card-head">
+          <p className="modal-card-title">{title}</p>
+          {closable ? (
+            <button
+              aria-label={closeButtonLabel}
+              className="delete is-large"
+              onClick={onClose}
+              type="button"
+            />
+          ) : null}
+        </div>
+        <div className={classNames('modal-card-body', className)}>{children}</div>
+        {footer ? <footer className="card-footer">{footer}</footer> : null}
+      </Component>
+    </div>
+  );
+}
