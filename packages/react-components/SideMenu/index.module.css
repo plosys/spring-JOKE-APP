@@ -1,0 +1,65 @@
+
+@value menu-width: 18rem;
+
+.button {
+  background: none;
+  border: none;
+  color: hsl(0deg 0% 100%);
+  outline: none;
+}
+
+.sideMenuWrapper {
+  height: 100%;
+
+  @media screen and (min-width: 1024px) {
+    margin-left: menu-width;
+  }
+}
+
+.sideMenu {
+  background-color: hsl(0deg 0% 100%);
+  bottom: 0;
+  box-shadow: 0 0 1em -0.125em hsl(0deg 0% 4% / 10%);
+  display: flex;
+  flex-flow: column;
+  left: calc(-1 * menu-width);
+  overflow-y: auto;
+  position: fixed;
+
+  /* This matches the size of the navbar */
+  top: 3.25rem;
+  transition: left 0.15s;
+  width: menu-width;
+  z-index: 5000;
+
+  @media screen and (min-width: 1024px) {
+    left: 0;
+  }
+
+  &.open {
+    left: 0;
+  }
+}
+
+.backdrop {
+  background-color: rgb(0 0 0 / 50%);
+  bottom: 0;
+  left: 0;
+  opacity: 1;
+  position: fixed;
+  right: 0;
+
+  /* This matches the size of the navbar */
+  top: 3.25rem;
+  transition: opacity 0.15s;
+  z-index: 4000;
+
+  @media screen and (min-width: 1024px) {
+    display: none;
+  }
+
+  &.closed {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
