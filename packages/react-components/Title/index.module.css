@@ -1,0 +1,11 @@
+
+.root {
+  & .anchor {
+    opacity: 0;
+    transition: 300ms;
+  }
+
+  &:hover .anchor {
+    opacity: 1;
+  }
+}

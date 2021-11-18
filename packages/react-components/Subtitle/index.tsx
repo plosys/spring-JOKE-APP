@@ -35,4 +35,20 @@ interface SubtitleProps {
 }
 
 /**
- * A bulma styled subtitle
+ * A bulma styled subtitle element.
+ */
+export function Subtitle({
+  children,
+  className,
+  lang,
+  size = 5,
+  level = Math.max(size - 2, 6) as SubtitleProps['size'],
+}: SubtitleProps): ReactElement {
+  const Component = `h${level}` as 'h1';
+
+  return (
+    <Component className={classNames(`subtitle is-${size}`, className)} lang={lang}>
+      {children}
+    </Component>
+  );
+}
