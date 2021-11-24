@@ -86,4 +86,10 @@ export function useAnimation(
     if (isOpen) {
       return open;
     }
-    r
+    return opening;
+  }
+  if (isOpen) {
+    return closing;
+  }
+  return closed;
+}
