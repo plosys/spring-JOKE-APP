@@ -21,4 +21,46 @@ import { compareStrings } from '@appsemble/utils';
  * ];
  * ```
  *
- * Now running the following command will fix the me
+ * Now running the following command will fix the message keys:
+ * @example
+ * ```sh
+ * yarn scripts rewrite-messages
+ * ```
+ */
+const replacements: [RegExp, string][] = [];
+
+const filename = fileURLToPath(import.meta.url);
+export const command = 'rewrite-messages';
+export const description = `Fix i18n message keys for moved files. Open ${filename} for details`;
+
+const translationdDir = 'i18n';
+
+export async function handler(): Promise<void> {
+  const filenames = await readdir(translationdDir);
+
+  if (!replacements.length) {
+    throw new AppsembleError(`Implement replacements in ${filename} to run this command.`);
+  }
+
+  await Promise.all(
+    filenames.map(async (filepath) => {
+      const path = join(translationdDir, filepath);
+      const pldMessages = JSON.parse(await readFile(path, 'utf8'));
+      const newMessages = Object.fromEntries(
+        Object.entries(pldMessages).map(([oldKey, value]) => {
+          const replacement = replacements.find(([pattern]) => pattern.test(oldKey));
+          if (replacement) {
+            const newKey = oldKey.replace(...replacement);
+            logger.info(`${path}: ${oldKey} → ${newKey}`);
+            return [newKey, value];
+          }
+          return [oldKey, value];
+        }),
+      );
+      await writeFile(
+        path,
+        `${JSON.stringify(newMessages, Object.keys(newMessages).sort(compareStrings), 2)}\n`,
+      );
+    }),
+  );
+}
