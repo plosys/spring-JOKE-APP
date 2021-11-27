@@ -206,3 +206,80 @@ async function validate(
         `Dependencies on Appsemble packages should depend on exactly "${latestVersion}"`,
       );
     }
+  }
+
+  /**
+   * Validate tsconfig.json
+   */
+  const tsConfig = await fsExtra.readJson(join(dir, 'tsconfig.json')).catch(() => null);
+  assert(tsConfig, 'tsconfig.json', 'The workspace should have a TypeScript configuration');
+  if (tsConfig) {
+    assert(
+      tsConfig.extends === '../../tsconfig',
+      'tsconfig.json',
+      'Should extend "../../tsconfig"',
+    );
+    assert(
+      isDeepStrictEqual(Object.keys(tsConfig), ['extends', 'compilerOptions']),
+      'tsconfig.json',
+      'Only specifies "extends" and "compilerOptions" with "extends" first',
+    );
+  }
+
+  /**
+   * Validate jest.config.js exists
+   */
+  assert(
+    existsSync(join(dir, 'jest.config.js')),
+    'jest.config.js',
+    'Projects should have a Jest configuration',
+  );
+}
+
+export async function handler(): Promise<void> {
+  const results: Result[] = [];
+  const paths = await getWorkspaces(process.cwd());
+  const allWorkspaces: Workspace[] = await Promise.all(
+    paths.map(async (dir) => ({
+      dir,
+      pkg: await fsExtra.readJson(join(dir, 'package.json')),
+    })),
+  );
+
+  const workspaces = allWorkspaces
+    .filter(({ pkg }) => !pkg.name.startsWith('@types/'))
+    .sort((a, b) => a.dir.localeCompare(b.dir));
+
+  const latestVersion = semver.maxSatisfying(
+    workspaces.map(({ pkg }) => pkg.version),
+    '*',
+  );
+
+  for (const workspace of workspaces) {
+    await validate(
+      (pass, filename, message) => results.push({ filename, message, pass, workspace }),
+      workspace,
+      latestVersion,
+    );
+  }
+
+  await validateTranslations((pass, filename, message, workspace = '') =>
+    results.push({
+      filename,
+      message,
+      pass,
+      workspace: { dir: workspace, pkg: '' as unknown as PackageJson },
+    }),
+  );
+
+  const valid = results.filter(({ pass }) => pass);
+  const invalid = results.filter(({ pass }) => !pass);
+
+  for (const { filename, message, workspace } of valid) {
+    logger.info(`✔️  ${relative(process.cwd(), join(workspace.dir, filename))}: ${message}`);
+  }
+  for (const { filename, message, workspace } of invalid) {
+    logger.error(`❌ ${relative(process.cwd(), join(workspace.dir, filename))}: ${message}`);
+    process.exitCode = 1;
+  }
+}
