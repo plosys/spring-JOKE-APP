@@ -2,11 +2,11 @@ import { Argv } from 'yargs';
 
 import { initDB } from '../models/index.js';
 import { argv } from '../utils/argv.js';
-import { cleanupDNS } from '../utils/dns/index.js';
+import { restoreDNS } from '../utils/dns/index.js';
 import { handleDBError } from '../utils/sqlUtils.js';
 import { databaseBuilder } from './builder/database.js';
 
-export const command = 'cleanup';
+export const command = 'restore';
 export const description = 'Restore the app DNS settings from the database in the host platform';
 
 export function builder(yargs: Argv): Argv {
@@ -52,5 +52,5 @@ export async function handler(): Promise<void> {
     handleDBError(error as Error);
   }
 
-  await cleanupDNS();
+  await restoreDNS();
 }
