@@ -122,4 +122,66 @@ export function builder(yargs: Argv): Argv {
       required: true,
     })
     .option('remote', {
-      desc: 'The remote that will be used for downloading unknown
+      desc: 'The remote that will be used for downloading unknown blocks. For example: https://appsemble.app',
+    })
+    .option('proxy', {
+      desc: 'Trust proxy headers. This is used to detect the source IP for logging.',
+      default: false,
+    });
+}
+
+export async function handler({ webpackConfigs }: AdditionalArguments = {}): Promise<void> {
+  try {
+    initDB({
+      host: argv.databaseHost,
+      port: argv.databasePort,
+      username: argv.databaseUser,
+      password: argv.databasePassword,
+      database: argv.databaseName,
+      ssl: argv.databaseSsl,
+      uri: argv.databaseUrl,
+    });
+  } catch (error: unknown) {
+    handleDBError(error as Error);
+  }
+
+  if (argv.migrateTo) {
+    await migrate(argv.migrateTo, migrations);
+  }
+
+  await configureDNS();
+
+  const app = await createServer({ webpackConfigs });
+
+  app.on('error', (err, ctx: Context) => {
+    if (err.expose) {
+      // It is thrown by `ctx.throw()` or `ctx.assert()`.
+      return;
+    }
+    logger.error(err);
+    captureException(err, {
+      tags: {
+        ip: ctx.ip,
+        method: ctx.method,
+        url: ctx.href,
+        'User-Agent': ctx.headers['user-agent'],
+      },
+    });
+  });
+
+  const callback = app.callback();
+  const httpServer = argv.ssl
+    ? https.createServer(
+        {
+          key: await readFileOrString(argv.sslKey),
+          cert: await readFileOrString(argv.sslCert),
+        },
+        callback,
+      )
+    : http.createServer(callback);
+
+  httpServer.listen(argv.port || PORT, '::', () => {
+    logger.info(asciiLogo);
+    logger.info(api(pkg.version, argv).info.description);
+  });
+}
