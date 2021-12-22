@@ -283,3 +283,171 @@ describe('handleRequestProxy', () => {
     expect(proxiedContext.path).toBe('/pour');
     expect(proxiedContext.querystring).toBe('drink=coffee');
   });
+
+  it('should throw if the upstream response fails', async () => {
+    const response = await request.get(
+      '/api/apps/1/action/pages.0.blocks.0.actions.invalidHost?data={}',
+    );
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 502 Bad Gateway
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Bad Gateway",
+        "message": "Bad Gateway",
+        "statusCode": 502,
+      }
+    `);
+  });
+});
+
+describe('handleEmail', () => {
+  beforeEach(async () => {
+    await Organization.create({ id: 'org' });
+    await App.create({
+      vapidPublicKey: '',
+      vapidPrivateKey: '',
+      OrganizationId: 'org',
+      definition: {
+        defaultPage: '',
+        pages: [
+          {
+            name: '',
+            blocks: [
+              {
+                type: '',
+                version: '',
+                actions: {
+                  email: {
+                    type: 'email',
+                    to: [{ prop: 'to' }],
+                    cc: [{ prop: 'cc' }],
+                    bcc: [{ prop: 'bcc' }],
+                    subject: [{ static: 'Test title' }],
+                    body: [{ prop: 'body' }],
+                    attachments: [{ prop: 'attachments' }],
+                  } as EmailActionDefinition,
+                },
+              },
+            ],
+          },
+        ],
+      },
+    } as Partial<App>);
+  });
+
+  it('should send emails', async () => {
+    const spy = import.meta.jest.spyOn(server.context.mailer, 'sendEmail');
+
+    const response = await request.post('/api/apps/1/action/pages.0.blocks.0.actions.email', {
+      body: 'Body',
+      to: 'test@example.com',
+    });
+
+    expect(response).toMatchInlineSnapshot('HTTP/1.1 204 No Content');
+    expect(spy).toHaveBeenCalledWith({
+      to: 'test@example.com',
+      from: 'Appsemble',
+      subject: 'Test title',
+      html: `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<p>Body</p>
+</body>
+</html>
+`,
+      text: 'Body\n',
+      attachments: [],
+      app: {
+        emailHost: null,
+        emailName: null,
+        emailPassword: null,
+        emailPort: 587,
+        emailSecure: true,
+        emailUser: null,
+      },
+    });
+    spy.mockRestore();
+  });
+
+  it('should send mails using CC', async () => {
+    const spy = import.meta.jest.spyOn(server.context.mailer, 'sendEmail');
+    const response = await request.post('/api/apps/1/action/pages.0.blocks.0.actions.email', {
+      body: 'Test',
+      cc: ['test@example.com', 'John Doe <test2@example.com>'],
+    });
+
+    expect(response).toMatchInlineSnapshot('HTTP/1.1 204 No Content');
+    expect(spy).toHaveBeenCalledWith({
+      from: 'Appsemble',
+      cc: ['test@example.com', 'John Doe <test2@example.com>'],
+      subject: 'Test title',
+      html: `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<p>Test</p>
+</body>
+</html>
+`,
+      text: 'Test\n',
+      attachments: [],
+      app: {
+        emailHost: null,
+        emailName: null,
+        emailPassword: null,
+        emailPort: 587,
+        emailSecure: true,
+        emailUser: null,
+      },
+    });
+    spy.mockRestore();
+  });
+
+  it('should send mails using BCC', async () => {
+    const spy = import.meta.jest.spyOn(server.context.mailer, 'sendEmail');
+    const response = await request.post('/api/apps/1/action/pages.0.blocks.0.actions.email', {
+      body: 'Test',
+      bcc: ['test@example.com', 'John Doe <test2@example.com>'],
+    });
+
+    expect(response).toMatchInlineSnapshot('HTTP/1.1 204 No Content');
+    expect(spy).toHaveBeenCalledWith({
+      from: 'Appsemble',
+      bcc: ['test@example.com', 'John Doe <test2@example.com>'],
+      subject: 'Test title',
+      html: `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<p>Test</p>
+</body>
+</html>
+`,
+      text: 'Test\n',
+      attachments: [],
+      app: {
+        emailHost: null,
+        emailName: null,
+        emailPassword: null,
+        emailPort: 587,
+        emailSecure: true,
+        emailUser: null,
+      },
+    });
+    spy.mockRestore();
+  });
+
+  it('should do nothing if to, cc, and bcc are empty', async () => {
+    const responseA = await request.post('/api/apps/1/action/pages.0.blocks.0.actions.email', {
+     
