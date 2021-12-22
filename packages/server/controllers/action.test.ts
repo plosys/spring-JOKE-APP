@@ -154,4 +154,132 @@ describe('handleRequestProxy', () => {
     `);
     expect(proxiedContext.method).toBe('GET');
     expect({ ...proxiedContext.headers }).toStrictEqual({
-      accept: 'application/json, text/plain, *
+      accept: 'application/json, text/plain, */*',
+      'accept-encoding': 'gzip, compress, deflate, br',
+      connection: 'close',
+      host: new URL(proxiedRequest.defaults.baseURL).host,
+      'user-agent': `AppsembleServer/${pkg.version}`,
+    });
+    expect(proxiedContext.path).toBe('/');
+  });
+
+  it('should proxy simple DELETE request actions', async () => {
+    const response = await request.delete(
+      '/api/apps/1/action/pages.0.blocks.0.actions.delete?data={}',
+    );
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 418 I'm a teapot
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "message": "I’m a teapot",
+      }
+    `);
+    expect(proxiedContext.method).toBe('DELETE');
+    expect({ ...proxiedContext.headers }).toStrictEqual({
+      accept: 'application/json, text/plain, */*',
+      'accept-encoding': 'gzip, compress, deflate, br',
+      connection: 'close',
+      host: new URL(proxiedRequest.defaults.baseURL).host,
+      'user-agent': `AppsembleServer/${pkg.version}`,
+    });
+    expect(proxiedContext.path).toBe('/');
+  });
+
+  it('should proxy simple PATCH request actions', async () => {
+    const response = await request.patch('/api/apps/1/action/pages.0.blocks.0.actions.patch', {});
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 418 I'm a teapot
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "message": "I’m a teapot",
+      }
+    `);
+    expect(proxiedContext.method).toBe('PATCH');
+    expect({ ...proxiedContext.headers }).toStrictEqual({
+      accept: 'application/json, text/plain, */*',
+      'accept-encoding': 'gzip, compress, deflate, br',
+      connection: 'close',
+      'content-length': '2',
+      'content-type': 'application/json',
+      host: new URL(proxiedRequest.defaults.baseURL).host,
+      'user-agent': `AppsembleServer/${pkg.version}`,
+    });
+    expect(proxiedContext.path).toBe('/');
+  });
+
+  it('should proxy simple POST request actions', async () => {
+    const response = await request.post('/api/apps/1/action/pages.0.blocks.0.actions.post', {});
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 418 I'm a teapot
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "message": "I’m a teapot",
+      }
+    `);
+    expect(proxiedContext.method).toBe('POST');
+    expect({ ...proxiedContext.headers }).toStrictEqual({
+      accept: 'application/json, text/plain, */*',
+      'accept-encoding': 'gzip, compress, deflate, br',
+      connection: 'close',
+      'content-length': '2',
+      'content-type': 'application/json',
+      host: new URL(proxiedRequest.defaults.baseURL).host,
+      'user-agent': `AppsembleServer/${pkg.version}`,
+    });
+    expect(proxiedContext.path).toBe('/');
+  });
+
+  it('should proxy simple PUT request actions', async () => {
+    const response = await request.put('/api/apps/1/action/pages.0.blocks.0.actions.put', {});
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 418 I'm a teapot
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "message": "I’m a teapot",
+      }
+    `);
+    expect(proxiedContext.method).toBe('PUT');
+    expect({ ...proxiedContext.headers }).toStrictEqual({
+      accept: 'application/json, text/plain, */*',
+      'accept-encoding': 'gzip, compress, deflate, br',
+      connection: 'close',
+      'content-length': '2',
+      'content-type': 'application/json',
+      host: new URL(proxiedRequest.defaults.baseURL).host,
+      'user-agent': `AppsembleServer/${pkg.version}`,
+    });
+    expect(proxiedContext.path).toBe('/');
+  });
+
+  it('should throw if the method doesn’t match the action method', async () => {
+    const response = await request.put('/api/apps/1/action/pages.0.blocks.0.actions.post', {});
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 400 Bad Request
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Bad Request",
+        "message": "Method does match the request action method",
+        "statusCode": 400,
+      }
+    `);
+  });
+
+  it('should proxy request paths', async () => {
+    const response = await request.get('/api/apps/1/action/pages.0.blocks.0.actions.path?data={}');
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 418 I'm a teapot
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "message": "I’m a teapot",
+      }
+    `);
+    expect(proxiedContext.method).toBe('GET');
+    expect(proxiedContext.path).toBe('/pour');
+    expect(proxiedContext.querystring).toBe('drink=coffee');
+  });
