@@ -352,4 +352,192 @@ export async function patchAppAccount(ctx: Context): Promise<void> {
     mailer
       .sendTranslatedEmail({
         appId,
- 
+        to: { email, name },
+        locale: member.locale,
+        emailName: 'appMemberEmailChange',
+        values: {
+          link: (text) => `[${text}](${verificationUrl})`,
+          name: member.name || 'null',
+          appName: app.definition.name,
+        },
+        app,
+      })
+      .catch((error: Error) => {
+        logger.error(error);
+      });
+  }
+
+  if (name != null) {
+    result.name = name;
+  }
+
+  if (picture) {
+    result.picture = picture.contents;
+  }
+
+  if (properties) {
+    result.properties = properties;
+  }
+
+  if (locale) {
+    result.locale = locale;
+  }
+
+  await member.update(result);
+  ctx.body = outputAppMember(app, language, baseLanguage);
+}
+
+export async function getAppMemberPicture(ctx: Context): Promise<void> {
+  const {
+    pathParams: { appId, memberId },
+  } = ctx;
+
+  const app = await App.findByPk(appId, {
+    attributes: [],
+    include: [
+      {
+        model: AppMember,
+        where: { [Op.or]: [{ id: memberId }, { UserId: memberId }] },
+        required: false,
+      },
+    ],
+  });
+
+  if (!app) {
+    throw notFound('App could not be found.');
+  }
+
+  if (!app.AppMembers.length) {
+    throw notFound('This member does not exist');
+  }
+
+  if (!app.AppMembers[0].picture) {
+    throw notFound('This member has no profile picture set.');
+  }
+
+  await serveIcon(ctx, {
+    icon: app.AppMembers[0].picture,
+    fallback: 'user-solid.png',
+    raw: true,
+  });
+}
+
+export async function registerMemberEmail(ctx: Context): Promise<void> {
+  const {
+    mailer,
+    pathParams: { appId },
+    request: {
+      body: { locale, name, password, picture, properties = {}, timezone },
+    },
+  } = ctx;
+
+  const email = ctx.request.body.email.toLowerCase();
+  const hashedPassword = await hash(password, 10);
+  const key = randomBytes(40).toString('hex');
+  let user: User;
+
+  const app = await App.findByPk(appId, {
+    attributes: [
+      'definition',
+      'domain',
+      'OrganizationId',
+      'emailName',
+      'emailHost',
+      'emailUser',
+      'emailPassword',
+      'emailPort',
+      'emailSecure',
+      'path',
+    ],
+    include: {
+      model: AppMember,
+      attributes: {
+        exclude: ['picture'],
+      },
+      where: { email },
+      required: false,
+    },
+  });
+
+  if (!app) {
+    throw notFound('App could not be found.');
+  }
+
+  if (!app.definition?.security?.default?.role) {
+    throw badRequest('This app has no security definition');
+  }
+
+  // XXX: This could introduce a race condition.
+  // If this is not manually checked here, Sequelize never returns on
+  // the AppMember.create() call if there is a conflict on the email index.
+  if (app.AppMembers.length) {
+    throw conflict('User with this email address already exists.');
+  }
+
+  try {
+    await transactional(async (transaction) => {
+      user = await User.create(
+        {
+          name,
+          timezone,
+        },
+        { transaction },
+      );
+
+      await AppMember.create(
+        {
+          UserId: user.id,
+          AppId: appId,
+          name,
+          password: hashedPassword,
+          email,
+          role: app.definition.security.default.role,
+          emailKey: key,
+          picture: picture ? picture.contents : null,
+          properties,
+          locale,
+        },
+        { transaction },
+      );
+    });
+  } catch (error: unknown) {
+    if (error instanceof UniqueConstraintError) {
+      throw conflict('User with this email address already exists.');
+    }
+    if (error instanceof DatabaseError) {
+      // XXX: Postgres throws a generic transaction aborted error
+      // if there is a way to read the internal error, replace this code.
+      throw conflict('User with this email address already exists.');
+    }
+
+    throw error;
+  }
+
+  const url = new URL('/Verify', getAppUrl(app));
+  url.searchParams.set('token', key);
+
+  // This is purposely not awaited, so failure won’t make the request fail. If this fails, the user
+  // will still be logged in, but will have to request a new verification email in order to verify
+  // their account.
+  mailer
+    .sendTranslatedEmail({
+      to: { email, name },
+      from: app.emailName,
+      appId,
+      emailName: 'welcome',
+      locale,
+      values: {
+        link: (text) => `[${text}](${url})`,
+        appName: app.definition.name,
+        name: name || 'null',
+      },
+      app,
+    })
+    .catch((error: Error) => {
+      logger.error(error);
+    });
+
+  ctx.body = createJWTResponse(user.id);
+}
+
+export asyn
