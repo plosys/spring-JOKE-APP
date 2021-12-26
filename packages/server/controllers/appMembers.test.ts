@@ -1074,3 +1074,352 @@ describe('registerMemberEmail', () => {
         name: 'Me',
         password: 'password',
         timezone: 'Europe/Amsterdam',
+      }),
+    );
+
+    expect(response).toMatchInlineSnapshot(
+      {
+        data: {
+          access_token: expect.stringMatching(jwtPattern),
+          refresh_token: expect.stringMatching(jwtPattern),
+        },
+      },
+      `
+      HTTP/1.1 201 Created
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "access_token": StringMatching /\\^\\[\\\\w-\\]\\+\\(\\?:\\\\\\.\\[\\\\w-\\]\\+\\)\\{2\\}\\$/,
+        "expires_in": 3600,
+        "refresh_token": StringMatching /\\^\\[\\\\w-\\]\\+\\(\\?:\\\\\\.\\[\\\\w-\\]\\+\\)\\{2\\}\\$/,
+        "token_type": "bearer",
+      }
+    `,
+    );
+
+    const m = await AppMember.findOne({ where: { email: 'test@example.com' } });
+    expect(m.name).toBe('Me');
+  });
+
+  it('should accept a profile picture', async () => {
+    const app = await createDefaultApp(organization);
+
+    const response = await request.post(
+      `/api/user/apps/${app.id}/account`,
+      createFormData({
+        email: 'test@example.com',
+        name: 'Me',
+        password: 'password',
+        picture: createFixtureStream('tux.png'),
+        timezone: 'Europe/Amsterdam',
+      }),
+    );
+
+    const m = await AppMember.findOne({ where: { email: 'test@example.com' } });
+
+    const responseB = await request.get(`/api/apps/${app.id}/members/${m.id}/picture`, {
+      responseType: 'arraybuffer',
+    });
+    const responseC = await request.get(`/api/apps/${app.id}/members/${m.UserId}/picture`, {
+      responseType: 'arraybuffer',
+    });
+    expect(response).toMatchInlineSnapshot(
+      {
+        data: {
+          access_token: expect.stringMatching(jwtPattern),
+          refresh_token: expect.stringMatching(jwtPattern),
+        },
+      },
+      `
+      HTTP/1.1 201 Created
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "access_token": StringMatching /\\^\\[\\\\w-\\]\\+\\(\\?:\\\\\\.\\[\\\\w-\\]\\+\\)\\{2\\}\\$/,
+        "expires_in": 3600,
+        "refresh_token": StringMatching /\\^\\[\\\\w-\\]\\+\\(\\?:\\\\\\.\\[\\\\w-\\]\\+\\)\\{2\\}\\$/,
+        "token_type": "bearer",
+      }
+    `,
+    );
+    expect(m.picture).toStrictEqual(await readFixture('tux.png'));
+    expect(responseB.data).toStrictEqual(await readFixture('tux.png'));
+    expect(responseC.data).toStrictEqual(await readFixture('tux.png'));
+  });
+
+  it('should not register invalid email addresses', async () => {
+    const app = await createDefaultApp(organization);
+
+    const response = await request.post(
+      `/api/user/apps/${app.id}/account`,
+      createFormData({ email: 'foo', password: 'bar', timezone: 'Europe/Amsterdam' }),
+    );
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 400 Bad Request
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "errors": [
+          {
+            "argument": "email",
+            "instance": "foo",
+            "message": "does not conform to the "email" format",
+            "name": "format",
+            "path": [
+              "email",
+            ],
+            "property": "instance.email",
+            "schema": {
+              "format": "email",
+              "type": "string",
+            },
+            "stack": "instance.email does not conform to the "email" format",
+          },
+          {
+            "argument": 8,
+            "instance": "bar",
+            "message": "does not meet minimum length of 8",
+            "name": "minLength",
+            "path": [
+              "password",
+            ],
+            "property": "instance.password",
+            "schema": {
+              "minLength": 8,
+              "type": "string",
+            },
+            "stack": "instance.password does not meet minimum length of 8",
+          },
+        ],
+        "message": "Invalid content types found",
+      }
+    `);
+  });
+
+  it('should not register duplicate email addresses', async () => {
+    const app = await createDefaultApp(organization);
+
+    await AppMember.create({
+      AppId: app.id,
+      UserId: user.id,
+      role: 'User',
+      email: 'test@example.com',
+    });
+
+    const response = await request.post(
+      `/api/user/apps/${app.id}/account`,
+      createFormData({
+        email: 'test@example.com',
+        password: 'password',
+        timezone: 'Europe/Amsterdam',
+      }),
+    );
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 409 Conflict
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Conflict",
+        "message": "User with this email address already exists.",
+        "statusCode": 409,
+      }
+    `);
+  });
+});
+
+describe('verifyMemberEmail', () => {
+  it('should verify existing email addresses', async () => {
+    const app = await createDefaultApp(organization);
+
+    await request.post(
+      `/api/user/apps/${app.id}/account`,
+      createFormData({
+        email: 'test@example.com',
+        password: 'password',
+        timezone: 'Europe/Amsterdam',
+      }),
+    );
+
+    const m = await AppMember.findOne({ where: { email: 'test@example.com' } });
+
+    expect(m.emailVerified).toBe(false);
+    expect(m.emailKey).not.toBeNull();
+
+    const response = await request.post(`/api/user/apps/${app.id}/account/verify`, {
+      token: m.emailKey,
+    });
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 200 OK
+      Content-Type: text/plain; charset=utf-8
+
+      OK
+    `);
+
+    await m.reload();
+    expect(m.emailVerified).toBe(true);
+    expect(m.emailKey).toBeNull();
+  });
+
+  it('should not verify empty or invalid keys', async () => {
+    const app = await createDefaultApp(organization);
+
+    const responseA = await request.post(`/api/user/apps/${app.id}/account/verify`);
+    const responseB = await request.post(`/api/user/apps/${app.id}/account/verify`, {
+      token: null,
+    });
+    const responseC = await request.post(`/api/user/apps/${app.id}/account/verify`, {
+      token: 'invalidkey',
+    });
+
+    expect(responseA).toMatchInlineSnapshot(`
+      HTTP/1.1 415 Unsupported Media Type
+      Content-Type: text/plain; charset=utf-8
+
+      Unsupported Media Type
+    `);
+    expect(responseB).toMatchInlineSnapshot(`
+      HTTP/1.1 400 Bad Request
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "errors": [
+          {
+            "argument": [
+              "string",
+            ],
+            "instance": null,
+            "message": "is not of a type(s) string",
+            "name": "type",
+            "path": [
+              "token",
+            ],
+            "property": "instance.token",
+            "schema": {
+              "type": "string",
+            },
+            "stack": "instance.token is not of a type(s) string",
+          },
+        ],
+        "message": "JSON schema validation failed",
+      }
+    `);
+    expect(responseC).toMatchInlineSnapshot(`
+      HTTP/1.1 404 Not Found
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Not Found",
+        "message": "Unable to verify this token.",
+        "statusCode": 404,
+      }
+    `);
+  });
+});
+
+describe('requestMemberResetPassword', () => {
+  it('should create a password reset token', async () => {
+    const app = await createDefaultApp(organization);
+
+    const data = { email: 'test@example.com', password: 'password', timezone: 'Europe/Amsterdam' };
+    await request.post(`/api/user/apps/${app.id}/account`, createFormData(data));
+
+    const responseA = await request.post(`/api/user/apps/${app.id}/account/reset/request`, {
+      email: data.email,
+    });
+
+    const m = await AppMember.findOne({ where: { email: data.email } });
+    const responseB = await request.post(`/api/user/apps/${app.id}/account/reset`, {
+      token: m.resetKey,
+      password: 'newPassword',
+    });
+
+    await m.reload();
+
+    expect(responseA).toMatchInlineSnapshot('HTTP/1.1 204 No Content');
+    expect(responseB).toMatchInlineSnapshot('HTTP/1.1 204 No Content');
+    expect(await compare('newPassword', m.password)).toBe(true);
+    expect(m.resetKey).toBeNull();
+  });
+
+  it('should not reveal existing emails', async () => {
+    const app = await createDefaultApp(organization);
+
+    const response = await request.post(`/api/user/apps/${app.id}/account/reset/request`, {
+      email: 'idonotexist@example.com',
+    });
+
+    expect(response).toMatchInlineSnapshot('HTTP/1.1 204 No Content');
+  });
+});
+
+describe('resetMemberPassword', () => {
+  it('should return not found when resetting using a non-existent token', async () => {
+    const app = await createDefaultApp(organization);
+
+    const response = await request.post(`/api/apps/${app.id}/account/reset`, {
+      token: 'idontexist',
+      password: 'whatever',
+    });
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 404 Not Found
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Not Found",
+        "message": "URL not found",
+        "statusCode": 404,
+      }
+    `);
+  });
+});
+
+describe('getAppMemberPicture', () => {
+  it('should fetch the app member’s profile picture', async () => {
+    const app = await createDefaultApp(organization);
+    await request.post(
+      `/api/user/apps/${app.id}/account`,
+      createFormData({
+        email: 'test@example.com',
+        password: 'password',
+        picture: createFixtureStream('tux.png'),
+        timezone: 'Europe/Amsterdam',
+      }),
+    );
+
+    const m = await AppMember.findOne({ where: { email: 'test@example.com' } });
+    const response = await request.get(`/api/apps/${app.id}/members/${m.id}/picture`, {
+      responseType: 'arraybuffer',
+    });
+
+    expect(response.data).toStrictEqual(await readFixture('tux.png'));
+  });
+
+  it('should return 404 if the user has not uploaded a picture', async () => {
+    const app = await createDefaultApp(organization);
+    await request.post(
+      `/api/user/apps/${app.id}/account`,
+      createFormData({
+        email: 'test@example.com',
+        password: 'password',
+        timezone: 'Europe/Amsterdam',
+      }),
+    );
+
+    const m = await AppMember.findOne({ where: { email: 'test@example.com' } });
+    const response = await request.get(`/api/apps/${app.id}/members/${m.id}/picture`);
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 404 Not Found
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Not Found",
+        "message": "This member has no profile picture set.",
+        "statusCode": 404,
+      }
+    `);
+  });
+});
