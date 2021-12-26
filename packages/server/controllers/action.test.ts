@@ -607,4 +607,125 @@ describe('handleEmail', () => {
         emailPassword: null,
         emailPort: 587,
         emailSecure: true,
-        emailU
+        emailUser: null,
+      },
+    });
+  });
+
+  it('should attach existing assets', async () => {
+    const spy = import.meta.jest.spyOn(server.context.mailer, 'sendEmail');
+    const buffer = Buffer.from('test');
+    const asset = await Asset.create({
+      AppId: 1,
+      mime: 'text/plain',
+      filename: 'test.txt',
+      data: buffer,
+    });
+    const response = await request.post('/api/apps/1/action/pages.0.blocks.0.actions.email', {
+      to: 'test@example.com',
+      body: 'Body',
+      attachments: [asset.id],
+    });
+
+    expect(response).toMatchInlineSnapshot('HTTP/1.1 204 No Content');
+    expect(spy).toHaveBeenCalledWith({
+      to: 'test@example.com',
+      from: 'Appsemble',
+      subject: 'Test title',
+      html: `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<p>Body</p>
+</body>
+</html>
+`,
+      text: 'Body\n',
+      attachments: [{ content: buffer, filename: 'test.txt' }],
+      app: {
+        emailHost: null,
+        emailName: null,
+        emailPassword: null,
+        emailPort: 587,
+        emailSecure: true,
+        emailUser: null,
+      },
+    });
+    spy.mockRestore();
+  });
+
+  it('should not attach non-existant assets', async () => {
+    const spy = import.meta.jest.spyOn(server.context.mailer, 'sendEmail');
+    const response = await request.post('/api/apps/1/action/pages.0.blocks.0.actions.email', {
+      to: 'test@example.com',
+      body: 'Body',
+      attachments: [100],
+    });
+
+    expect(response).toMatchInlineSnapshot('HTTP/1.1 204 No Content');
+    expect(spy).toHaveBeenCalledWith({
+      to: 'test@example.com',
+      from: 'Appsemble',
+      subject: 'Test title',
+      html: `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<p>Body</p>
+</body>
+</html>
+`,
+      text: 'Body\n',
+      attachments: [],
+      app: {
+        emailHost: null,
+        emailName: null,
+        emailPassword: null,
+        emailPort: 587,
+        emailSecure: true,
+        emailUser: null,
+      },
+    });
+    spy.mockRestore();
+  });
+
+  it('should not send emails if body or subject is empty', async () => {
+    const response = await request.post('/api/apps/1/action/pages.0.blocks.0.actions.email', {
+      to: 'test@example.com',
+    });
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 400 Bad Request
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Bad Request",
+        "message": "Fields “subject” and “body” must be a valid string",
+        "statusCode": 400,
+      }
+    `);
+  });
+
+  it('should only send emails if requests are POST', async () => {
+    const response = await request.put('/api/apps/1/action/pages.0.blocks.0.actions.email', {
+      body: 'Body',
+    });
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 405 Method Not Allowed
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Method Not Allowed",
+        "message": "Method must be POST for email actions",
+        "statusCode": 405,
+      }
+    `);
+  });
+});
