@@ -160,4 +160,177 @@ describe('getMessages', () => {
       messages: { messageIds: { test: 'Test.', bla: 'bla' } },
     });
 
-    await request
+    await request.post(`/api/apps/${app.id}/messages`, {
+      language: 'en-gb',
+      messages: { messageIds: { bla: 'blah' } },
+    });
+
+    const response = await request.get(`/api/apps/${app.id}/messages/en-GB?merge=true`);
+
+    expect(response).toMatchInlineSnapshot(
+      { data: { messages: { core: expect.any(Object) } } },
+      `
+      HTTP/1.1 200 OK
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "language": "en-gb",
+        "messages": {
+          "app": {
+            "description": "Description",
+            "name": "Test App",
+          },
+          "blocks": {},
+          "core": Any<Object>,
+          "messageIds": {
+            "bla": "blah",
+            "test": "Test.",
+          },
+        },
+      }
+    `,
+    );
+  });
+
+  it('should include translated block messages', async () => {
+    authorizeStudio();
+    await Organization.create({
+      id: 'appsemble',
+      name: 'Appsemble',
+    });
+    const blockA = await BlockVersion.create({
+      OrganizationId: 'testorganization',
+      name: 'test',
+      version: '0.0.0',
+    });
+    const blockB = await BlockVersion.create({
+      OrganizationId: 'testorganization',
+      name: 'test',
+      version: '0.0.1',
+    });
+    const blockC = await BlockVersion.create({
+      OrganizationId: 'appsemble',
+      name: 'form',
+      version: '0.0.0',
+    });
+    await BlockMessages.create({
+      BlockVersionId: blockA.id,
+      language: 'en',
+      messages: { foo: 'bar', bla: 'bla' },
+    });
+    await BlockMessages.create({
+      BlockVersionId: blockB.id,
+      language: 'en',
+      messages: { foo: 'bar', test: 'test', bla: 'blablabla' },
+    });
+    await BlockMessages.create({
+      BlockVersionId: blockC.id,
+      language: 'en',
+      messages: { form: 'form' },
+    });
+    await app.update({
+      definition: {
+        name: 'Test App',
+        description: 'Description',
+        pages: [
+          {
+            name: 'test',
+            blocks: [
+              { type: '@testorganization/test', version: '0.0.0' },
+              { type: '@testorganization/test', version: '0.0.1' },
+              { type: 'form', version: '0.0.0' },
+            ],
+          },
+        ],
+      },
+    });
+
+    const response = await request.get(`/api/apps/${app.id}/messages/en`);
+    expect(response).toMatchInlineSnapshot(
+      { data: { messages: { core: expect.any(Object) } } },
+      `
+      HTTP/1.1 200 OK
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "language": "en",
+        "messages": {
+          "app": {
+            "description": "Description",
+            "name": "Test App",
+            "pages.test": "test",
+          },
+          "blocks": {
+            "@appsemble/form": {
+              "0.0.0": {
+                "form": "form",
+              },
+            },
+            "@testorganization/test": {
+              "0.0.0": {
+                "bla": "bla",
+                "foo": "bar",
+              },
+              "0.0.1": {
+                "bla": "blablabla",
+                "foo": "bar",
+                "test": "test",
+              },
+            },
+          },
+          "core": Any<Object>,
+          "messageIds": {},
+        },
+      }
+    `,
+    );
+  });
+
+  it('should merge translations if other language’s translations are incomplete', async () => {
+    authorizeStudio();
+    const blockA = await BlockVersion.create({
+      OrganizationId: 'testorganization',
+      name: 'test',
+      version: '0.0.0',
+    });
+    await BlockMessages.create({
+      BlockVersionId: blockA.id,
+      language: 'en',
+      messages: { foo: 'bar', bla: 'bla' },
+    });
+    await BlockMessages.create({
+      BlockVersionId: blockA.id,
+      language: 'nl',
+      messages: { foo: 'foo but dutch', bla: '' },
+    });
+    await AppMessages.create({
+      AppId: app.id,
+      language: 'nl',
+      messages: { messageIds: { test: 'test translation' } },
+    });
+    await app.update({
+      definition: {
+        name: 'Test App',
+        description: 'Description',
+        pages: [
+          {
+            name: 'test',
+            blocks: [{ type: '@testorganization/test', version: '0.0.0' }],
+          },
+        ],
+      },
+    });
+
+    const response = await request.get(`/api/apps/${app.id}/messages/nl`);
+    expect(response).toMatchInlineSnapshot(
+      { data: { messages: { core: expect.any(Object) } } },
+      `
+      HTTP/1.1 200 OK
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "language": "nl",
+        "messages": {
+          "app": {
+            "description": "Description",
+            "
