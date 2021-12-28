@@ -747,4 +747,8 @@ export async function deleteAppMember(ctx: Context): Promise<void> {
   const member = app.AppMembers?.[0];
 
   if (!member) {
-    throw notFound('App
+    throw notFound('App member not found');
+  }
+
+  await member.destroy();
+}
