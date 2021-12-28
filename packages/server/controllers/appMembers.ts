@@ -540,4 +540,211 @@ export async function registerMemberEmail(ctx: Context): Promise<void> {
   ctx.body = createJWTResponse(user.id);
 }
 
-export asyn
+export async function verifyMemberEmail(ctx: Context): Promise<void> {
+  const {
+    pathParams: { appId },
+    request: {
+      body: { token },
+    },
+  } = ctx;
+
+  const app = await App.findByPk(appId, {
+    attributes: ['definition'],
+    include: [
+      {
+        model: AppMember,
+        attributes: ['id', 'emailVerified', 'emailKey'],
+        required: false,
+        where: {
+          emailKey: token,
+        },
+      },
+    ],
+  });
+
+  if (!app) {
+    throw notFound('App could not be found.');
+  }
+
+  if (!app.AppMembers.length) {
+    throw notFound('Unable to verify this token.');
+  }
+
+  const [member] = app.AppMembers;
+  member.emailVerified = true;
+  member.emailKey = null;
+  await member.save();
+
+  ctx.status = 200;
+}
+export async function resendMemberEmailVerification(ctx: Context): Promise<void> {
+  const {
+    mailer,
+    pathParams: { appId },
+    request,
+  } = ctx;
+
+  const email = request.body.email.toLowerCase();
+
+  const app = await App.findByPk(appId, {
+    attributes: [
+      'definition',
+      'domain',
+      'path',
+      'OrganizationId',
+      'emailHost',
+      'emailUser',
+      'emailPassword',
+      'emailPort',
+      'emailSecure',
+    ],
+    include: [
+      { model: AppMember, attributes: { exclude: ['picture'] }, where: { email }, required: false },
+    ],
+  });
+
+  if (app?.AppMembers.length && !app.AppMembers[0].emailVerified) {
+    const url = new URL('/Verify', getAppUrl(app));
+    url.searchParams.set('token', app.AppMembers[0].emailKey);
+
+    mailer
+      .sendTranslatedEmail({
+        appId,
+        emailName: 'resend',
+        locale: app.AppMembers[0].locale,
+        to: app.AppMembers[0],
+        values: {
+          link: (text) => `[${text}](${url})`,
+          name: app.AppMembers[0].name || 'null',
+          appName: app.definition.name,
+        },
+        app,
+      })
+      .catch((error: Error) => {
+        logger.error(error);
+      });
+  }
+
+  ctx.status = 204;
+}
+export async function requestMemberResetPassword(ctx: Context): Promise<void> {
+  const {
+    mailer,
+    pathParams: { appId },
+    request,
+  } = ctx;
+
+  const email = request.body.email.toLowerCase();
+  const app = await App.findByPk(appId, {
+    attributes: [
+      'definition',
+      'domain',
+      'path',
+      'emailName',
+      'emailHost',
+      'emailUser',
+      'emailPassword',
+      'emailPort',
+      'emailSecure',
+      'OrganizationId',
+    ],
+    include: [
+      { model: AppMember, attributes: { exclude: ['picture'] }, where: { email }, required: false },
+    ],
+  });
+
+  if (app?.AppMembers.length) {
+    const [member] = app.AppMembers;
+    const resetKey = randomBytes(40).toString('hex');
+
+    const url = new URL('/Edit-Password', getAppUrl(app));
+    url.searchParams.set('token', resetKey);
+
+    await member.update({ resetKey });
+    mailer
+      .sendTranslatedEmail({
+        to: member,
+        from: app.emailName,
+        emailName: 'reset',
+        appId,
+        locale: member.locale,
+        values: {
+          link: (text) => `[${text}](${url})`,
+          appName: app.definition.name,
+          name: member.name || 'null',
+        },
+        app,
+      })
+      .catch((error: Error) => {
+        logger.error(error);
+      });
+  }
+
+  ctx.status = 204;
+}
+export async function resetMemberPassword(ctx: Context): Promise<void> {
+  const {
+    pathParams: { appId },
+    request: {
+      body: { token },
+    },
+  } = ctx;
+
+  const app = await App.findByPk(appId, {
+    attributes: [],
+    include: {
+      model: AppMember,
+      attributes: ['id'],
+      required: false,
+      where: {
+        resetKey: token,
+      },
+    },
+  });
+
+  if (!app) {
+    throw notFound('App not found');
+  }
+
+  if (!app.AppMembers.length) {
+    throw notFound(`Unknown password reset token: ${token}`);
+  }
+
+  const password = await hash(ctx.request.body.password, 10);
+  const [member] = app.AppMembers;
+
+  await member.update({
+    password,
+    resetKey: null,
+  });
+}
+
+export async function deleteAppMember(ctx: Context): Promise<void> {
+  const {
+    pathParams: { appId, memberId },
+    user,
+  } = ctx;
+
+  const app = await App.findByPk(appId, {
+    include: [
+      {
+        model: AppMember,
+        attributes: ['id'],
+        required: false,
+        where: { UserId: memberId },
+      },
+    ],
+  });
+
+  if (!app) {
+    throw notFound('App not found');
+  }
+
+  if (user.id !== memberId) {
+    await checkRole(ctx, app.OrganizationId, Permission.EditApps);
+  }
+
+  const member = app.AppMembers?.[0];
+
+  if (!member) {
+    throw notFound('App
