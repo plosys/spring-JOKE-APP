@@ -648,4 +648,109 @@ describe('createMessages', () => {
     authorizeStudio();
     const response = await request.post(`/api/apps/${app.id}/messages`, {
       language: 'english',
-      messages: { me
+      messages: { messageIds: { test: 'Test.' } },
+    });
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 400 Bad Request
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Bad Request",
+        "message": "Language “english” is invalid",
+        "statusCode": 400,
+      }
+    `);
+  });
+});
+
+describe('deleteMessages', () => {
+  it('should delete existing messages', async () => {
+    authorizeStudio();
+    await request.post(`/api/apps/${app.id}/messages`, {
+      language: 'en',
+      messages: { messageIds: { test: 'Test.' } },
+    });
+
+    const response = await request.delete(`/api/apps/${app.id}/messages/en`);
+
+    expect(response).toMatchInlineSnapshot('HTTP/1.1 204 No Content');
+  });
+
+  it('should return 404 when deleting non-existant messages', async () => {
+    authorizeStudio();
+    const response = await request.delete(`/api/apps/${app.id}/messages/en`);
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 404 Not Found
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Not Found",
+        "message": "App does not have messages for “en”",
+        "statusCode": 404,
+      }
+    `);
+  });
+});
+
+describe('getLanguages', () => {
+  it('should return a the default app language if no translations are available', async () => {
+    await app.update({
+      definition: {
+        ...app.definition,
+        defaultLanguage: 'nl-nl',
+      },
+    });
+    const response = await request.get(`/api/apps/${app.id}/messages`);
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 200 OK
+      Content-Type: application/json; charset=utf-8
+
+      [
+        "nl-nl",
+      ]
+    `);
+  });
+
+  it('should fallback to the default value of defaultLanguage', async () => {
+    const response = await request.get(`/api/apps/${app.id}/messages`);
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 200 OK
+      Content-Type: application/json; charset=utf-8
+
+      [
+        "en",
+      ]
+    `);
+  });
+
+  it('should return a list of available languages', async () => {
+    authorizeStudio();
+    await request.post(`/api/apps/${app.id}/messages`, {
+      language: 'nl',
+      messages: { messageIds: { test: 'Geslaagd met vliegende kleuren' } },
+    });
+    await request.post(`/api/apps/${app.id}/messages`, {
+      language: 'en',
+      messages: { messageIds: { test: 'Passed with flying colors' } },
+    });
+    await request.post(`/api/apps/${app.id}/messages`, {
+      language: 'en-GB',
+      messages: { messageIds: { test: 'Passed with flying colours' } },
+    });
+
+    const response = await request.get(`/api/apps/${app.id}/messages`);
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 200 OK
+      Content-Type: application/json; charset=utf-8
+
+      [
+        "en",
+        "en-gb",
+        "nl",
+      ]
+    `);
+  });
+});
