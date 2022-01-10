@@ -494,4 +494,158 @@ describe('getMessages', () => {
     const messages = await getAppsembleMessages('en');
     await AppMessages.create({
       AppId: app.id,
- 
+      language: 'en',
+      messages: {
+        messageIds: { bla: 'bla' },
+      },
+    });
+
+    const response = await request.get(`/api/apps/${app.id}/messages/en?override=false`);
+    expect(response).toMatchObject({
+      status: 200,
+      data: {
+        language: 'en',
+        messages: {
+          messageIds: {},
+          core: {
+            ...Object.fromEntries(
+              Object.entries(messages).filter(
+                ([key]) => key.startsWith('app') || key.startsWith('react-components'),
+              ),
+            ),
+          },
+          app: {
+            name: 'Test App',
+            description: 'Description',
+            'pages.test-page': 'test-page',
+            'pages.test-page-2': 'test-page-2',
+            'pages.test-page.blocks.0.test': 'foo',
+            'pages.test-page-2.blocks.0.test': 'foo',
+          },
+          blocks: {
+            '@xkcd/standing': {
+              '1.32.9': {
+                test: 'foo',
+              },
+            },
+          },
+        },
+      },
+    });
+  });
+
+  it('should only include overwritten app messages if override is not set to false', async () => {
+    const organization = await Organization.create({
+      id: 'xkcd',
+      name: 'xkcd',
+    });
+    await Member.create({ OrganizationId: organization.id, UserId: user.id, role: 'Maintainer' });
+    const formData = new FormData();
+    formData.append('name', '@xkcd/standing');
+    formData.append('version', '1.32.9');
+    formData.append('files', createFixtureStream('standing.png'), {
+      filename: encodeURIComponent('build/standing.png'),
+    });
+    formData.append('files', createFixtureStream('standing.png'), {
+      filepath: encodeURIComponent('build/testblock.js'),
+    });
+    formData.append(
+      'messages',
+      JSON.stringify({
+        en: { test: 'foo' },
+        nl: { test: 'bar' },
+      }),
+    );
+
+    await authorizeClientCredentials('blocks:write');
+    await request.post('/api/blocks', formData);
+    await BlockVersion.findOne({
+      where: { version: '1.32.9', OrganizationId: 'xkcd', name: 'standing' },
+      include: [BlockMessages],
+    });
+    await app.update({
+      definition: {
+        ...app.definition,
+        pages: [
+          { name: 'test-page', blocks: [{ type: '@xkcd/standing', version: '1.32.9' }] },
+          { name: 'test-page-2', blocks: [{ type: '@xkcd/standing', version: '1.32.9' }] },
+        ],
+      },
+    });
+
+    authorizeStudio();
+    const messages = await getAppsembleMessages('en');
+    await AppMessages.create({
+      AppId: app.id,
+      language: 'en',
+      messages: {
+        app: { 'pages.test-page.blocks.0.test': 'Bla' },
+
+        messageIds: { bla: 'bla' },
+      },
+    });
+
+    const response = await request.get(`/api/apps/${app.id}/messages/en`);
+    expect(response).toMatchObject({
+      status: 200,
+      data: {
+        language: 'en',
+        messages: {
+          messageIds: { bla: 'bla' },
+          core: {
+            ...Object.fromEntries(
+              Object.entries(messages).filter(
+                ([key]) => key.startsWith('app') || key.startsWith('react-components'),
+              ),
+            ),
+          },
+          app: {
+            name: 'Test App',
+            description: 'Description',
+            'pages.test-page': 'test-page',
+            'pages.test-page-2': 'test-page-2',
+            'pages.test-page.blocks.0.test': 'Bla',
+          },
+          blocks: {
+            '@xkcd/standing': {
+              '1.32.9': {
+                test: 'foo',
+              },
+            },
+          },
+        },
+      },
+    });
+  });
+});
+
+describe('createMessages', () => {
+  it('should accept valid requests', async () => {
+    authorizeStudio();
+    const response = await request.post(`/api/apps/${app.id}/messages`, {
+      language: 'en',
+      messages: { messageIds: { test: 'Test.' } },
+    });
+    const translation = await AppMessages.findOne({ where: { AppId: app.id, language: 'en' } });
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 201 Created
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "language": "en",
+        "messages": {
+          "messageIds": {
+            "test": "Test.",
+          },
+        },
+      }
+    `);
+    expect(translation.messages).toStrictEqual({ messageIds: { test: 'Test.' } });
+  });
+
+  it('should not accept invalid language tags', async () => {
+    authorizeStudio();
+    const response = await request.post(`/api/apps/${app.id}/messages`, {
+      language: 'english',
+      messages: { me
