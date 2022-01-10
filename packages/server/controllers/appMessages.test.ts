@@ -333,4 +333,165 @@ describe('getMessages', () => {
         "messages": {
           "app": {
             "description": "Description",
-            "
+            "name": "Test App",
+            "pages.test": "test",
+          },
+          "blocks": {
+            "@testorganization/test": {
+              "0.0.0": {
+                "bla": "bla",
+                "foo": "foo but dutch",
+              },
+            },
+          },
+          "core": Any<Object>,
+          "messageIds": {
+            "test": "test translation",
+          },
+        },
+      }
+    `,
+    );
+  });
+
+  it('should merge block translations with the base language', async () => {
+    authorizeStudio();
+    const blockA = await BlockVersion.create({
+      OrganizationId: 'testorganization',
+      name: 'test',
+      version: '0.0.0',
+    });
+    await BlockMessages.create({
+      BlockVersionId: blockA.id,
+      language: 'en',
+      messages: { foo: 'bar', bla: 'bla' },
+    });
+    await BlockMessages.create({
+      BlockVersionId: blockA.id,
+      language: 'en-gb',
+      messages: { foo: '', bla: 'blah' },
+    });
+    await AppMessages.create({
+      AppId: app.id,
+      language: 'en-gb',
+      messages: { messageIds: { test: 'test translation' } },
+    });
+    await app.update({
+      definition: {
+        name: 'Test App',
+        description: 'Description',
+        pages: [
+          {
+            name: 'test',
+            blocks: [{ type: '@testorganization/test', version: '0.0.0' }],
+          },
+        ],
+      },
+    });
+
+    const response = await request.get(`/api/apps/${app.id}/messages/en-gb`);
+    expect(response).toMatchInlineSnapshot(
+      { data: { messages: { core: expect.any(Object) } } },
+      `
+      HTTP/1.1 200 OK
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "language": "en-gb",
+        "messages": {
+          "app": {
+            "description": "Description",
+            "name": "Test App",
+            "pages.test": "test",
+          },
+          "blocks": {
+            "@testorganization/test": {
+              "0.0.0": {
+                "bla": "blah",
+                "foo": "bar",
+              },
+            },
+          },
+          "core": Any<Object>,
+          "messageIds": {
+            "test": "test translation",
+          },
+        },
+      }
+    `,
+    );
+  });
+
+  it('should include dutch core translations', async () => {
+    authorizeStudio();
+    const messages = await getAppsembleMessages('nl');
+    await AppMessages.create({
+      AppId: app.id,
+      language: 'nl',
+      messages: { messageIds: { test: 'test translation' } },
+    });
+
+    const response = await request.get(`/api/apps/${app.id}/messages/nl`);
+    expect(response).toMatchObject({
+      status: 200,
+      data: {
+        language: 'nl',
+        messages: {
+          messageIds: { test: 'test translation' },
+          core: {
+            ...Object.fromEntries(
+              Object.entries(messages).filter(
+                ([key]) => key.startsWith('app') || key.startsWith('react-components'),
+              ),
+            ),
+          },
+          blocks: {},
+        },
+      },
+    });
+  });
+
+  it('should include defaults for app messages if override is set to false', async () => {
+    const organization = await Organization.create({
+      id: 'xkcd',
+      name: 'xkcd',
+    });
+    await Member.create({ OrganizationId: organization.id, UserId: user.id, role: 'Maintainer' });
+    const formData = new FormData();
+    formData.append('name', '@xkcd/standing');
+    formData.append('version', '1.32.9');
+    formData.append('files', createFixtureStream('standing.png'), {
+      filename: encodeURIComponent('build/standing.png'),
+    });
+    formData.append('files', createFixtureStream('standing.png'), {
+      filepath: encodeURIComponent('build/testblock.js'),
+    });
+    formData.append(
+      'messages',
+      JSON.stringify({
+        en: { test: 'foo' },
+        nl: { test: 'bar' },
+      }),
+    );
+
+    await authorizeClientCredentials('blocks:write');
+    await request.post('/api/blocks', formData);
+    await BlockVersion.findOne({
+      where: { version: '1.32.9', OrganizationId: 'xkcd', name: 'standing' },
+      include: [BlockMessages],
+    });
+    await app.update({
+      definition: {
+        ...app.definition,
+        pages: [
+          { name: 'test-page', blocks: [{ type: '@xkcd/standing', version: '1.32.9' }] },
+          { name: 'test-page-2', blocks: [{ type: '@xkcd/standing', version: '1.32.9' }] },
+        ],
+      },
+    });
+
+    authorizeStudio();
+    const messages = await getAppsembleMessages('en');
+    await AppMessages.create({
+      AppId: app.id,
+ 
