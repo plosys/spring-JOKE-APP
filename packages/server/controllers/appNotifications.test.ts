@@ -403,3 +403,162 @@ describe('updateSubscription', () => {
     `);
   });
 
+  it('should toggle resource type subscriptions if value isn’t set', async () => {
+    const app = await defaultApp(organization.id);
+    await AppSubscription.create({
+      AppId: app.id,
+      endpoint: 'https://example.com',
+      p256dh: 'abc',
+      auth: 'def',
+    });
+
+    authorizeApp(app);
+    await request.patch(`/api/apps/${app.id}/subscriptions`, {
+      endpoint: 'https://example.com',
+      resource: 'person',
+      action: 'create',
+    });
+    const responseA = await request.get(`/api/apps/${app.id}/subscriptions`, {
+      params: { endpoint: 'https://example.com' },
+    });
+    await request.patch(`/api/apps/${app.id}/subscriptions`, {
+      endpoint: 'https://example.com',
+      resource: 'person',
+      action: 'create',
+    });
+    const responseB = await request.get(`/api/apps/${app.id}/subscriptions`, {
+      params: { endpoint: 'https://example.com' },
+    });
+
+    expect(responseA).toMatchInlineSnapshot(`
+      HTTP/1.1 200 OK
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "person": {
+          "create": true,
+          "delete": false,
+          "update": false,
+        },
+        "pet": {
+          "create": false,
+          "delete": false,
+          "update": false,
+        },
+      }
+    `);
+
+    expect(responseB).toMatchInlineSnapshot(`
+      HTTP/1.1 200 OK
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "person": {
+          "create": false,
+          "delete": false,
+          "update": false,
+        },
+        "pet": {
+          "create": false,
+          "delete": false,
+          "update": false,
+        },
+      }
+    `);
+  });
+
+  it('should toggle individual resource subscriptions if value isn’t set', async () => {
+    const app = await defaultApp(organization.id);
+    await AppSubscription.create({
+      AppId: app.id,
+      endpoint: 'https://example.com',
+      p256dh: 'abc',
+      auth: 'def',
+    });
+    const { id } = await Resource.create({ AppId: app.id, type: 'person', data: {} });
+
+    authorizeApp(app);
+    await request.patch(`/api/apps/${app.id}/subscriptions`, {
+      endpoint: 'https://example.com',
+      resource: 'person',
+      action: 'update',
+      resourceId: id,
+    });
+    const responseA = await request.get(`/api/apps/${app.id}/subscriptions`, {
+      params: { endpoint: 'https://example.com' },
+    });
+
+    await request.patch(`/api/apps/${app.id}/subscriptions`, {
+      endpoint: 'https://example.com',
+      resource: 'person',
+      action: 'update',
+      resourceId: id,
+    });
+    const responseB = await request.get(`/api/apps/${app.id}/subscriptions`, {
+      params: { endpoint: 'https://example.com' },
+    });
+
+    expect(responseA).toMatchInlineSnapshot(`
+      HTTP/1.1 200 OK
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "person": {
+          "create": false,
+          "delete": false,
+          "subscriptions": {
+            "1": {
+              "delete": false,
+              "update": true,
+            },
+          },
+          "update": false,
+        },
+        "pet": {
+          "create": false,
+          "delete": false,
+          "update": false,
+        },
+      }
+    `);
+
+    expect(responseB).toMatchInlineSnapshot(`
+      HTTP/1.1 200 OK
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "person": {
+          "create": false,
+          "delete": false,
+          "update": false,
+        },
+        "pet": {
+          "create": false,
+          "delete": false,
+          "update": false,
+        },
+      }
+    `);
+  });
+
+  it('should 404 on non-existent subscriptions', async () => {
+    const app = await defaultApp(organization.id);
+    const response = await request.patch(`/api/apps/${app.id}/subscriptions`, {
+      endpoint: 'https://example.com',
+      resource: 'person',
+      action: 'create',
+      value: true,
+    });
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 404 Not Found
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Not Found",
+        "message": "Subscription not found",
+        "statusCode": 404,
+      }
+    `);
+  });
+});
