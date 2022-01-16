@@ -3877,3 +3877,850 @@ describe('getAppSnapshots', () => {
             "name": "Test User",
           },
           "$created": "1970-01-01T00:00:00.000Z",
+          "id": 1,
+        },
+      ]
+    `,
+    );
+    expect(response.data[0].$author.id).toBe(user.id);
+    expect(response.data[1].$author.id).toBe(user.id);
+  });
+});
+
+describe('getAppSnapshot', () => {
+  it('should return an app snapshot', async () => {
+    const app = await App.create({
+      definition: { name: 'Test App', defaultPage: 'Test Page' },
+      path: 'test-app',
+      icon: await readFixture('nodejs-logo.png'),
+      vapidPublicKey: 'a',
+      vapidPrivateKey: 'b',
+      OrganizationId: organization.id,
+    });
+    const snapshot = await AppSnapshot.create({
+      AppId: app.id,
+      UserId: user.id,
+      yaml: "name: Test App\ndefaultPage: 'Test Page 1'",
+    });
+    await AppSnapshot.create({
+      AppId: app.id,
+      UserId: user.id,
+      yaml: "name: Test App\ndefaultPage: 'Test Page 2'",
+    });
+
+    authorizeStudio(user);
+    const response = await request.get(`/api/apps/${app.id}/snapshots/${snapshot.id}`);
+
+    expect(response).toMatchInlineSnapshot(
+      { data: { $author: { id: expect.any(String) } } },
+      `
+      HTTP/1.1 200 OK
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "$author": {
+          "id": Any<String>,
+          "name": "Test User",
+        },
+        "$created": "1970-01-01T00:00:00.000Z",
+        "id": 1,
+        "yaml": "name: Test App
+      defaultPage: 'Test Page 1'",
+      }
+    `,
+    );
+  });
+
+  it('should not return an snapshot for a snapshot that doesn’t exist', async () => {
+    const app = await App.create({
+      definition: { name: 'Test App', defaultPage: 'Test Page' },
+      path: 'test-app',
+      icon: await readFixture('nodejs-logo.png'),
+      vapidPublicKey: 'a',
+      vapidPrivateKey: 'b',
+      OrganizationId: organization.id,
+    });
+    await AppSnapshot.create({
+      AppId: app.id,
+      UserId: user.id,
+      yaml: "name: Test App\ndefaultPage: 'Test Page 1'",
+    });
+
+    authorizeStudio(user);
+    const response = await request.get(`/api/apps/${app.id}/snapshots/1000`);
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 404 Not Found
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Not Found",
+        "message": "Snapshot not found",
+        "statusCode": 404,
+      }
+    `);
+  });
+});
+
+describe('getAppIcon', () => {
+  it('should serve the regular icon if requested', async () => {
+    const app = await App.create({
+      definition: { name: 'Test App', defaultPage: 'Test Page' },
+      path: 'test-app',
+      icon: await readFixture('nodejs-logo.png'),
+      vapidPublicKey: 'a',
+      vapidPrivateKey: 'b',
+      OrganizationId: organization.id,
+    });
+    const response = await request.get(`/api/apps/${app.id}/icon`, { responseType: 'arraybuffer' });
+    expect(response).toMatchInlineSnapshot(
+      { data: expect.any(Buffer) },
+      `
+      HTTP/1.1 200 OK
+      Content-Type: image/png
+
+      Any<Buffer>
+    `,
+    );
+    expect(response.data).toMatchImageSnapshot();
+  });
+
+  it('should generate a maskable icon from a horizontal app icon', async () => {
+    const app = await App.create({
+      definition: { name: 'Test App', defaultPage: 'Test Page' },
+      path: 'test-app',
+      icon: await readFixture('nodejs-logo.png'),
+      vapidPublicKey: 'a',
+      vapidPrivateKey: 'b',
+      OrganizationId: organization.id,
+    });
+    const response = await request.get(`/api/apps/${app.id}/icon`, {
+      params: { maskable: 'true' },
+      responseType: 'arraybuffer',
+    });
+    expect(response).toMatchInlineSnapshot(
+      { data: expect.any(Buffer) },
+      `
+      HTTP/1.1 200 OK
+      Content-Type: image/png
+
+      Any<Buffer>
+    `,
+    );
+    expect(response.data).toMatchImageSnapshot();
+  });
+
+  it('should generate a maskable icon from a vertical app icon', async () => {
+    const app = await App.create({
+      definition: { name: 'Test App', defaultPage: 'Test Page' },
+      path: 'test-app',
+      icon: await readFixture('10x50.png'),
+      vapidPublicKey: 'a',
+      vapidPrivateKey: 'b',
+      OrganizationId: organization.id,
+    });
+    const response = await request.get(`/api/apps/${app.id}/icon`, {
+      params: { maskable: 'true' },
+      responseType: 'arraybuffer',
+    });
+    expect(response).toMatchInlineSnapshot(
+      { data: expect.any(Buffer) },
+      `
+      HTTP/1.1 200 OK
+      Content-Type: image/png
+
+      Any<Buffer>
+    `,
+    );
+    expect(response.data).toMatchImageSnapshot();
+  });
+
+  it('should use the icon background color if one is specified', async () => {
+    const app = await App.create({
+      definition: { name: 'Test App', defaultPage: 'Test Page' },
+      path: 'test-app',
+      icon: await readFixture('10x50.png'),
+      iconBackground: '#00ffff',
+      vapidPublicKey: 'a',
+      vapidPrivateKey: 'b',
+      OrganizationId: organization.id,
+    });
+    const response = await request.get(`/api/apps/${app.id}/icon`, {
+      params: { maskable: 'true' },
+      responseType: 'arraybuffer',
+    });
+    expect(response).toMatchInlineSnapshot(
+      { data: expect.any(Buffer) },
+      `
+      HTTP/1.1 200 OK
+      Content-Type: image/png
+
+      Any<Buffer>
+    `,
+    );
+    expect(response.data).toMatchImageSnapshot();
+  });
+
+  it('should crop and fill an maskable icon', async () => {
+    const app = await App.create({
+      definition: { name: 'Test App', defaultPage: 'Test Page' },
+      path: 'test-app',
+      maskableIcon: await readFixture('nodejs-logo.png'),
+      vapidPublicKey: 'a',
+      vapidPrivateKey: 'b',
+      OrganizationId: organization.id,
+    });
+    const response = await request.get(`/api/apps/${app.id}/icon`, {
+      params: { maskable: 'true' },
+      responseType: 'arraybuffer',
+    });
+    expect(response).toMatchInlineSnapshot(
+      { data: expect.any(Buffer) },
+      `
+      HTTP/1.1 200 OK
+      Content-Type: image/png
+
+      Any<Buffer>
+    `,
+    );
+    expect(response.data).toMatchImageSnapshot();
+  });
+});
+
+describe('deleteAppIcon', () => {
+  it('should delete existing app icons', async () => {
+    const app = await App.create({
+      definition: { name: 'Test App', defaultPage: 'Test Page' },
+      path: 'test-app',
+      icon: await readFixture('nodejs-logo.png'),
+      vapidPublicKey: 'a',
+      vapidPrivateKey: 'b',
+      OrganizationId: organization.id,
+    });
+    authorizeStudio();
+    const response = await request.delete(`/api/apps/${app.id}/icon`);
+    await app.reload();
+    expect(response).toMatchInlineSnapshot('HTTP/1.1 204 No Content');
+    expect(app.maskableIcon).toBeNull();
+  });
+
+  it('should not delete icons from non-existent apps', async () => {
+    authorizeStudio();
+    const response = await request.delete('/api/apps/0/icon');
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 404 Not Found
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Not Found",
+        "message": "App not found",
+        "statusCode": 404,
+      }
+    `);
+  });
+
+  it('should not delete non-existent icons from apps', async () => {
+    const app = await App.create({
+      definition: { name: 'Test App', defaultPage: 'Test Page' },
+      path: 'test-app',
+      vapidPublicKey: 'a',
+      vapidPrivateKey: 'b',
+      OrganizationId: organization.id,
+    });
+    authorizeStudio();
+    const response = await request.delete(`/api/apps/${app.id}/icon`);
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 404 Not Found
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Not Found",
+        "message": "App has no icon",
+        "statusCode": 404,
+      }
+    `);
+  });
+});
+
+describe('deleteAppMaskableIcon', () => {
+  it('should delete existing app maskable icons', async () => {
+    const app = await App.create({
+      definition: { name: 'Test App', defaultPage: 'Test Page' },
+      path: 'test-app',
+      maskableIcon: await readFixture('nodejs-logo.png'),
+      vapidPublicKey: 'a',
+      vapidPrivateKey: 'b',
+      OrganizationId: organization.id,
+    });
+    authorizeStudio();
+    const response = await request.delete(`/api/apps/${app.id}/maskableIcon`);
+    await app.reload();
+    expect(response).toMatchInlineSnapshot('HTTP/1.1 204 No Content');
+    expect(app.maskableIcon).toBeNull();
+  });
+
+  it('should not delete maskable icons from non-existent apps', async () => {
+    authorizeStudio();
+    const response = await request.delete('/api/apps/0/maskableIcon');
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 404 Not Found
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Not Found",
+        "message": "App not found",
+        "statusCode": 404,
+      }
+    `);
+  });
+
+  it('should not delete non-existent maskable icons from apps', async () => {
+    const app = await App.create({
+      definition: { name: 'Test App', defaultPage: 'Test Page' },
+      path: 'test-app',
+      vapidPublicKey: 'a',
+      vapidPrivateKey: 'b',
+      OrganizationId: organization.id,
+    });
+    authorizeStudio();
+    const response = await request.delete(`/api/apps/${app.id}/maskableIcon`);
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 404 Not Found
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Not Found",
+        "message": "App has no maskable icon",
+        "statusCode": 404,
+      }
+    `);
+  });
+});
+
+describe('getAppScreenshots', () => {
+  it('should throw a 404 if the app doesn’t exist', async () => {
+    const response = await request.get('/api/apps/1/screenshots/1');
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 404 Not Found
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Not Found",
+        "message": "App not found",
+        "statusCode": 404,
+      }
+    `);
+  });
+
+  it('should throw a 404 if the screenshot doesn’t exist', async () => {
+    const app = await App.create({
+      definition: {},
+      OrganizationId: organization.id,
+      vapidPrivateKey: '',
+      vapidPublicKey: '',
+    });
+    const response = await request.get(`/api/apps/${app.id}/screenshots/1`);
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 404 Not Found
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Not Found",
+        "message": "Screenshot not found",
+        "statusCode": 404,
+      }
+    `);
+  });
+
+  it('should return the screenshot', async () => {
+    const app = await App.create({
+      definition: {},
+      OrganizationId: organization.id,
+      vapidPrivateKey: '',
+      vapidPublicKey: '',
+    });
+    const buffer = await readFixture('standing.png');
+    const screenshot = await AppScreenshot.create({
+      AppId: app.id,
+      screenshot: buffer,
+      width: 427,
+      height: 247,
+      mime: 'image/png',
+    });
+    const response = await request.get(`/api/apps/${app.id}/screenshots/${screenshot.id}`, {
+      responseType: 'arraybuffer',
+    });
+    expect(response).toMatchInlineSnapshot(
+      { data: expect.any(Buffer) },
+      `
+      HTTP/1.1 200 OK
+      Content-Type: image/png
+
+      Any<Buffer>
+    `,
+    );
+    expect(response.data).toStrictEqual(buffer);
+  });
+});
+
+describe('createAppScreenshot', () => {
+  it('should create one screenshot', async () => {
+    const app = await App.create({
+      definition: {},
+      OrganizationId: organization.id,
+      vapidPrivateKey: '',
+      vapidPublicKey: '',
+    });
+    const form = createFormData({
+      screenshots: createFixtureStream('standing.png'),
+    });
+
+    authorizeStudio();
+    const createdResponse = await request.post(`/api/apps/${app.id}/screenshots`, form);
+
+    expect(createdResponse).toMatchInlineSnapshot(`
+      HTTP/1.1 201 Created
+      Content-Type: application/json; charset=utf-8
+
+      [
+        1,
+      ]
+    `);
+  });
+
+  it('should create multiple screenshots', async () => {
+    const app = await App.create({
+      definition: {},
+      OrganizationId: organization.id,
+      vapidPrivateKey: '',
+      vapidPublicKey: '',
+    });
+    const form = createFormData({
+      screenshots: [createFixtureStream('standing.png'), createFixtureStream('standing.png')],
+    });
+
+    authorizeStudio();
+    const createdResponse = await request.post(`/api/apps/${app.id}/screenshots`, form);
+
+    expect(createdResponse).toMatchInlineSnapshot(`
+      HTTP/1.1 201 Created
+      Content-Type: application/json; charset=utf-8
+
+      [
+        1,
+        2,
+      ]
+    `);
+  });
+
+  // XXX: Re-enable this test when updating Koas 🧀
+  // eslint-disable-next-line jest/no-disabled-tests
+  it.skip('should not accept empty arrays of screenshots', async () => {
+    const app = await App.create({
+      definition: {},
+      OrganizationId: organization.id,
+      vapidPrivateKey: '',
+      vapidPublicKey: '',
+    });
+    const form = createFormData({});
+
+    authorizeStudio();
+    const createdResponse = await request.post(`/api/apps/${app.id}/screenshots`, form);
+
+    expect(createdResponse).toMatchInlineSnapshot();
+  });
+
+  it('should not accept files that aren’t images', async () => {
+    const app = await App.create({
+      definition: {},
+      OrganizationId: organization.id,
+      vapidPrivateKey: '',
+      vapidPublicKey: '',
+    });
+    const form = createFormData({ screenshots: Buffer.from('I am not a screenshot') });
+
+    authorizeStudio();
+    const createdResponse = await request.post(`/api/apps/${app.id}/screenshots`, form);
+
+    expect(createdResponse).toMatchInlineSnapshot(`
+      HTTP/1.1 400 Bad Request
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "errors": [
+          {
+            "argument": "image/png,image/jpeg,image/tiff,image/webp",
+            "instance": "I am not a screenshot",
+            "message": "has an invalid content type",
+            "name": "contentType",
+            "path": [
+              "screenshots",
+              0,
+            ],
+            "property": "instance.screenshots[0]",
+            "schema": {},
+            "stack": "instance has an invalid content type",
+          },
+        ],
+        "message": "Invalid content types found",
+      }
+    `);
+  });
+});
+
+describe('deleteAppScreenshot', () => {
+  it('should delete existing screenshots', async () => {
+    const app = await App.create({
+      definition: {},
+      OrganizationId: organization.id,
+      vapidPrivateKey: '',
+      vapidPublicKey: '',
+    });
+    const buffer = await readFixture('standing.png');
+    const screenshot = await AppScreenshot.create({
+      AppId: app.id,
+      screenshot: buffer,
+      width: 427,
+      height: 247,
+      mime: 'image/png',
+    });
+
+    authorizeStudio();
+    const response = await request.delete(`/api/apps/${app.id}/screenshots/${screenshot.id}`);
+
+    const screenshots = await AppScreenshot.count();
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 200 OK
+      Content-Type: text/plain; charset=utf-8
+
+      OK
+    `);
+    expect(screenshots).toBe(0);
+  });
+
+  it('should return 404 when trying to delete screenshots with IDs that don’t exist', async () => {
+    const app = await App.create({
+      definition: {},
+      OrganizationId: organization.id,
+      vapidPrivateKey: '',
+      vapidPublicKey: '',
+    });
+    authorizeStudio();
+    const response = await request.delete(`/api/apps/${app.id}/screenshots/0`);
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 404 Not Found
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Not Found",
+        "message": "Screenshot not found",
+        "statusCode": 404,
+      }
+    `);
+  });
+});
+
+describe('setAppBlockStyle', () => {
+  it('should validate and update css when updating an app’s block style', async () => {
+    await BlockVersion.create({
+      name: 'testblock',
+      OrganizationId: 'appsemble',
+      description: 'This is a test block for testing purposes.',
+      version: '0.0.0',
+    });
+
+    const { id } = await App.create(
+      {
+        path: 'bar',
+        definition: {
+          name: 'Test App',
+          defaultPage: 'Test Page',
+          pages: [{ name: 'Test', blocks: { type: 'testblock', version: '0.0.0' } }],
+        },
+        vapidPublicKey: 'a',
+        vapidPrivateKey: 'b',
+        OrganizationId: organization.id,
+      },
+      { raw: true },
+    );
+
+    authorizeStudio();
+    const response = await request.post(`/api/apps/${id}/style/block/@appsemble/testblock`, {
+      style: 'body { color: yellow; }',
+    });
+
+    const style = await request.get(`/api/apps/${id}/style/block/@appsemble/testblock`);
+
+    expect(response).toMatchInlineSnapshot('HTTP/1.1 204 No Content');
+    expect(style).toMatchInlineSnapshot(`
+      HTTP/1.1 200 OK
+      Content-Type: text/css; charset=utf-8
+
+      body { color: yellow; }
+    `);
+  });
+
+  it('should delete block stylesheet when uploading empty stylesheets for an app', async () => {
+    await BlockVersion.create({
+      name: 'testblock',
+      OrganizationId: 'appsemble',
+      description: 'This is a test block for testing purposes.',
+      version: '0.0.0',
+    });
+
+    const { id } = await App.create(
+      {
+        path: 'bar',
+        definition: { name: 'Test App', defaultPage: 'Test Page' },
+        vapidPublicKey: 'a',
+        vapidPrivateKey: 'b',
+        OrganizationId: organization.id,
+      },
+      { raw: true },
+    );
+
+    authorizeStudio();
+    const responseA = await request.post(`/api/apps/${id}/style/block/@appsemble/testblock`, {
+      style: 'body { color: blue; }',
+    });
+    expect(responseA).toMatchInlineSnapshot('HTTP/1.1 204 No Content');
+
+    authorizeStudio();
+    const responseB = await request.post(`/api/apps/${id}/style/block/@appsemble/testblock`, {
+      style: ' ',
+    });
+
+    expect(responseB).toMatchInlineSnapshot('HTTP/1.1 204 No Content');
+
+    const style = await AppBlockStyle.findOne({
+      where: { AppId: id, block: '@appsemble/testblock' },
+    });
+    expect(style).toBeNull();
+  });
+
+  it('should not update an app if it is currently locked', async () => {
+    await BlockVersion.create({
+      name: 'testblock',
+      OrganizationId: 'appsemble',
+      description: 'This is a test block for testing purposes.',
+      version: '0.0.0',
+    });
+
+    const { id } = await App.create(
+      {
+        path: 'bar',
+        definition: {
+          name: 'Test App',
+          defaultPage: 'Test Page',
+          pages: [{ name: 'Test', blocks: { type: 'testblock', version: '0.0.0' } }],
+        },
+        vapidPublicKey: 'a',
+        vapidPrivateKey: 'b',
+        OrganizationId: organization.id,
+        locked: true,
+      },
+      { raw: true },
+    );
+
+    authorizeStudio();
+    const response = await request.post(`/api/apps/${id}/style/block/@appsemble/testblock`, {
+      style: 'body { color: yellow; }',
+    });
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 403 Forbidden
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Forbidden",
+        "message": "App is currently locked.",
+        "statusCode": 403,
+      }
+    `);
+  });
+
+  it('should not allow invalid stylesheets when uploading block stylesheets to an app', async () => {
+    await BlockVersion.create({
+      OrganizationId: 'appsemble',
+      name: 'styledblock',
+      description: 'This is a test block for testing purposes.',
+      version: '0.0.0',
+    });
+
+    const { id } = await App.create({
+      path: 'b',
+      definition: { name: 'Test App', defaultPage: 'Test Page' },
+      vapidPublicKey: 'a',
+      vapidPrivateKey: 'b',
+      visibility: 'unlisted',
+      OrganizationId: organization.id,
+    });
+
+    authorizeStudio();
+    const response = await request.post(`/api/apps/${id}/style/block/@appsemble/styledblock`, {
+      style: 'invalidCss',
+    });
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 400 Bad Request
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Bad Request",
+        "message": "Provided CSS was invalid.",
+        "statusCode": 400,
+      }
+    `);
+  });
+
+  it('should not allow uploading block stylesheets to non-existent apps', async () => {
+    await BlockVersion.create({
+      OrganizationId: 'appsemble',
+      name: 'block',
+      description: 'This is a test block for testing purposes.',
+      version: '0.0.0',
+    });
+
+    authorizeStudio();
+    const response = await request.post('/api/apps/0/style/block/@appsemble/block', {
+      style: 'body { color: red; }',
+    });
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 404 Not Found
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Not Found",
+        "message": "App not found.",
+        "statusCode": 404,
+      }
+    `);
+  });
+
+  it('should not allow uploading block stylesheets for non-existent blocks', async () => {
+    const { id } = await App.create({
+      path: 'bar',
+      definition: { name: 'Test App', defaultPage: 'Test Page' },
+      vapidPublicKey: 'a',
+      vapidPrivateKey: 'b',
+      OrganizationId: organization.id,
+    });
+
+    authorizeStudio();
+    const response = await request.post(`/api/apps/${id}/style/block/@appsemble/doesntexist`, {
+      style: 'body { color: red; }',
+    });
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 404 Not Found
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Not Found",
+        "message": "Block not found.",
+        "statusCode": 404,
+      }
+    `);
+  });
+
+  it('should return an empty response on non-existent block stylesheets', async () => {
+    const { id } = await App.create({
+      path: 'bar',
+      definition: { name: 'Test App', defaultPage: 'Test Page' },
+      vapidPublicKey: 'a',
+      vapidPrivateKey: 'b',
+      OrganizationId: organization.id,
+    });
+
+    const response = await request.get(`/api/apps/${id}/style/block/@appsemble/doesntexist`);
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 200 OK
+      Content-Type: text/css; charset=utf-8
+    `);
+  });
+
+  it('should not allow to update an app using non-existent blocks', async () => {
+    authorizeStudio();
+    const { id } = await App.create({
+      path: 'bar',
+      definition: { name: 'Test App', defaultPage: 'Test Page' },
+      vapidPublicKey: 'a',
+      vapidPrivateKey: 'b',
+      OrganizationId: organization.id,
+    });
+    const response = await request.patch(
+      `/api/apps/${id}`,
+      createFormData({
+        'organization.id': organization.id,
+        yaml: stripIndent(`
+          name: Test App
+          defaultPage: Test Page
+          pages:
+            - name: Test Page
+              blocks:
+                - type: '@non/existent'
+                  version: 0.0.0'
+        `),
+      }),
+    );
+
+    expect(response).toMatchSnapshot();
+  });
+
+  it('should not allow to update an app using non-existent block versions', async () => {
+    authorizeStudio();
+    const { id } = await App.create({
+      path: 'bar',
+      definition: { name: 'Test App', defaultPage: 'Test Page' },
+      vapidPublicKey: 'a',
+      vapidPrivateKey: 'b',
+      OrganizationId: organization.id,
+    });
+    const response = await request.patch(
+      `/api/apps/${id}`,
+      createFormData({
+        yaml: stripIndent(`
+          name: Test App
+          defaultPage: Test Page
+          pages:
+            - name: Test Page
+              blocks:
+                - type: test
+                  version: 0.0.1
+        `),
+      }),
+    );
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 400 Bad Request
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "data": {
+          "errors": [
+            {
+              "instance": "test",
+              "message": "is not a known block type",
+              "path": [
+                "pages",
+                0,
+                "blocks",
+                0,
+                "type",
+              ],
+              "property": "instance.pages[0].blocks[0].type",
+              "stack": "instance.pages[0].blocks[0].type is not a known block type",
+            },
+          ],
+        },
+        "error": "Bad Request",
+        "message": "App validation failed",
+        "statusCode": 400,
+      }
+    `);
+  });
+});
