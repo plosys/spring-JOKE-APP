@@ -577,4 +577,159 @@ describe('createAsset', () => {
   });
 
   it('should not create assets for apps that don’t exist', async () => {
-   
+    const response = await request.post(
+      '/api/apps/0/assets',
+      createFormData({ file: Buffer.alloc(0) }),
+    );
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 404 Not Found
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Not Found",
+        "message": "App not found",
+        "statusCode": 404,
+      }
+    `);
+  });
+
+  it('should associate the user if the user is authenticated', async () => {
+    authorizeStudio();
+    const response = await request.post<AssetType>(
+      `/api/apps/${app.id}/assets`,
+      createFormData({ file: Buffer.alloc(0) }),
+    );
+    const asset = await Asset.findByPk(response.data.id);
+
+    expect(asset.UserId).toStrictEqual(user.id);
+    expect(response).toMatchInlineSnapshot(
+      { data: { id: expect.stringMatching(uuid4Pattern) } },
+      `
+      HTTP/1.1 201 Created
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "id": StringMatching /\\^\\[\\\\d\\[a-f\\]\\{8\\}-\\[\\\\da-f\\]\\{4\\}-4\\[\\\\da-f\\]\\{3\\}-\\[\\\\da-f\\]\\{4\\}-\\[\\\\d\\[a-f\\]\\{12\\}\\$/,
+        "mime": "application/octet-stream",
+      }
+    `,
+    );
+  });
+});
+
+describe('deleteAsset', () => {
+  it('should delete existing assets', async () => {
+    const asset = await Asset.create({
+      AppId: app.id,
+      mime: 'application/octet-stream',
+      filename: 'test.bin',
+      data: Buffer.from('buffer'),
+    });
+
+    authorizeStudio();
+    const response = await request.delete(`/api/apps/${app.id}/assets/${asset.id}`);
+
+    expect(response).toMatchInlineSnapshot('HTTP/1.1 204 No Content');
+  });
+
+  it('should not delete assets if the user has insufficient permissions', async () => {
+    await Member.update({ role: 'Member' }, { where: { UserId: user.id } });
+
+    const asset = await Asset.create({
+      AppId: app.id,
+      mime: 'application/octet-stream',
+      filename: 'test.bin',
+      data: Buffer.from('buffer'),
+    });
+
+    authorizeStudio();
+    const response = await request.delete(`/api/apps/${app.id}/assets/${asset.id}`);
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 403 Forbidden
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Forbidden",
+        "message": "User does not have sufficient permissions.",
+        "statusCode": 403,
+      }
+    `);
+  });
+
+  it('should not delete existing assets from different apps', async () => {
+    const appB = await App.create({
+      definition: {
+        name: 'Test App',
+        defaultPage: 'Test Page',
+        security: {
+          default: {
+            role: 'Reader',
+            policy: 'everyone',
+          },
+          roles: {
+            Reader: {},
+          },
+        },
+      },
+      path: 'test-app-B',
+      vapidPublicKey: 'a',
+      vapidPrivateKey: 'b',
+      OrganizationId: organization.id,
+    });
+
+    const asset = await Asset.create({
+      AppId: appB.id,
+      mime: 'application/octet-stream',
+      filename: 'test.bin',
+      data: Buffer.from('buffer'),
+    });
+
+    authorizeStudio();
+    const response = await request.delete(`/api/apps/${app.id}/assets/${asset.id}`);
+
+    expect(response).toMatchInlineSnapshot(`
+      HTTP/1.1 404 Not Found
+      Content-Type: application/json; charset=utf-8
+
+      {
+        "error": "Not Found",
+        "message": "Asset not found",
+        "statusCode": 404,
+      }
+    `);
+  });
+});
+
+describe('deleteAssets', () => {
+  it('should delete existing assets', async () => {
+    const assetA = await Asset.create({
+      AppId: app.id,
+      mime: 'application/octet-stream',
+      filename: 'test.bin',
+      data: Buffer.from('buffer'),
+    });
+    const assetB = await Asset.create({
+      AppId: app.id,
+      mime: 'application/octet-stream',
+      filename: 'test.bin',
+      data: Buffer.from('buffer'),
+    });
+    await Asset.create({
+      AppId: app.id,
+      mime: 'application/octet-stream',
+      filename: 'test.bin',
+      data: Buffer.from('buffer'),
+    });
+
+    authorizeStudio();
+    const assetsResponse = await request.get(`/api/apps/${app.id}/assets`);
+    const response = await request.delete(`/api/apps/${app.id}/assets`, {
+      data: [assetA.id, assetB.id],
+    });
+    const newAssetsResponse = await request.get(`/api/apps/${app.id}/assets`);
+
+    expect(assetsResponse).toMatchInlineSnapshot(
+      {
+        data: [
+          { id: expect.stringMatch
