@@ -237,4 +237,165 @@ export async function publishBlock(ctx: Context): Promise<void> {
 
   if (messages) {
     const messageKeys = Object.keys(messages.en);
-    for (const [language, record] of Object.
+    for (const [language, record] of Object.entries(messages)) {
+      const keys = Object.keys(record);
+      if (keys.length !== messageKeys.length || keys.some((key) => !messageKeys.includes(key))) {
+        throw badRequest(`Language ‘${language}’ contains mismatched keys compared to ‘en’.`);
+      }
+    }
+  }
+
+  await checkRole(ctx, OrganizationId, Permission.PublishBlocks);
+
+  const blockVersion = await BlockVersion.findOne({
+    where: { name: blockId, OrganizationId },
+    order: [['created', 'DESC']],
+    raw: true,
+  });
+
+  // If there is a previous version and it has a higher semver, throw an error.
+  if (blockVersion && semver.gte(blockVersion.version, version)) {
+    throw conflict(
+      `Version ${blockVersion.version} is equal to or lower than the already existing ${name}@${version}.`,
+    );
+  }
+
+  try {
+    await transactional(async (transaction) => {
+      const createdBlock = await BlockVersion.create(
+        {
+          ...data,
+          visibility: data.visibility || 'public',
+          icon: icon?.contents,
+          name: blockId,
+          OrganizationId,
+        },
+        { transaction },
+      );
+
+      for (const file of files) {
+        logger.verbose(
+          `Creating block assets for ${name}@${version}: ${decodeURIComponent(file.filename)}`,
+        );
+      }
+      createdBlock.BlockAssets = await BlockAsset.bulkCreate(
+        files.map((file) => ({
+          name: blockId,
+          BlockVersionId: createdBlock.id,
+          filename: decodeURIComponent(file.filename),
+          mime: file.mime,
+          content: file.contents,
+        })),
+        { logging: false, transaction },
+      );
+
+      if (messages) {
+        await BlockMessages.bulkCreate(
+          Object.entries(messages).map(([language, content]) => ({
+            language,
+            messages: content,
+            BlockVersionId: createdBlock.id,
+          })),
+          { transaction },
+        );
+      }
+
+      createdBlock.Organization = new Organization({ id: OrganizationId });
+      if (!icon) {
+        await createdBlock.Organization.reload({
+          attributes: ['updated', [literal('"Organization".icon IS NOT NULL'), 'hasIcon']],
+        });
+      }
+
+      ctx.body = blockVersionToJson(createdBlock);
+    });
+  } catch (err: unknown) {
+    if (err instanceof UniqueConstraintError || err instanceof DatabaseError) {
+      throw conflict(`Block “${name}@${data.version}” already exists`);
+    }
+    throw err;
+  }
+}
+
+export async function getBlockVersion(ctx: Context): Promise<void> {
+  const {
+    pathParams: { blockId, blockVersion, organizationId },
+  } = ctx;
+
+  const version = await BlockVersion.findOne({
+    attributes: [
+      'actions',
+      'events',
+      'layout',
+      'name',
+      'parameters',
+      'description',
+      'examples',
+      'longDescription',
+      'version',
+      'wildcardActions',
+      [literal('"BlockVersion".icon IS NOT NULL'), 'hasIcon'],
+    ],
+    where: { name: blockId, OrganizationId: organizationId, version: blockVersion },
+    include: [
+      { model: BlockAsset, attributes: ['filename'] },
+      {
+        model: Organization,
+        attributes: ['id', 'updated', [literal('"Organization".icon IS NOT NULL'), 'hasIcon']],
+      },
+      {
+        model: BlockMessages,
+        required: false,
+        attributes: ['language'],
+      },
+    ],
+  });
+
+  if (!version) {
+    throw notFound('Block version not found');
+  }
+
+  ctx.body = blockVersionToJson(version);
+  ctx.set('Cache-Control', 'max-age=31536000,immutable');
+}
+
+export async function getBlockVersions(ctx: Context): Promise<void> {
+  const {
+    pathParams: { blockId, organizationId },
+  } = ctx;
+
+  const blockVersions = await BlockVersion.findAll({
+    attributes: [
+      'actions',
+      'description',
+      'longDescription',
+      'name',
+      'events',
+      'examples',
+      'layout',
+      'version',
+      'parameters',
+      'wildcardActions',
+      [literal('"BlockVersion".icon IS NOT NULL'), 'hasIcon'],
+    ],
+    where: { name: blockId, OrganizationId: organizationId },
+    include: [
+      { model: BlockAsset, attributes: ['filename'] },
+      {
+        model: Organization,
+        attributes: ['id', 'updated', [literal('"Organization".icon IS NOT NULL'), 'hasIcon']],
+      },
+      {
+        model: BlockMessages,
+        required: false,
+        attributes: ['language'],
+      },
+    ],
+    order: [['created', 'DESC']],
+  });
+
+  if (blockVersions.length === 0) {
+    throw notFound('Block not found.');
+  }
+
+  ctx.body = blo
