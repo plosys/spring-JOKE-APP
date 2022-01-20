@@ -398,4 +398,88 @@ export async function getBlockVersions(ctx: Context): Promise<void> {
     throw notFound('Block not found.');
   }
 
-  ctx.body = blo
+  ctx.body = blockVersions.map(blockVersionToJson);
+}
+
+export async function getBlockAsset(ctx: Context): Promise<void> {
+  const {
+    pathParams: { blockId, blockVersion, organizationId },
+    query: { filename },
+  } = ctx;
+
+  const block = await BlockVersion.findOne({
+    attributes: ['id'],
+    where: { name: blockId, OrganizationId: organizationId, version: blockVersion },
+    include: [
+      { model: BlockAsset, where: { filename }, attributes: ['content', 'mime'], required: false },
+    ],
+  });
+
+  if (!block) {
+    throw notFound('Block version not found');
+  }
+
+  if (block.BlockAssets.length !== 1) {
+    throw notFound(`Block has no asset named "${filename}"`);
+  }
+
+  ctx.body = block.BlockAssets[0].content;
+  ctx.type = block.BlockAssets[0].mime;
+}
+
+export async function getBlockMessages(ctx: Context): Promise<void> {
+  const {
+    pathParams: { blockId, blockVersion, language, organizationId },
+  } = ctx;
+
+  const block = await BlockVersion.findOne({
+    attributes: ['id'],
+    where: { name: blockId, OrganizationId: organizationId, version: blockVersion },
+    include: [
+      {
+        model: BlockMessages,
+        required: false,
+        where: { language },
+      },
+    ],
+  });
+
+  if (!block) {
+    throw notFound('Block version not found');
+  }
+
+  if (block.BlockMessages.length !== 1) {
+    throw notFound(`Block has no messages for language "${language}"`);
+  }
+
+  ctx.body = block.BlockMessages[0].messages;
+}
+
+export async function getBlockIcon(ctx: Context): Promise<void> {
+  const {
+    pathParams: { blockId, blockVersion, organizationId },
+    query: { size, updated },
+  } = ctx;
+
+  const version = await BlockVersion.findOne({
+    attributes: ['icon'],
+    where: { name: blockId, OrganizationId: organizationId, version: blockVersion },
+    include: [{ model: Organization, attributes: ['icon', 'updated'] }],
+  });
+
+  if (!version) {
+    throw notFound('Block version not found');
+  }
+
+  const cache = version.icon
+    ? true
+    : isEqual(parseISO(updated as string), version.Organization.updated);
+
+  return serveIcon(ctx, {
+    cache,
+    fallback: 'cubes-solid.png',
+    height: size && Number.parseInt(size as string),
+    icon: version.icon || version.Organization.icon,
+    width: size && Number.parseInt(size as string),
+  });
+}
