@@ -193,4 +193,39 @@ export async function connectPendingOAuth2Profile(ctx: Context): Promise<void> {
             throw conflict('This email address has already been linked to an existing account.');
           }
         } else {
-          await p
+          await processEmailAuthorization(
+            mailer,
+            user.id,
+            userInfo.name,
+            userInfo.email,
+            Boolean(userInfo.email_verified),
+            transaction,
+          );
+        }
+      }
+    });
+  }
+  ctx.body = createJWTResponse(user.id);
+}
+
+export async function getConnectedAccounts(ctx: Context): Promise<void> {
+  const { user } = ctx;
+
+  ctx.body = await OAuthAuthorization.findAll({
+    attributes: ['authorizationUrl'],
+    where: { UserId: user.id },
+  });
+}
+
+export async function unlinkConnectedAccount(ctx: Context): Promise<void> {
+  const {
+    query: { authorizationUrl },
+    user,
+  } = ctx;
+
+  const rows = await OAuthAuthorization.destroy({ where: { UserId: user.id, authorizationUrl } });
+
+  if (!rows) {
+    throw notFound('OAuth2 account to unlink not found');
+  }
+}
