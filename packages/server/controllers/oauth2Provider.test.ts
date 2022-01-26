@@ -269,3 +269,163 @@ describe('verifyOAuth2Consent', () => {
   it('should block if a user hasn’t agreed before', async () => {
     const app = await App.create({
       OrganizationId: organization.id,
+      path: 'app',
+      domain: 'app.example',
+      definition: {},
+      vapidPublicKey: '',
+      vapidPrivateKey: '',
+    });
+    authorizeStudio();
+    const response = await request.post('/api/oauth2/consent/verify', {
+      appId: app.id,
+      redirectUri: 'http://invalid.example:9999',
+      scope: 'email openid',
+    });
+    expect(response).toMatchObject({
+      status: 400,
+      data: {
+        error: 'Bad Request',
+        message: 'User has not agreed to the requested scopes',
+        statusCode: 400,
+      },
+    });
+  });
+
+  it('should block if user has agreed before but isn’t allowed anymore due to the policy', async () => {
+    const app = await App.create({
+      OrganizationId: organization.id,
+      path: 'app',
+      domain: 'app.example',
+      definition: { security: { default: { policy: 'invite' } } },
+      vapidPublicKey: '',
+      vapidPrivateKey: '',
+    });
+
+    authorizeStudio();
+    const response = await request.post('/api/oauth2/consent/verify', {
+      appId: app.id,
+      redirectUri: 'http://app.example:9999',
+      scope: 'openid',
+    });
+    expect(response).toMatchObject({
+      status: 400,
+      data: {
+        error: 'Bad Request',
+        data: { isAllowed: false },
+        message: 'User is not allowed to login due to the app’s security policy',
+        statusCode: 400,
+      },
+    });
+  });
+
+  it('should block if user isn’t allowed due to the policy', async () => {
+    const app = await App.create({
+      OrganizationId: organization.id,
+      path: 'app',
+      domain: 'app.example',
+      definition: { security: { default: { policy: 'invite' } } },
+      vapidPublicKey: '',
+      vapidPrivateKey: '',
+    });
+    authorizeStudio();
+    const response = await request.post('/api/oauth2/consent/verify', {
+      appId: app.id,
+      redirectUri: 'http://app.example:9999',
+      scope: 'openid',
+    });
+    expect(response).toMatchObject({
+      status: 400,
+      data: {
+        error: 'Bad Request',
+        data: { isAllowed: false },
+        message: 'User is not allowed to login due to the app’s security policy',
+        statusCode: 400,
+      },
+    });
+  });
+
+  it('should return 404 for non-existent apps', async () => {
+    authorizeStudio();
+    const response = await request.post('/api/oauth2/consent/verify', {
+      appId: 346,
+      redirectUri: 'http://any.example:9999',
+      scope: 'openid',
+    });
+    expect(response).toMatchObject({
+      status: 404,
+      data: {
+        error: 'Not Found',
+        message: 'App not found',
+        statusCode: 404,
+      },
+    });
+  });
+});
+
+describe('agreeOAuth2Consent', () => {
+  let organization: Organization;
+
+  beforeEach(async () => {
+    organization = await Organization.create({
+      id: 'org',
+      name: 'Test Organization',
+    });
+    await Member.create({ OrganizationId: organization.id, UserId: user.id, role: 'Owner' });
+  });
+
+  it('should create an authorization code linked to the user and app on a default domain', async () => {
+    const app = await App.create({
+      OrganizationId: organization.id,
+      path: 'app',
+      definition: {
+        security: {
+          default: {
+            role: 'User',
+            policy: 'everyone',
+          },
+          roles: { User: {} },
+        },
+      },
+      vapidPublicKey: '',
+      vapidPrivateKey: '',
+    });
+    authorizeStudio();
+    const response = await request.post<LoginCodeResponse>('/api/oauth2/consent/agree', {
+      appId: app.id,
+      redirectUri: 'http://app.org.localhost:9999',
+      scope: 'openid',
+    });
+    expect(response).toMatchObject({
+      status: 201,
+      data: {
+        code: expect.stringMatching(/^[0-f]{24}$/),
+      },
+    });
+
+    const { code } = response.data;
+    const authCode = await OAuth2AuthorizationCode.findOne({ raw: true, where: { code } });
+    expect(authCode).toStrictEqual({
+      AppId: app.id,
+      code,
+      expires: new Date('2000-01-01T00:10:00.000Z'),
+      redirectUri: 'http://app.org.localhost:9999',
+      scope: 'openid',
+      UserId: user.id,
+    });
+  });
+
+  it('should create an authorization code linked to the user and app on a custom domain', async () => {
+    const app = await App.create({
+      OrganizationId: organization.id,
+      path: 'app',
+      domain: 'app.example',
+      definition: {
+        security: {
+          default: {
+            role: 'User',
+            policy: 'everyone',
+          },
+          roles: { User: {} },
+        },
+      },
+      vapidPublicKey:
