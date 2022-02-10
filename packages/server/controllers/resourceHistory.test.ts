@@ -135,4 +135,44 @@ describe('getResourceHistory', () => {
     expect(response).toMatchInlineSnapshot(
       {
         data: [
-          { author: { id: expect.stringMatching(uuid4Pattern
+          { author: { id: expect.stringMatching(uuid4Pattern) } },
+          {},
+          { author: { id: expect.stringMatching(uuid4Pattern) } },
+        ],
+      },
+      `
+      HTTP/1.1 200 OK
+      Content-Type: application/json; charset=utf-8
+
+      [
+        {
+          "author": {
+            "id": StringMatching /\\^\\[\\\\d\\[a-f\\]\\{8\\}-\\[\\\\da-f\\]\\{4\\}-4\\[\\\\da-f\\]\\{3\\}-\\[\\\\da-f\\]\\{4\\}-\\[\\\\d\\[a-f\\]\\{12\\}\\$/,
+            "name": "Test User",
+          },
+          "created": "2000-01-01T00:00:03.000Z",
+          "data": {
+            "version": "newest",
+          },
+        },
+        {
+          "created": "2000-01-01T00:00:02.000Z",
+          "data": {
+            "version": "newer",
+          },
+        },
+        {
+          "author": {
+            "id": StringMatching /\\^\\[\\\\d\\[a-f\\]\\{8\\}-\\[\\\\da-f\\]\\{4\\}-4\\[\\\\da-f\\]\\{3\\}-\\[\\\\da-f\\]\\{4\\}-\\[\\\\d\\[a-f\\]\\{12\\}\\$/,
+            "name": "Test User",
+          },
+          "created": "2000-01-01T00:00:01.000Z",
+          "data": {
+            "version": "new",
+          },
+        },
+      ]
+    `,
+    );
+  });
+});
