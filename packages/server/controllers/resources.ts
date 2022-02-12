@@ -187,3 +187,180 @@ async function verifyPermission(
 
     const userIds = (
       await TeamMember.findAll({
+        attributes: ['UserId'],
+        raw: true,
+        where: { TeamId: teamIds },
+      })
+    ).map((tm) => tm.UserId);
+    result.push({ AuthorId: { [Op.in]: userIds } });
+  }
+
+  if (app.definition.security && !isPublic) {
+    const member = app.AppMembers?.find((m) => m.UserId === user?.id);
+    const { policy = 'everyone', role: defaultRole } = app.definition.security.default;
+    let role: string;
+
+    if (member) {
+      ({ role } = member);
+    } else {
+      switch (policy) {
+        case 'everyone':
+          role = defaultRole;
+          break;
+
+        case 'organization':
+          if (!(await app.Organization.$has('User', user.id))) {
+            throw forbidden('User is not a member of the organization.');
+          }
+
+          role = defaultRole;
+          break;
+
+        case 'invite':
+          throw forbidden('User is not a member of the app.');
+
+        default:
+          role = null;
+      }
+    }
+
+    // Team roles are checked separately
+    // XXX unify this logic?
+    if (
+      !appRoles.some((r) => checkAppRole(app.definition.security, r, role, null)) &&
+      !result.length
+    ) {
+      throw forbidden('User does not have sufficient permissions.');
+    }
+  }
+
+  if (result.length === 0) {
+    return;
+  }
+
+  return result.length === 1 ? result[0] : { [Op.or]: result };
+}
+
+export async function queryResources(ctx: Context): Promise<void> {
+  const {
+    pathParams: { appId, resourceType },
+    queryParams: { $select, $skip, $top },
+    user,
+  } = ctx;
+
+  const app = await App.findByPk(appId, {
+    attributes: ['id', 'OrganizationId', 'definition', 'template'],
+    ...(user && {
+      include: [
+        { model: Organization, attributes: ['id'] },
+        {
+          model: AppMember,
+          attributes: ['role', 'UserId'],
+          required: false,
+          where: { UserId: user.id },
+        },
+      ],
+    }),
+  });
+
+  const view = ctx.queryParams?.view;
+  const resourceDefinition = getResourceDefinition(app, resourceType, view);
+  const userQuery = await verifyPermission(ctx, app, resourceType, 'query');
+  const { order, query } = generateQuery(ctx);
+
+  const resources = await Resource.findAll({
+    include: [
+      { association: 'Author', attributes: ['id', 'name'], required: false },
+      { association: 'Editor', attributes: ['id', 'name'], required: false },
+    ],
+    limit: $top,
+    offset: $skip,
+    order,
+    where: {
+      [Op.and]: [
+        query,
+        {
+          ...userQuery,
+          type: resourceType,
+          AppId: appId,
+          expires: { [Op.or]: [{ [Op.gt]: new Date() }, null] },
+        },
+      ],
+    },
+  });
+
+  const exclude: string[] = app.template ? [] : undefined;
+  const include = $select?.split(',').map((s) => s.trim());
+  const mappedResources = resources.map((resource) => resource.toJSON({ exclude, include }));
+
+  if (view) {
+    const context = await getRemapperContext(
+      app,
+      app.definition.defaultLanguage || defaultLocale,
+      user && {
+        sub: user.id,
+        name: user.name,
+        email: user.primaryEmail,
+        email_verified: Boolean(user.EmailAuthorizations?.[0]?.verified),
+        zoneinfo: user.timezone,
+      },
+    );
+    ctx.body = mappedResources.map((resource) =>
+      remap(resourceDefinition.views[view].remap, resource, context),
+    );
+    return;
+  }
+
+  ctx.body = mappedResources;
+}
+
+export async function countResources(ctx: Context): Promise<void> {
+  const {
+    pathParams: { appId, resourceType },
+    user,
+  } = ctx;
+
+  const app = await App.findByPk(appId, {
+    attributes: ['id', 'definition', 'OrganizationId'],
+    ...(user && {
+      include: [
+        { model: Organization, attributes: ['id'] },
+        {
+          model: AppMember,
+          attributes: ['role', 'UserId'],
+          required: false,
+          where: { UserId: user.id },
+        },
+      ],
+    }),
+  });
+
+  const view = ctx.queryParams?.view;
+  getResourceDefinition(app, resourceType, view);
+  const userQuery = await verifyPermission(ctx, app, resourceType, 'count');
+  const { query } = generateQuery(ctx);
+
+  const count = await Resource.count({
+    where: {
+      [Op.and]: [
+        query,
+        {
+          ...userQuery,
+          type: resourceType,
+          AppId: appId,
+          expires: { [Op.or]: [{ [Op.gt]: new Date() }, null] },
+        },
+      ],
+    },
+  });
+
+  ctx.body = count;
+}
+
+export async function getResourceById(ctx: Context): Promise<void> {
+  const {
+    pathParams: { appId, resourceId, resourceType },
+    user,
+  } = ctx;
+
+  const app = a
