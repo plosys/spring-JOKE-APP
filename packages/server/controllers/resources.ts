@@ -34,4 +34,156 @@ import {
 const specialRoles = new Set([
   '$author',
   '$public',
-  '$none'
+  '$none',
+  ...Object.values(TeamRole).map((r) => `$team:${r}`),
+]);
+
+/**
+ * Generate Sequelize filter objects based on ODATA filters present in the request.
+ *
+ * @param ctx The context to extract the parameters from.
+ * @returns An object containing the generated order and query options.
+ */
+function generateQuery(ctx: Context): { order: Order; query: WhereOptions } {
+  const {
+    query: { $filter, $orderby },
+  } = ctx;
+
+  try {
+    const order =
+      $orderby &&
+      odataOrderbyToSequelize(
+        ($orderby as string)
+          .replace(/(^|\B)\$created(\b|$)/g, '__created__')
+          .replace(/(^|\B)\$updated(\b|$)/g, '__updated__'),
+        renameOData,
+      );
+    const query =
+      $filter &&
+      odataFilterToSequelize(
+        ($filter as string)
+          .replace(/(^|\B)\$created(\b|$)/g, '__created__')
+          .replace(/(^|\B)\$updated(\b|$)/g, '__updated__')
+          .replace(/(^|\B)\$author\/id(\b|$)/g, '__author__'),
+        Resource,
+        renameOData,
+      );
+
+    return { order, query };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw badRequest('Unable to process this query', { syntaxError: error.message });
+    }
+    logger.error(error);
+    throw internal('Unable to process this query');
+  }
+}
+
+/**
+ * Verifies whether or not the user has sufficient permissions to perform a resource call.
+ * Will throw an 403 error if the user does not satisfy the requirements.
+ *
+ * @param ctx Koa context of the request
+ * @param app App as fetched from the database.
+ * This must include the app member and organization relationships.
+ * @param resourceType The resource type to check the role for.
+ * @param action The resource action to check the role for.
+ * @returns Query options to filter the resource for the user context.
+ */
+async function verifyPermission(
+  ctx: Context,
+  app: App,
+  resourceType: string,
+  action: 'count' | 'create' | 'delete' | 'get' | 'patch' | 'query' | 'update',
+): Promise<WhereOptions> {
+  const resourceDefinition = app.definition.resources[resourceType];
+
+  const {
+    query: { $team },
+    user,
+    users,
+  } = ctx;
+
+  if ('studio' in users || 'cli' in users) {
+    await checkRole(
+      ctx,
+      app.OrganizationId,
+      action === 'count' || action === 'get' || action === 'query'
+        ? Permission.ReadResources
+        : Permission.ManageResources,
+    );
+    return;
+  }
+
+  const view = ctx.queryParams?.view;
+  const roles =
+    (view
+      ? resourceDefinition.views[view].roles
+      : resourceDefinition[action]?.roles ?? resourceDefinition.roles) || [];
+
+  if (!roles?.length && app.definition.roles?.length) {
+    roles.push(...app.definition.roles);
+  }
+
+  const functionalRoles = roles.filter((r) => specialRoles.has(r));
+  const appRoles = roles.filter((r) => !specialRoles.has(r));
+  const isPublic = functionalRoles.includes('$public');
+  const isNone = functionalRoles.includes('$none');
+
+  if ($team && !functionalRoles.includes(`$team:${$team}`)) {
+    functionalRoles.push(`$team:${$team}`);
+  }
+
+  if (!functionalRoles.length && !appRoles.length) {
+    throw forbidden('This action is private.');
+  }
+
+  if (isPublic && action !== 'count') {
+    return;
+  }
+
+  if (isNone && !user) {
+    return;
+  }
+
+  if (!isPublic && !user && (appRoles.length || functionalRoles.length)) {
+    throw unauthorized('User is not logged in.');
+  }
+
+  const result: WhereOptions[] = [];
+
+  if (functionalRoles.includes('$author') && user && action !== 'create') {
+    result.push({ AuthorId: user.id });
+  }
+
+  if (functionalRoles.includes(`$team:${TeamRole.Member}`) && user) {
+    const teamIds = (
+      await Team.findAll({
+        where: { AppId: app.id },
+        include: [{ model: User, where: { id: user.id } }],
+        attributes: ['id'],
+      })
+    ).map((t) => t.id);
+
+    const userIds = (
+      await TeamMember.findAll({
+        attributes: ['UserId'],
+        where: { TeamId: teamIds },
+      })
+    ).map((tm) => tm.UserId);
+    result.push({ AuthorId: { [Op.in]: userIds } });
+  }
+
+  if (functionalRoles.includes(`$team:${TeamRole.Manager}`) && user) {
+    const teamIds = (
+      await Team.findAll({
+        where: { AppId: app.id },
+        include: [
+          { model: User, where: { id: user.id }, through: { where: { role: TeamRole.Manager } } },
+        ],
+        attributes: ['id'],
+      })
+    ).map((t) => t.id);
+
+    const userIds = (
+      await TeamMember.findAll({
