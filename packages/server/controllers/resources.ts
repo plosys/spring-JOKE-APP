@@ -363,4 +363,181 @@ export async function getResourceById(ctx: Context): Promise<void> {
     user,
   } = ctx;
 
-  const app = a
+  const app = await App.findByPk(appId, {
+    attributes: ['id', 'definition', 'OrganizationId'],
+    ...(user && {
+      include: [
+        { model: Organization, attributes: ['id'] },
+        {
+          model: AppMember,
+          attributes: ['role', 'UserId'],
+          required: false,
+          where: { UserId: user.id },
+        },
+      ],
+    }),
+  });
+  const view = ctx.queryParams?.view;
+  const resourceDefinition = getResourceDefinition(app, resourceType, view);
+  const userQuery = await verifyPermission(ctx, app, resourceType, 'get');
+
+  const resource = await Resource.findOne({
+    where: {
+      AppId: appId,
+      id: resourceId,
+      type: resourceType,
+      expires: { [Op.or]: [{ [Op.gt]: new Date() }, null] },
+      ...userQuery,
+    },
+    include: [
+      { association: 'Author', attributes: ['id', 'name'], required: false },
+      { association: 'Editor', attributes: ['id', 'name'], required: false },
+    ],
+  });
+
+  if (!resource) {
+    throw notFound('Resource not found');
+  }
+
+  if (view) {
+    const context = await getRemapperContext(
+      app,
+      app.definition.defaultLanguage || defaultLocale,
+      user && {
+        sub: user.id,
+        name: user.name,
+        email: user.primaryEmail,
+        email_verified: Boolean(user.EmailAuthorizations?.[0]?.verified),
+        zoneinfo: user.timezone,
+      },
+    );
+
+    ctx.body = remap(resourceDefinition.views[view].remap, resource.toJSON(), context);
+    return;
+  }
+
+  ctx.body = resource;
+}
+
+export async function getResourceTypeSubscription(ctx: Context): Promise<void> {
+  const {
+    pathParams: { appId, resourceType },
+    query: { endpoint },
+  } = ctx;
+
+  const app = await App.findByPk(appId, {
+    attributes: ['definition'],
+    include: [
+      {
+        model: Resource,
+        attributes: ['id'],
+        where: { type: resourceType },
+        required: false,
+      },
+      {
+        attributes: ['id', 'UserId'],
+        model: AppSubscription,
+        include: [
+          {
+            model: ResourceSubscription,
+            where: { type: resourceType },
+            required: false,
+          },
+        ],
+        required: false,
+        where: { endpoint },
+      },
+    ],
+  });
+  getResourceDefinition(app, resourceType);
+
+  if (!app.Resources.length) {
+    throw notFound('Resource not found.');
+  }
+
+  if (!app.AppSubscriptions.length) {
+    throw notFound('User is not subscribed to this app.');
+  }
+
+  const [appSubscription] = app.AppSubscriptions;
+
+  if (!appSubscription) {
+    throw notFound('Subscription not found');
+  }
+
+  const result: any = { create: false, update: false, delete: false };
+  for (const { ResourceId, action } of appSubscription.ResourceSubscriptions) {
+    if (ResourceId) {
+      if (!result.subscriptions) {
+        result.subscriptions = {};
+      }
+
+      if (!result.subscriptions[ResourceId]) {
+        result.subscriptions[ResourceId] = { update: false, delete: false };
+      }
+
+      result.subscriptions[ResourceId][action] = true;
+    } else {
+      result[action] = true;
+    }
+  }
+
+  ctx.body = result;
+}
+
+export async function getResourceSubscription(ctx: Context): Promise<void> {
+  const {
+    pathParams: { appId, resourceId, resourceType },
+    query: { endpoint },
+  } = ctx;
+
+  const app = await App.findByPk(appId, {
+    attributes: ['definition'],
+    include: [
+      {
+        model: Resource,
+        attributes: ['id'],
+        where: { id: resourceId },
+        required: false,
+      },
+      {
+        attributes: ['id', 'UserId'],
+        model: AppSubscription,
+        include: [
+          {
+            model: ResourceSubscription,
+            where: { type: resourceType, ResourceId: resourceId },
+            required: false,
+          },
+        ],
+        required: false,
+        where: { endpoint },
+      },
+    ],
+  });
+  getResourceDefinition(app, resourceType);
+
+  if (!app.Resources.length) {
+    throw notFound('Resource not found.');
+  }
+
+  const subscriptions = app.AppSubscriptions?.[0]?.ResourceSubscriptions ?? [];
+  const result: any = { id: resourceId, update: false, delete: false };
+
+  for (const { action } of subscriptions) {
+    result[action] = true;
+  }
+
+  ctx.body = result;
+}
+
+export async function createResource(ctx: Context): Promise<void> {
+  const {
+    pathParams: { appId, resourceType },
+    user,
+  } = ctx;
+  const action = 'create';
+
+  const app = await App.findByPk(appId, {
+    attributes: ['id', 'definition', 'OrganizationId', 'vapidPrivateKey', 'vapidPublicKey'],
+    in
