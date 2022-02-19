@@ -540,4 +540,152 @@ export async function createResource(ctx: Context): Promise<void> {
 
   const app = await App.findByPk(appId, {
     attributes: ['id', 'definition', 'OrganizationId', 'vapidPrivateKey', 'vapidPublicKey'],
-    in
+    include: user
+      ? [
+          { model: Organization, attributes: ['id'] },
+          {
+            model: AppMember,
+            attributes: ['role', 'UserId'],
+            required: false,
+            where: { UserId: user.id },
+          },
+        ]
+      : [],
+  });
+
+  const definition = getResourceDefinition(app, resourceType);
+  await verifyPermission(ctx, app, resourceType, action);
+
+  const [resource, preparedAssets] = processResourceBody(ctx, definition);
+  if (Array.isArray(resource) && !resource.length) {
+    ctx.body = [];
+    return;
+  }
+
+  await user?.reload({ attributes: ['name'] });
+  let createdResources: Resource[];
+  await transactional(async (transaction) => {
+    const resources = Array.isArray(resource) ? resource : [resource];
+    createdResources = await Resource.bulkCreate(
+      resources.map(({ $expires, ...data }) => ({
+        AppId: app.id,
+        type: resourceType,
+        data,
+        AuthorId: user?.id,
+        expires: $expires,
+      })),
+      { logging: false, transaction },
+    );
+    for (const createdResource of createdResources) {
+      createdResource.Author = user;
+    }
+    await Asset.bulkCreate(
+      preparedAssets.map((asset) => {
+        const index = resources.indexOf(asset.resource);
+        const { id: ResourceId } = createdResources[index];
+        return {
+          ...asset,
+          AppId: app.id,
+          ResourceId,
+          UserId: user?.id,
+        };
+      }),
+      { logging: false, transaction },
+    );
+  });
+
+  ctx.body = Array.isArray(resource) ? createdResources : createdResources[0];
+
+  processReferenceHooks(user, app, createdResources[0], action);
+  processHooks(user, app, createdResources[0], action);
+}
+
+export async function updateResources(ctx: Context): Promise<void> {
+  const {
+    pathParams: { appId, resourceType },
+    user,
+  } = ctx;
+  const action = 'update';
+
+  const app = await App.findByPk(appId, {
+    attributes: ['id', 'definition', 'OrganizationId', 'vapidPrivateKey', 'vapidPublicKey'],
+    include: user
+      ? [
+          { model: Organization, attributes: ['id'] },
+          {
+            model: AppMember,
+            attributes: ['role', 'UserId'],
+            required: false,
+            where: { UserId: user.id },
+          },
+        ]
+      : [],
+  });
+
+  const definition = getResourceDefinition(app, resourceType);
+  const userQuery = await verifyPermission(ctx, app, resourceType, action);
+  const resourceList = extractResourceBody(ctx)[0] as ResourceType[];
+
+  if (!resourceList.length) {
+    ctx.body = [];
+    return;
+  }
+
+  if (resourceList.some((r) => !r.id)) {
+    throw badRequest(
+      'List of resources contained a resource without an ID.',
+      resourceList.filter((r) => !r.id),
+    );
+  }
+
+  const existingResources = await Resource.findAll({
+    where: {
+      id: resourceList.map((r) => Number(r.id)),
+      type: resourceType,
+      AppId: appId,
+      ...userQuery,
+    },
+    include: [
+      { association: 'Author', attributes: ['id', 'name'], required: false },
+      { association: 'Editor', attributes: ['id', 'name'], required: false },
+      { model: Asset, attributes: ['id'], required: false },
+    ],
+  });
+
+  const [resources, preparedAssets, unusedAssetIds] = processResourceBody(
+    ctx,
+    definition,
+    existingResources.flatMap((r) => r.Assets.map((a) => a.id)),
+  );
+  const processedResources = resources as ResourceType[];
+
+  if (existingResources.length !== processedResources.length) {
+    const ids = new Set(existingResources.map((r) => r.id));
+    throw badRequest(
+      'One or more resources could not be found.',
+      processedResources.filter((r) => !ids.has(r.id)),
+    );
+  }
+
+  let updatedResources: Resource[];
+  await transactional(async (transaction) => {
+    updatedResources = await Promise.all(
+      processedResources.map(async ({ $author, $created, $editor, $updated, id, ...data }) => {
+        const [, [resource]] = await Resource.update(
+          {
+            data,
+            EditorId: user?.id,
+          },
+          { where: { id }, transaction, returning: true },
+        );
+        return resource;
+      }),
+    );
+
+    if (definition.history) {
+      const historyDefinition = definition.history;
+      await ResourceVersion.bulkCreate(
+        existingResources.map((resource) => ({
+          ResourceId: resource.id,
+          UserId: resource.EditorId,
+          data: historyDefinition === true || historyDefi
