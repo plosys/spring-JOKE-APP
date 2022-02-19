@@ -283,4 +283,102 @@ export async function assertConsumerService(ctx: Context): Promise<void> {
   const { code } = await createOAuth2AuthorizationCode(
     app,
     loginRequest.redirectUri,
-   
+    loginRequest.scope,
+    user,
+  );
+  const location = new URL(loginRequest.redirectUri);
+  location.searchParams.set('code', code);
+  location.searchParams.set('state', loginRequest.state);
+  ctx.redirect(String(location));
+  ctx.body = `Redirecting to ${location}`;
+}
+
+export async function continueSamlLogin(ctx: Context): Promise<void> {
+  const {
+    request: {
+      body: { id },
+    },
+    user,
+  } = ctx;
+
+  const loginRequest = await SamlLoginRequest.findByPk(id, {
+    include: [
+      { model: User },
+      {
+        model: AppSamlSecret,
+        include: [{ model: App, attributes: ['domain', 'id', 'path', 'OrganizationId'] }],
+      },
+    ],
+  });
+
+  // The logged in account is linked to a new SAML authorization for next time.
+  await AppSamlAuthorization.create({
+    nameId: loginRequest.nameId,
+    AppSamlSecretId: loginRequest.AppSamlSecret.id,
+    UserId: loginRequest.User?.id ?? user.id,
+  });
+
+  const { code } = await createOAuth2AuthorizationCode(
+    loginRequest.AppSamlSecret.App,
+    loginRequest.redirectUri,
+    loginRequest.scope,
+    loginRequest.User ?? user,
+  );
+  const redirect = new URL(loginRequest.redirectUri);
+  redirect.searchParams.set('code', code);
+  redirect.searchParams.set('state', loginRequest.state);
+  ctx.body = { redirect };
+}
+
+export async function getEntityId(ctx: Context): Promise<void> {
+  const {
+    path,
+    pathParams: { appId, appSamlSecretId },
+  } = ctx;
+
+  const secret = await AppSamlSecret.findOne({
+    attributes: ['spCertificate'],
+    where: { AppId: appId, id: appSamlSecretId },
+  });
+
+  if (!secret) {
+    throw notFound('SAML secret not found');
+  }
+
+  ctx.body = toXml(
+    <>
+      {{
+        type: 'instruction',
+        name: 'xml',
+        value: 'version="1.0" encoding="utf-8"',
+      }}
+      <md:EntityDescriptor entityID={String(new URL(path, argv.host))} xmlns:md={NS.md}>
+        <md:SPSSODescriptor
+          AuthnRequestsSigned="true"
+          protocolSupportEnumeration={NS.samlp}
+          WantAssertionsSigned="true"
+        >
+          <md:KeyDescriptor use="signing">
+            <ds:KeyInfo xmlns:ds={NS.ds}>
+              <ds:X509Data>
+                <ds:X509Certificate>{stripPem(secret.spCertificate, true)}</ds:X509Certificate>
+              </ds:X509Data>
+            </ds:KeyInfo>
+          </md:KeyDescriptor>
+          <md:KeyDescriptor use="encryption">
+            <ds:KeyInfo xmlns:ds={NS.ds}>
+              <ds:X509Data>
+                <ds:X509Certificate>{stripPem(secret.spCertificate, true)}</ds:X509Certificate>
+              </ds:X509Data>
+            </ds:KeyInfo>
+          </md:KeyDescriptor>
+          <md:AssertionConsumerService
+            Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST"
+            Location={String(new URL(`/api/apps/${appId}/saml/${appSamlSecretId}/acs`, argv.host))}
+          />
+        </md:SPSSODescriptor>
+      </md:EntityDescriptor>
+    </>,
+    { closeEmptyElements: true, tightClose: true },
+  );
+}
