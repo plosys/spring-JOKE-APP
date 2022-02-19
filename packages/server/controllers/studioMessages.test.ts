@@ -38,4 +38,22 @@ describe('getStudioMessages', () => {
 
   it('should return empty messages if requesting the default language', async () => {
     const result = await request('/api/messages/en');
-    expect(resul
+    expect(result).toMatchObject({ status: 200, data: { language: 'en', messages: {} } });
+  });
+
+  it('should return 404 on languages that aren’t supported', async () => {
+    const result = await request('/api/messages/ko-kr');
+    expect(result).toMatchObject({
+      status: 404,
+      data: { message: 'Language “ko-kr” could not be found' },
+    });
+  });
+
+  it('should return 400 on misformatted languages', async () => {
+    const result = await request('/api/messages/invalid');
+    expect(result).toMatchObject({
+      status: 400,
+      data: { message: 'Language code “invalid” is invalid' },
+    });
+  });
+});
