@@ -854,3 +854,148 @@ export async function patchResource(ctx: Context): Promise<void> {
   });
 
   if (!resource) {
+    throw notFound('Resource not found');
+  }
+
+  const [updatedResource, preparedAssets, deletedAssetIds] = processResourceBody(
+    ctx,
+    definition,
+    resource.Assets.map((asset) => asset.id),
+    resource.expires,
+  );
+  const {
+    $clonable: clonable,
+    $expires: expires,
+    ...patchData
+  } = updatedResource as Record<string, unknown>;
+
+  await transactional((transaction) => {
+    const oldData = resource.data;
+    const data = { ...oldData, ...patchData };
+    const previousEditorId = resource.EditorId;
+    const promises: Promise<unknown>[] = [
+      resource.update({ data, clonable, expires, EditorId: user?.id }, { transaction }),
+    ];
+
+    if (preparedAssets.length) {
+      promises.push(
+        Asset.bulkCreate(
+          preparedAssets.map((asset) => ({
+            ...asset,
+            AppId: app.id,
+            ResourceId: resource.id,
+            UserId: user?.id,
+          })),
+          { logging: false, transaction },
+        ),
+      );
+    }
+
+    if (definition.history) {
+      promises.push(
+        ResourceVersion.create(
+          {
+            ResourceId: resourceId,
+            UserId: previousEditorId,
+            data: definition.history === true || definition.history.data ? oldData : undefined,
+          },
+          { transaction },
+        ),
+      );
+    } else {
+      promises.push(Asset.destroy({ where: { id: deletedAssetIds }, transaction }));
+    }
+
+    return Promise.all(promises);
+  });
+  await resource.reload({ include: [{ association: 'Editor' }] });
+
+  ctx.body = resource;
+}
+
+export async function deleteResource(ctx: Context): Promise<void> {
+  const {
+    pathParams: { appId, resourceId, resourceType },
+    user,
+  } = ctx;
+  const action = 'delete';
+
+  const app = await App.findByPk(appId, {
+    attributes: ['id', 'definition', 'OrganizationId', 'vapidPrivateKey', 'vapidPublicKey'],
+    include: user
+      ? [
+          { model: Organization, attributes: ['id'] },
+          {
+            model: AppMember,
+            attributes: ['role', 'UserId'],
+            required: false,
+            where: { UserId: user.id },
+          },
+        ]
+      : [],
+  });
+
+  getResourceDefinition(app, resourceType);
+  const userQuery = await verifyPermission(ctx, app, resourceType, action);
+
+  const resource = await Resource.findOne({
+    where: { id: resourceId, type: resourceType, AppId: appId, ...userQuery },
+  });
+
+  if (!resource) {
+    throw notFound('Resource not found');
+  }
+
+  await resource.destroy();
+  ctx.status = 204;
+
+  processReferenceHooks(user, app, resource, action);
+  processHooks(user, app, resource, action);
+}
+
+export async function deleteResources(ctx: Context): Promise<void> {
+  const {
+    pathParams: { appId, resourceType },
+    request: { body },
+    user,
+  } = ctx;
+
+  const action = 'delete';
+  const app = await App.findByPk(appId, {
+    attributes: ['id', 'definition', 'OrganizationId', 'vapidPrivateKey', 'vapidPublicKey'],
+    include: user
+      ? [
+          { model: Organization, attributes: ['id'] },
+          {
+            model: AppMember,
+            attributes: ['role', 'UserId'],
+            required: false,
+            where: { UserId: user.id },
+          },
+        ]
+      : [],
+  });
+
+  getResourceDefinition(app, resourceType);
+  const userQuery = await verifyPermission(ctx, app, resourceType, action);
+
+  let deletedAmount = 0;
+  while (deletedAmount < body.length) {
+    for (const resource of await Resource.findAll({
+      where: {
+        id: body.slice(deletedAmount, deletedAmount + 100),
+        type: resourceType,
+        AppId: appId,
+        ...userQuery,
+      },
+      limit: 100,
+    })) {
+      await resource.destroy();
+      processReferenceHooks(user, app, resource, action);
+      processHooks(user, app, resource, action);
+    }
+    deletedAmount += 100;
+  }
+
+  ctx.status = 204;
+}
