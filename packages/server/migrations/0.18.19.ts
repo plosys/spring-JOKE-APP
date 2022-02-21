@@ -23,4 +23,8 @@ export async function up(db: Sequelize): Promise<void> {
  */
 export async function down(db: Sequelize): Promise<void> {
   const queryInterface = db.getQueryInterface();
-  logger.info('Adding column resources to BlockVer
+  logger.info('Adding column resources to BlockVersion');
+  await queryInterface.addColumn('BlockVersion', 'resources', {
+    type: DataTypes.JSON,
+  });
+}
