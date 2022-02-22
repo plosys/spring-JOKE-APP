@@ -65,4 +65,12 @@ export async function down(db: Sequelize): Promise<void> {
 
   logger.info('Adding column `private` to `App');
   await queryInterface.addColumn('App', 'private', {
-    type: DataTypes
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  });
+  await db.query('UPDATE "App" SET private = true WHERE visibility != \'public\'');
+
+  logger.info('Removing column `visibility` from `App`');
+  await queryInterface.removeColumn('App', 'visibility');
+}
