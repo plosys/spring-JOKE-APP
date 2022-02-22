@@ -143,4 +143,80 @@ export async function up(db: Sequelize): Promise<void> {
         { type: QueryTypes.SELECT },
       );
 
-  const { apps, messages 
+  const { apps, messages } = processAppsAndMessages(appsInput, messagesInput);
+
+  logger.info('Applying all changes to database.');
+  await Promise.all([
+    ...apps
+      .filter((app) => app.coreStyle && app.sharedStyle)
+      .map((app) =>
+        db.query('UPDATE "App" SET "coreStyle" = ?, "sharedStyle" = ? WHERE id = ?', {
+          type: QueryTypes.UPDATE,
+          replacements: [app.coreStyle, app.sharedStyle, app.id],
+        }),
+      ),
+    ...messages.map((m) =>
+      db.query('UPDATE "AppMessages" SET messages = ? WHERE "AppId" = ? AND language = ?', {
+        type: QueryTypes.UPDATE,
+        replacements: [JSON.stringify(m.messages), m.AppId, m.language],
+      }),
+    ),
+  ]);
+}
+
+/**
+ * Summary:
+ * - Convert all path references for apps to use the page index instead of the name.
+ * - Remove table `TeamInvite`
+ *
+ * @param db The sequelize database.
+ */
+export async function down(db: Sequelize): Promise<void> {
+  const queryInterface = db.getQueryInterface();
+
+  logger.info('Starting path reference migration');
+  const messagesInput = await db.query<MessagesQuery>(
+    `SELECT "AppId", language, messages FROM "AppMessages" WHERE messages->>'app' ~ '"pages\\.${partialNormalized.source}'`,
+    {
+      type: QueryTypes.SELECT,
+    },
+  );
+
+  const appsInput = messagesInput.length
+    ? await db.query<AppQuery>(
+        `SELECT id, "coreStyle", "sharedStyle", definition
+         FROM "App"
+         WHERE "coreStyle" ~ 'pages\\.${partialNormalized.source}'
+         OR "sharedStyle" ~ 'pages\\.${partialNormalized.source}'
+         OR id IN (?)`,
+        { type: QueryTypes.SELECT, replacements: [messagesInput.map((m) => m.AppId)] },
+      )
+    : await db.query<AppQuery>(
+        `SELECT id, "coreStyle", "sharedStyle", definition
+         FROM "App"
+         WHERE "coreStyle" ~ 'pages\\.${partialNormalized.source}'
+         OR "sharedStyle" ~ 'pages\\.${partialNormalized.source}'`,
+        { type: QueryTypes.SELECT },
+      );
+
+  const { apps, messages } = processAppsAndMessages(appsInput, messagesInput, true);
+
+  logger.info('Applying all changes to database.');
+  await Promise.all([
+    ...apps.map((app) =>
+      db.query('UPDATE "App" SET "coreStyle" = ?, "sharedStyle" = ? WHERE id = ?', {
+        type: QueryTypes.UPDATE,
+        replacements: [app.coreStyle, app.sharedStyle, app.id],
+      }),
+    ),
+    ...messages.map((m) =>
+      db.query('UPDATE "AppMessages" SET messages = ? WHERE "AppId" = ? AND language = ?', {
+        type: QueryTypes.UPDATE,
+        replacements: [JSON.stringify(m.messages), m.AppId, m.language],
+      }),
+    ),
+  ]);
+
+  logger.info('Removing table `TeamInvite`');
+  await queryInterface.dropTable('TeamInvite');
+}
