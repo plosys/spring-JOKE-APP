@@ -55,4 +55,20 @@ export async function up(db: Sequelize): Promise<void> {
     }),
   );
 
-  await queryInterface.changeColumn('App', 'v
+  await queryInterface.changeColumn('App', 'vapidPublicKey', {
+    type: DataTypes.STRING,
+    allowNull: false,
+  });
+  await queryInterface.changeColumn('App', 'vapidPrivateKey', {
+    type: DataTypes.STRING,
+    allowNull: false,
+  });
+}
+
+export async function down(db: Sequelize): Promise<void> {
+  const queryInterface = db.getQueryInterface();
+
+  await queryInterface.removeColumn('App', 'vapidPublicKey');
+  await queryInterface.removeColumn('App', 'vapidPrivateKey');
+  await queryInterface.dropTable('AppSubscription');
+}
