@@ -1,5 +1,7 @@
+
 import {
   AllowNull,
+  AutoIncrement,
   BelongsTo,
   Column,
   CreatedAt,
@@ -8,47 +10,40 @@ import {
   Model,
   PrimaryKey,
   Table,
-  Unique,
-  UpdatedAt,
 } from 'sequelize-typescript';
 
 import { App, User } from './index.js';
 
-@Table({ tableName: 'AppRating' })
-export class AppRating extends Model {
-  @AllowNull(false)
-  @Column
-  rating: number;
-
-  @Column(DataType.TEXT)
-  description: string;
-
+@Table({ tableName: 'AppSnapshot', updatedAt: false })
+export class AppSnapshot extends Model {
   @PrimaryKey
+  @AutoIncrement
+  @Column
+  id: number;
+
   @AllowNull(false)
-  @Unique('UniqueRatingIndex')
+  @Column(DataType.TEXT)
+  yaml: string;
+
+  @CreatedAt
+  created: Date;
+
   @ForeignKey(() => App)
+  @AllowNull(false)
   @Column
   AppId: number;
 
   @BelongsTo(() => App)
   App: Awaited<App>;
 
-  @PrimaryKey
-  @AllowNull(false)
-  @Unique('UniqueRatingIndex')
+  /**
+   * XXX: Update this to not allow null after the migration has finished
+   */
   @ForeignKey(() => User)
+  @AllowNull(true)
   @Column(DataType.UUID)
   UserId: string;
 
   @BelongsTo(() => User)
   User: Awaited<User>;
-
-  @CreatedAt
-  created: Date;
-
-  @UpdatedAt
-  updated: Date;
-
-  RatingAverage?: number;
-  RatingCount?: number;
 }
