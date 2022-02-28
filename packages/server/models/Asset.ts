@@ -11,4 +11,56 @@ import {
   Table,
   Unique,
   UpdatedAt,
-} from 'sequelize-
+} from 'sequelize-typescript';
+
+import { App, Resource, User } from './index.js';
+
+@Table({ tableName: 'Asset' })
+export class Asset extends Model {
+  @PrimaryKey
+  @Default(DataType.UUIDV4)
+  @Column
+  id: string;
+
+  @Column
+  mime: string;
+
+  @Column
+  filename: string;
+
+  @AllowNull(false)
+  @Column
+  data: Buffer;
+
+  @Unique('UniqueAssetNameIndex')
+  @Column
+  name: string;
+
+  @CreatedAt
+  created: Date;
+
+  @UpdatedAt
+  updated: Date;
+
+  @ForeignKey(() => App)
+  @Unique('UniqueAssetNameIndex')
+  @Column
+  AppId: number;
+
+  @BelongsTo(() => App)
+  App: Awaited<App>;
+
+  @ForeignKey(() => User)
+  @Column(DataType.UUID)
+  UserId: string;
+
+  @BelongsTo(() => User)
+  User: Awaited<User>;
+
+  @ForeignKey(() => Resource)
+  @Column
+  ResourceId: number;
+
+  @BelongsTo(() => Resource)
+  Resource: Awaited<Resource>;
+}
