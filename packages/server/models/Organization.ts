@@ -55,4 +55,16 @@ export class Organization extends Model {
   Apps: App[];
 
   @HasMany(() => BlockVersion)
-  BlockVersions: BlockVersion[
+  BlockVersions: BlockVersion[];
+
+  @CreatedAt
+  created: Date;
+
+  @UpdatedAt
+  updated: Date;
+
+  @DeletedAt
+  deleted: Date;
+
+  Member: Awaited<Member>;
+}
