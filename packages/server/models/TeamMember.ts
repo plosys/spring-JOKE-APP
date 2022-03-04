@@ -11,4 +11,36 @@ import {
   PrimaryKey,
   Table,
   UpdatedAt,
-} from 'sequelize-type
+} from 'sequelize-typescript';
+
+import { Team, User } from './index.js';
+
+@Table({ tableName: 'TeamMember' })
+export class TeamMember extends Model {
+  @PrimaryKey
+  @ForeignKey(() => Team)
+  @Column
+  TeamId: number;
+
+  @PrimaryKey
+  @ForeignKey(() => User)
+  @Column
+  UserId: string;
+
+  @Default(TeamRole.Member)
+  @AllowNull(false)
+  @Column(DataType.ENUM(...Object.values(TeamRole)))
+  role: TeamRole;
+
+  @BelongsTo(() => User)
+  User: Awaited<User>;
+
+  @BelongsTo(() => Team)
+  Team: Awaited<Team>;
+
+  @CreatedAt
+  created: Date;
+
+  @UpdatedAt
+  updated: Date;
+}
