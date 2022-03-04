@@ -30,4 +30,18 @@ it('should download a block asset', async () => {
     responseType: 'arraybuffer',
   });
   expect(response.status).toBe(200);
-  expect(response.headers[
+  expect(response.headers['content-type']).toBe('image/png');
+  expect(response.data).toMatchImageSnapshot();
+});
+
+it('should respond with 404 when trying to fetch a non existing block asset', async () => {
+  const response = await request.get('/api/blocks/@linux/tux/versions/3.1.4/tux.png');
+  expect(response).toMatchObject({
+    status: 404,
+    data: {
+      error: 'Not Found',
+      message: 'Block asset not found',
+      statusCode: 404,
+    },
+  });
+});
