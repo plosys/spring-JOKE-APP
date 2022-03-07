@@ -66,4 +66,12 @@ it('should serve app shared CSS', async () => {
 
 it('should handle if an app is not found', async () => {
   const response = await request.get('/core.css');
-  expe
+  expect(response).toMatchObject({
+    status: 404,
+    data: {
+      error: 'Not Found',
+      message: 'App not found',
+      statusCode: 404,
+    },
+  });
+});
