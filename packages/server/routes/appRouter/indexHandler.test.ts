@@ -183,4 +183,109 @@ it('should render the index page', async () => {
   const response = await request.get('/');
   expect(response).toMatchInlineSnapshot(`
     HTTP/1.1 200 OK
-    Content-Security-Policy: connect-src * blob: data:; default-src 'self'; font-src * data:; frame-src 'self' *.vimeo.com *.youtube.com; img-src * blob: data: http://host.example; media-src * blob: data: http://host.example; script-src 'nonce-AAAAAAAAAAAAAAAAAAAAAA==' 'self' 'sha256-ZIQmAQ5kLTM8k
+    Content-Security-Policy: connect-src * blob: data:; default-src 'self'; font-src * data:; frame-src 'self' *.vimeo.com *.youtube.com; img-src * blob: data: http://host.example; media-src * blob: data: http://host.example; script-src 'nonce-AAAAAAAAAAAAAAAAAAAAAA==' 'self' 'sha256-ZIQmAQ5kLTM8kPLxm2ZIAGxGWL4fBbf21DH0NuLeuVw=' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com
+    Content-Type: text/html; charset=utf-8
+
+    {
+      "data": {
+        "app": {
+          "$updated": "1970-01-01T00:00:00.000Z",
+          "OrganizationId": "test",
+          "definition": {
+            "name": "Test App",
+            "pages": [
+              {
+                "blocks": [
+                  {
+                    "type": "@test/a",
+                    "version": "0.0.0",
+                  },
+                  {
+                    "type": "a",
+                    "version": "0.1.0",
+                  },
+                  {
+                    "type": "a",
+                    "version": "0.1.0",
+                  },
+                ],
+                "name": "Test Page",
+              },
+              {
+                "name": "Test Page with Flow",
+                "steps": [
+                  {
+                    "blocks": [
+                      {
+                        "type": "a",
+                        "version": "0.1.0",
+                      },
+                      {
+                        "actions": {
+                          "whatever": {
+                            "blocks": [
+                              {
+                                "type": "@test/b",
+                                "version": "0.0.2",
+                              },
+                            ],
+                          },
+                        },
+                        "type": "a",
+                        "version": "0.1.1",
+                      },
+                    ],
+                  },
+                ],
+                "type": "flow",
+              },
+            ],
+          },
+          "domain": null,
+          "googleAnalyticsID": null,
+          "hasIcon": false,
+          "hasMaskableIcon": false,
+          "iconBackground": "#ffffff",
+          "iconUrl": null,
+          "id": 1,
+          "locked": false,
+          "path": "app",
+          "sentryDsn": null,
+          "sentryEnvironment": null,
+          "showAppsembleLogin": false,
+          "showAppsembleOAuth2Login": true,
+          "yaml": "name: Test App
+    pages:
+      - name: Test Page
+        blocks:
+          - type: "@test/a"
+            version: 0.0.0
+          - type: a
+            version: 0.1.0
+          - type: a
+            version: 0.1.0
+      - name: Test Page with Flow
+        type: flow
+        steps:
+          - blocks:
+              - type: a
+                version: 0.1.0
+              - type: a
+                version: 0.1.1
+                actions:
+                  whatever:
+                    blocks:
+                      - type: "@test/b"
+                        version: 0.0.2
+    ",
+        },
+        "appUpdated": "1970-01-01T00:00:00.000Z",
+        "appUrl": "http://app.test.host.example/",
+        "bulmaURL": "/bulma/0.9.3/bulma.min.css?dangerColor=%23ff2800&fontFamily=Open+Sans&fontSource=google&infoColor=%23a7d0ff&linkColor=%230440ad&primaryColor=%235393ff&splashColor=%23ffffff&successColor=%231fd25b&themeColor=%23ffffff&tileLayer=https%3A%2F%2F%7Bs%7D.tile.openstreetmap.org%2F%7Bz%7D%2F%7Bx%7D%2F%7By%7D.png&warningColor=%23fed719",
+        "faURL": "/fa/6.3.0/css/all.min.css",
+        "host": "http://host.example",
+        "locale": "en",
+        "locales": [],
+        "nonce": "AAAAAAAAAAAAAAAAAAAAAA==",
+        "settings": "<script>window.settings={"apiUrl":"http://host.example","blockManifests":[{"name":"@test/a","version":"0.0.0","layout":null,"actions":null,"events":null,"files":["a0.js","a0.css"]},{"name":"@test/b","version":"0.0.2","layout":null,"actions":null,"events":null,"files":["b2.js","b2.css"]},{"name":"@appsemble/a","version":"0.1.0","layout":null,"actions":null,"events":null,"files":["a0.js","a0.css"]},{"name":"@appsemble/a","version":"0.1.1","layout":null,"actions":null,"events":null,"files":["a1.js","a1.css"]}],"id":1,"languages":["en"],"logins":[],"vapidPublicKey":"","definition":{"name":"Test App","pages":[{"name":"Test Page","blocks":[{"type":"@test/a","version":"0.0.0"},{"type":"a","version":"0.1.0"},{"type":"a","version":"0.1.0"}]},{"name":"Test Page with Flow","type":"flow","steps":[{"blocks":[{"type":"a","version":"0.1.0"},{"type":"a","version":"0.1.1","actions":{"whatever":{"blocks":[{"type":"@test/b","version":"0.0.2"}]}}}]}]}]},"showAppsembleLogin":false,"showAppsembleOAuth2Login":true,"appUpdated":"1970-01-01T00:00:00.000Z"}</script>",
+        "themeColor": "#ffff
