@@ -288,4 +288,73 @@ it('should render the index page', async () => {
         "locales": [],
         "nonce": "AAAAAAAAAAAAAAAAAAAAAA==",
         "settings": "<script>window.settings={"apiUrl":"http://host.example","blockManifests":[{"name":"@test/a","version":"0.0.0","layout":null,"actions":null,"events":null,"files":["a0.js","a0.css"]},{"name":"@test/b","version":"0.0.2","layout":null,"actions":null,"events":null,"files":["b2.js","b2.css"]},{"name":"@appsemble/a","version":"0.1.0","layout":null,"actions":null,"events":null,"files":["a0.js","a0.css"]},{"name":"@appsemble/a","version":"0.1.1","layout":null,"actions":null,"events":null,"files":["a1.js","a1.css"]}],"id":1,"languages":["en"],"logins":[],"vapidPublicKey":"","definition":{"name":"Test App","pages":[{"name":"Test Page","blocks":[{"type":"@test/a","version":"0.0.0"},{"type":"a","version":"0.1.0"},{"type":"a","version":"0.1.0"}]},{"name":"Test Page with Flow","type":"flow","steps":[{"blocks":[{"type":"a","version":"0.1.0"},{"type":"a","version":"0.1.1","actions":{"whatever":{"blocks":[{"type":"@test/b","version":"0.0.2"}]}}}]}]}]},"showAppsembleLogin":false,"showAppsembleOAuth2Login":true,"appUpdated":"1970-01-01T00:00:00.000Z"}</script>",
-        "themeColor": "#ffff
+        "themeColor": "#ffffff",
+      },
+      "filename": "app/index.html",
+    }
+  `);
+});
+
+it('should render a 404 page if no app is found', async () => {
+  const response = await request.get('/');
+  expect(response).toMatchInlineSnapshot(`
+    HTTP/1.1 404 Not Found
+    Content-Type: text/html; charset=utf-8
+
+    {
+      "data": {
+        "bulmaURL": "/bulma/0.9.3/bulma.min.css",
+        "faURL": "/fa/6.3.0/css/all.min.css",
+        "message": "The app you are looking for could not be found.",
+      },
+      "filename": "app/error.html",
+    }
+  `);
+});
+
+it('should redirect if only the organization id is given', async () => {
+  requestURL = new URL('http://org.host.example');
+  const response = await request.get('/');
+  expect(response).toMatchInlineSnapshot(`
+    HTTP/1.1 302 Found
+    Content-Type: text/html; charset=utf-8
+    Location: http://host.example/organizations/org
+
+    Redirecting to <a href="http://host.example/organizations/org">http://host.example/organizations/org</a>.
+  `);
+});
+
+it('should if the app has a custom domain', async () => {
+  requestURL = new URL('http://app.test.host.example');
+  await App.create({
+    OrganizationId: 'test',
+    definition: {
+      name: 'Test App',
+      pages: [],
+    },
+    path: 'app',
+    domain: 'custom.example',
+    vapidPublicKey: '',
+    vapidPrivateKey: '',
+  });
+  const response = await request.get('/en?query=param');
+  expect(response).toMatchInlineSnapshot(`
+    HTTP/1.1 302 Found
+    Content-Type: text/html; charset=utf-8
+    Location: http://custom.example/en?query=param
+
+    Redirecting to <a href="http://custom.example/en?query=param">http://custom.example/en?query=param</a>.
+  `);
+});
+
+it('should redirect to the app root if the organization id is disallowed', async () => {
+  requestURL = new URL('http://www.host.example');
+  const response = await request.get('/');
+  expect(response).toMatchInlineSnapshot(`
+    HTTP/1.1 302 Found
+    Content-Type: text/html; charset=utf-8
+    Location: http://host.example
+
+    Redirecting to <a href="http://host.example">http://host.example</a>.
+  `);
+});
