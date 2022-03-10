@@ -197,4 +197,158 @@ describe('authorization_code', () => {
         client_id: `app:${app.id}`,
         code: '123',
         grant_type: 'authorization_code',
-        redirect_uri: 'http:/
+        redirect_uri: 'http://foo.bar.localhost:9999/',
+        scope: 'email openid',
+      }),
+      { headers: { referer: 'http://foo.bar.localhost:9999/' } },
+    );
+    expect(response).toMatchObject({
+      status: 400,
+      data: {
+        error: 'invalid_scope',
+      },
+    });
+  });
+
+  it('should return an access token response if the authorization code is valid', async () => {
+    await user.$create('Organization', { id: 'org' });
+    const app = await App.create({
+      OrganizationId: 'org',
+      definition: '',
+      vapidPrivateKey: '',
+      vapidPublicKey: '',
+    });
+    const expires = new Date('2000-01-01T00:10:00Z');
+    const authCode = await OAuth2AuthorizationCode.create({
+      AppId: app.id,
+      code: '123',
+      UserId: user.id,
+      expires,
+      redirectUri: 'http://foo.bar.localhost:9999/',
+      scope: 'email openid',
+    });
+    const response = await request.post<TokenResponse>(
+      '/oauth2/token',
+      new URLSearchParams({
+        client_id: `app:${app.id}`,
+        code: '123',
+        grant_type: 'authorization_code',
+        redirect_uri: 'http://foo.bar.localhost:9999/',
+        scope: 'openid',
+      }),
+      { headers: { referer: 'http://foo.bar.localhost:9999/' } },
+    );
+    expect(response).toMatchObject({
+      status: 200,
+      data: {
+        access_token: expect.stringMatching(/(?:[\w-]+\.){2}[\w-]/),
+        expires_in: 3600,
+        refresh_token: expect.stringMatching(/(?:[\w-]+\.){2}[\w-]/),
+        token_type: 'bearer',
+      },
+    });
+    await expect(authCode.reload()).rejects.toThrow(
+      'Instance could not be reloaded because it does not exist anymore (find call returned null)',
+    );
+    const payload = jwt.decode(response.data.access_token);
+    expect(payload).toStrictEqual({
+      aud: 'app:1',
+      exp: 946_688_400,
+      iat: 946_684_800,
+      iss: 'http://localhost',
+      scope: 'openid',
+      sub: user.id,
+    });
+  });
+});
+
+describe('client_credentials', () => {
+  beforeEach(async () => {
+    await OAuth2ClientCredentials.create({
+      description: 'Test credentials',
+      id: 'testClientId',
+      expires: new Date('2000-01-02T00:00:00Z'),
+      scopes: 'apps:write blocks:write',
+      secret: await hash('testClientSecret', 10),
+      UserId: user.id,
+    });
+  });
+
+  it('should handle a missing authorization header', async () => {
+    const response = await request.post('/oauth2/token', 'grant_type=client_credentials');
+    expect(response).toMatchObject({
+      status: 400,
+      data: {
+        error: 'invalid_client',
+      },
+    });
+  });
+
+  it('should handle invalid authentication types', async () => {
+    const response = await request.post('/oauth2/token', 'grant_type=client_credentials', {
+      headers: {
+        authorization: 'Bearer foo',
+      },
+    });
+    expect(response).toMatchObject({
+      status: 400,
+      data: {
+        error: 'invalid_client',
+      },
+    });
+  });
+
+  it('should handle invalidly encoded basic authentication', async () => {
+    const response = await request.post('/oauth2/token', 'grant_type=client_credentials', {
+      headers: {
+        authorization: 'Basic invalid',
+      },
+    });
+    expect(response).toMatchObject({
+      status: 400,
+      data: {
+        error: 'invalid_client',
+      },
+    });
+  });
+
+  it('should handle invalid client credentials', async () => {
+    const response = await request.post('/oauth2/token', 'grant_type=client_credentials', {
+      headers: { authorization: basicAuth('invalidId', 'invalidSecret') },
+    });
+    expect(response).toMatchObject({
+      status: 400,
+      data: {
+        error: 'invalid_client',
+      },
+    });
+  });
+
+  it('should handle expired clients', async () => {
+    import.meta.jest.setSystemTime(new Date('2000-03-01T00:00:00Z'));
+    const response = await request.post('/oauth2/token', 'grant_type=client_credentials', {
+      headers: { authorization: basicAuth('testClientId', 'testClientSecret') },
+    });
+    expect(response).toMatchObject({
+      status: 400,
+      data: {
+        error: 'invalid_grant',
+      },
+    });
+  });
+
+  it('should handle unauthorized client scopes', async () => {
+    const response = await request.post(
+      '/oauth2/token',
+      'grant_type=client_credentials&scope=blocks:write organizations:write',
+      { headers: { authorization: basicAuth('testClientId', 'testClientSecret') } },
+    );
+    expect(response).toMatchObject({
+      status: 400,
+      data: {
+        error: 'invalid_scope',
+      },
+    });
+  });
+
+  it('sho
