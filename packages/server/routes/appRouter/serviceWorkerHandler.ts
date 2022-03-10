@@ -43,4 +43,15 @@ export async function serviceWorkerHandler(ctx: Context): Promise<void> {
     },
   });
 
-  ctx.body = `const block
+  ctx.body = `const blockAssets=${JSON.stringify(
+    blockManifests.flatMap((block) =>
+      block.BlockAssets.filter((asset) => !asset.filename.endsWith('.map')).map((asset) =>
+        prefixBlockURL(
+          { type: `@${block.OrganizationId}/${block.name}`, version: block.version },
+          asset.filename,
+        ),
+      ),
+    ),
+  )};${serviceWorker}`;
+  ctx.type = 'application/javascript';
+}
