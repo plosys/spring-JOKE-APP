@@ -233,4 +233,49 @@ it('should support screenshots', async () => {
           type: 'image/png',
         },
         {
-          pu
+          purpose: 'maskable',
+          sizes: '144x144',
+          src: '/icon-144.png?maskable=true',
+          type: 'image/png',
+        },
+        {
+          purpose: 'any',
+          sizes: '192x192',
+          src: '/icon-192.png',
+          type: 'image/png',
+        },
+        {
+          purpose: 'maskable',
+          sizes: '192x192',
+          src: '/icon-192.png?maskable=true',
+          type: 'image/png',
+        },
+        {
+          purpose: 'any',
+          sizes: '512x512',
+          src: '/icon-512.png',
+          type: 'image/png',
+        },
+        {
+          purpose: 'maskable',
+          sizes: '512x512',
+          src: '/icon-512.png?maskable=true',
+          type: 'image/png',
+        },
+      ],
+      name: 'Test App',
+      orientation: 'any',
+      scope: '/',
+      screenshots: [
+        {
+          sizes: '1080x1920',
+          src: '/screenshots/42.png',
+          type: 'image/png',
+        },
+      ],
+      short_name: 'Test App',
+      start_url: '/test-page',
+      theme_color: '#ffffff',
+    },
+  });
+});
