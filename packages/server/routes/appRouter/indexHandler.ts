@@ -94,4 +94,95 @@ export async function indexHandler(ctx: Context): Promise<void> {
 
   const blocks = getAppBlocks(app.definition);
   const blockManifests = await BlockVersion.findAll({
-    attributes: ['name', 'OrganizationId', 'v
+    attributes: ['name', 'OrganizationId', 'version', 'layout', 'actions', 'events'],
+    include: [
+      {
+        attributes: ['filename'],
+        model: BlockAsset,
+        where: {
+          BlockVersionId: { [Op.col]: 'BlockVersion.id' },
+        },
+      },
+    ],
+    where: {
+      [Op.or]: blocks.map(({ type, version }) => {
+        const [OrganizationId, name] = parseBlockName(type);
+        return { name, OrganizationId, version };
+      }),
+    },
+  });
+  const nonce = crypto.randomBytes(16).toString('base64');
+  const { reportUri, sentryDsn, sentryEnvironment, sentryOrigin } = getSentryClientSettings(
+    hostname,
+    app.sentryDsn,
+    app.sentryEnvironment,
+  );
+
+  const defaultLanguage = app.definition.defaultLanguage || defaultLocale;
+  const languages = [
+    ...new Set([...app.AppMessages.map(({ language }) => language), defaultLanguage]),
+  ].sort();
+  const [settingsHash, settings] = createSettings(
+    {
+      apiUrl: host,
+      blockManifests: blockManifests.map(
+        ({ BlockAssets, OrganizationId, actions, events, layout, name, version }) => ({
+          name: `@${OrganizationId}/${name}`,
+          version,
+          layout,
+          actions,
+          events,
+          files: BlockAssets.map(({ filename }) => filename),
+        }),
+      ),
+      id: app.id,
+      languages,
+      logins: [
+        ...app.AppOAuth2Secrets.map(({ icon, id, name }) => ({ icon, id, name, type: 'oauth2' })),
+        ...app.AppSamlSecrets.map(({ icon, id, name }) => ({ icon, id, name, type: 'saml' })),
+      ],
+      vapidPublicKey: app.vapidPublicKey,
+      definition: app.definition,
+      showAppsembleLogin: app.showAppsembleLogin ?? false,
+      showAppsembleOAuth2Login: app.showAppsembleOAuth2Login ?? true,
+      sentryDsn,
+      sentryEnvironment,
+      appUpdated: app.updated.toISOString(),
+    },
+    app.googleAnalyticsID ? createGtagCode(app.googleAnalyticsID) : undefined,
+  );
+  const csp = {
+    'report-uri': [reportUri],
+    'connect-src': ['*', 'blob:', 'data:', sentryOrigin, sentryDsn && 'https://sentry.io'],
+    'default-src': ["'self'"],
+    'script-src': [
+      "'self'",
+      `'nonce-${nonce}'`,
+      settingsHash,
+      app.googleAnalyticsID && 'https://www.googletagmanager.com',
+      // This is needed for Webpack.
+      process.env.NODE_ENV !== 'production' && "'unsafe-eval'",
+    ],
+    'img-src': ['*', 'blob:', 'data:', host],
+    'media-src': ['*', 'blob:', 'data:', host],
+    'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+    'font-src': ['*', 'data:'],
+    'frame-src': ["'self'", '*.vimeo.com', '*.youtube.com'],
+  };
+
+  ctx.set('Content-Security-Policy', makeCSP(csp));
+
+  return render(ctx, 'app/index.html', {
+    app,
+    appUrl: String(appUrl),
+    host,
+    locale: defaultLanguage,
+    locales: languages.filter((lang) => lang !== defaultLanguage),
+    bulmaURL: createThemeURL(mergeThemes(app.definition.theme)),
+    faURL,
+    nonce,
+    settings,
+    themeColor: app.definition.theme?.themeColor || '#ffffff',
+    appUpdated: app.updated.toISOString(),
+  });
+}
