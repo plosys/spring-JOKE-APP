@@ -36,4 +36,165 @@ it('should not accept invalid content types', async () => {
   });
 });
 
-it('should not accept missing grant ty
+it('should not accept missing grant types', async () => {
+  const response = await request.post('/oauth2/token', '');
+  expect(response).toMatchObject({
+    status: 400,
+    data: {
+      error: 'unsupported_grant_type',
+    },
+  });
+});
+
+it('should not accept unsupported grant types', async () => {
+  const response = await request.post('/oauth2/token', 'grant_type=unsupported');
+  expect(response).toMatchObject({
+    status: 400,
+    data: {
+      error: 'unsupported_grant_type',
+    },
+  });
+});
+
+describe('authorization_code', () => {
+  it('should handle a missing referer header', async () => {
+    const response = await request.post(
+      '/oauth2/token',
+      new URLSearchParams({
+        client_id: 'app:123',
+        code: '123',
+        grant_type: 'authorization_code',
+        redirect_uri: 'http://foo.bar.localhost',
+        scope: 'openid',
+      }),
+    );
+    expect(response).toMatchObject({
+      status: 400,
+      data: {
+        error: 'invalid_request',
+      },
+    });
+  });
+
+  it('should fail if the referer doesn’t match the redirect URI', async () => {
+    const response = await request.post(
+      '/oauth2/token',
+      new URLSearchParams({
+        client_id: 'app:42',
+        code: '123',
+        grant_type: 'authorization_code',
+        redirect_uri: 'http://foo.bar.localhost:9999/',
+        scope: 'openid',
+      }),
+      { headers: { referer: 'http://fooz.baz.localhost:9999/' } },
+    );
+    expect(response).toMatchObject({
+      status: 400,
+      data: {
+        error: 'invalid_request',
+      },
+    });
+  });
+
+  it('should fail if the client id doesn’t match an app id', async () => {
+    const response = await request.post(
+      '/oauth2/token',
+      new URLSearchParams({
+        client_id: 'invalid',
+        code: '123',
+        grant_type: 'authorization_code',
+        redirect_uri: 'http://foo.bar.localhost:9999/',
+        scope: 'openid',
+      }),
+      { headers: { referer: 'http://foo.bar.localhost:9999/' } },
+    );
+    expect(response).toMatchObject({
+      status: 400,
+      data: {
+        error: 'invalid_client',
+      },
+    });
+  });
+
+  it('should fail if no authorization code has been registered', async () => {
+    const response = await request.post(
+      '/oauth2/token',
+      new URLSearchParams({
+        client_id: 'app:42',
+        code: '123',
+        grant_type: 'authorization_code',
+        redirect_uri: 'http://foo.bar.localhost:9999/',
+        scope: 'openid',
+      }),
+      { headers: { referer: 'http://foo.bar.localhost:9999/' } },
+    );
+    expect(response).toMatchObject({
+      status: 400,
+      data: {
+        error: 'invalid_client',
+      },
+    });
+  });
+
+  it('should not allow expired authorization codes', async () => {
+    await user.$create('Organization', { id: 'org' });
+    const app = await App.create({
+      OrganizationId: 'org',
+      definition: '',
+      vapidPrivateKey: '',
+      vapidPublicKey: '',
+    });
+    const expires = new Date('1999-12-31T23:00:00Z');
+    const authCode = await OAuth2AuthorizationCode.create({
+      AppId: app.id,
+      code: '123',
+      UserId: user.id,
+      expires,
+      redirectUri: 'http://foo.bar.localhost:9999/',
+      scope: 'openid',
+    });
+    const response = await request.post(
+      '/oauth2/token',
+      new URLSearchParams({
+        client_id: `app:${app.id}`,
+        code: '123',
+        grant_type: 'authorization_code',
+        redirect_uri: 'http://foo.bar.localhost:9999/',
+      }),
+      { headers: { referer: 'http://foo.bar.localhost:9999/' } },
+    );
+    expect(response).toMatchObject({
+      status: 400,
+      data: {
+        error: 'invalid_grant',
+      },
+    });
+    await expect(authCode.reload()).rejects.toThrow(
+      'Instance could not be reloaded because it does not exist anymore (find call returned null)',
+    );
+  });
+
+  it('should only allow granted scopes', async () => {
+    await user.$create('Organization', { id: 'org' });
+    const app = await App.create({
+      OrganizationId: 'org',
+      definition: '',
+      vapidPrivateKey: '',
+      vapidPublicKey: '',
+    });
+    const expires = new Date('2000-01-01T00:10:00Z');
+    await OAuth2AuthorizationCode.create({
+      AppId: app.id,
+      code: '123',
+      UserId: user.id,
+      expires,
+      redirectUri: 'http://foo.bar.localhost:9999/',
+      scope: 'openid',
+    });
+    const response = await request.post(
+      '/oauth2/token',
+      new URLSearchParams({
+        client_id: `app:${app.id}`,
+        code: '123',
+        grant_type: 'authorization_code',
+        redirect_uri: 'http:/
