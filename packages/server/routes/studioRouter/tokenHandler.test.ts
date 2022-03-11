@@ -351,4 +351,75 @@ describe('client_credentials', () => {
     });
   });
 
-  it('sho
+  it('should return an access token response if the request is made correctly', async () => {
+    const response = await request.post<TokenResponse>(
+      '/oauth2/token',
+      'grant_type=client_credentials&scope=blocks:write',
+      { headers: { authorization: basicAuth('testClientId', 'testClientSecret') } },
+    );
+    expect(response).toMatchObject({
+      status: 200,
+      data: {
+        access_token: expect.stringMatching(/^(?:[\w-]+\.){2}[\w-]+$/),
+        expires_in: 3600,
+        token_type: 'bearer',
+      },
+    });
+    const payload = jwt.decode(response.data.access_token);
+    expect(payload).toStrictEqual({
+      aud: 'testClientId',
+      exp: 946_688_400,
+      iat: 946_684_800,
+      iss: 'http://localhost',
+      scope: 'blocks:write',
+      sub: user.id,
+    });
+  });
+});
+
+describe('refresh_token', () => {
+  it('should verify the refresh token', async () => {
+    const response = await request.post(
+      '/oauth2/token',
+      new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: 'invalid.refresh.token',
+        scope: 'resources:manage',
+      }),
+    );
+    expect(response).toMatchObject({
+      status: 400,
+      data: {
+        error: 'invalid_grant',
+      },
+    });
+  });
+
+  it('should create a refresh token', async () => {
+    const response = await request.post<TokenResponse>(
+      '/oauth2/token',
+      new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: createJWTResponse(user.id).refresh_token,
+        scope: 'resources:manage',
+      }),
+    );
+    expect(response).toMatchObject({
+      status: 200,
+      data: {
+        access_token: expect.stringMatching(/^(?:[\w-]+\.){2}[\w-]+$/),
+        expires_in: 3600,
+        refresh_token: expect.stringMatching(/^(?:[\w-]+\.){2}[\w-]+$/),
+        token_type: 'bearer',
+      },
+    });
+    const payload = jwt.decode(response.data.access_token);
+    expect(payload).toStrictEqual({
+      aud: 'http://localhost',
+      exp: 946_688_400,
+      iat: 946_684_800,
+      iss: 'http://localhost',
+      sub: user.id,
+    });
+  });
+});
