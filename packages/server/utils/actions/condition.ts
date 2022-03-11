@@ -23,4 +23,24 @@ export async function condition({
         attributes: ['verified'],
         where: {
           email: { [Op.col]: 'User.primaryEmail' },
-     
+        },
+      },
+    ],
+  });
+
+  const context = await getRemapperContext(
+    app,
+    app.definition.defaultLanguage || defaultLocale,
+    user && {
+      sub: user.id,
+      name: user.name,
+      email: user.primaryEmail,
+      email_verified: Boolean(user.EmailAuthorizations?.[0]?.verified),
+      zoneinfo: user.timezone,
+    },
+  );
+
+  const actionDefinition = remap(action.if, data, context) ? action.then : action.else;
+  const implementation = actions[actionDefinition.type];
+  return handleAction(implementation, { app, user, action: actionDefinition, data, ...params });
+}
