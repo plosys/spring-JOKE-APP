@@ -225,4 +225,15 @@ export function parseLanguage(input: string[] | string): {
 export function applyAppMessages(app: App, language: string, baseLanguage: string): void {
   if (app.AppMessages?.length) {
     const baseMessages =
-      b
+      baseLanguage && app.AppMessages.find((messages) => messages.language === baseLanguage);
+    const languageMessages = app.AppMessages.find((messages) => messages.language === language);
+
+    Object.assign(app, {
+      messages: mergeMessages(
+        extractAppMessages(app.definition),
+        baseMessages?.messages ?? {},
+        languageMessages?.messages ?? {},
+      ),
+    });
+  }
+}
