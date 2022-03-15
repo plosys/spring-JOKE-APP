@@ -151,4 +151,179 @@ export interface Argv {
    *
    * @default false
    */
-  ssl: boolea
+  ssl: boolean;
+
+  /**
+   * Either the SSL key as a string or as a path to the file to use.
+   */
+  sslKey: string;
+
+  /**
+   * Either the SSL certificate as a string or as a path to the file to use.
+   */
+  sslCert: string;
+
+  // //////////////////////////////////////////////////////////////////////////////////////////// //
+  // SMTP                                                                                         //
+  // //////////////////////////////////////////////////////////////////////////////////////////// //
+  /**
+   * The SMTP sender to use.
+   */
+  smtpFrom: string;
+
+  /**
+   * The SMTP server host to use.
+   */
+  smtpHost: string;
+
+  /**
+   * The SMTP server port to use.
+   */
+  smtpPort: number;
+
+  /**
+   * The username to use for authenticating to the SMTP server.
+   */
+  smtpUser: string;
+
+  /**
+   * The password to use for authenticating to the SMTP server.
+   */
+  smtpPass: string;
+
+  /**
+   * Whether or not to use the secure SMTP protocol.
+   *
+   * @default false
+   */
+  smtpSecure: boolean;
+
+  // //////////////////////////////////////////////////////////////////////////////////////////// //
+  // Sentry                                                                                       //
+  // //////////////////////////////////////////////////////////////////////////////////////////// //
+  /**
+   * The DSN to use for sending crash reports to Sentry.
+   */
+  sentryDsn: string;
+
+  /**
+   * The Sentry environment to use for crash reports.
+   */
+  sentryEnvironment: string;
+
+  /**
+   * Domain wildcards for apps where Sentry integration should be injected if Sentry is configured
+   */
+  sentryAllowedDomains?: string;
+
+  // //////////////////////////////////////////////////////////////////////////////////////////// //
+  // OAuth2                                                                                       //
+  // //////////////////////////////////////////////////////////////////////////////////////////// //
+
+  /**
+   * The client ID for authenticating users using GitHub.
+   */
+  githubClientId: string;
+
+  /**
+   * The client secret for authenticating users using GitHub.
+   */
+  githubClientSecret: string;
+
+  /**
+   * The client ID for authenticating users using GitLab.
+   */
+  gitlabClientId: string;
+
+  /**
+   * The client secret for authenticating users using GitLab.
+   */
+  gitlabClientSecret: string;
+
+  /**
+   * The client ID for authenticating users using Google.
+   */
+  googleClientId: string;
+
+  /**
+   * The client secret for authenticating users using Google.
+   */
+  googleClientSecret: string;
+
+  // //////////////////////////////////////////////////////////////////////////////////////////// //
+  // Miscellaneous                                                                                //
+  // //////////////////////////////////////////////////////////////////////////////////////////// //
+  /**
+   * Whether or not user registration should be disabled on the server.
+   *
+   * @default false
+   */
+  disableRegistration: boolean;
+
+  /**
+   * The remote to use synchronizing blocks.
+   *
+   * @example 'https://appsemble.app'
+   */
+  remote: string;
+
+  /**
+   * How many minutes are between each cron job run.
+   *
+   * @default 5
+   */
+  interval: number;
+}
+
+const defaults: Argv = {
+  quiet: 0,
+  verbose: 0,
+  host: undefined,
+  port: 9999,
+  proxy: false,
+  secret: undefined,
+  aesSecret: undefined,
+  appDomainStrategy: undefined,
+  serviceName: undefined,
+  servicePort: undefined,
+  kubernetesServiceHost: 'kubernetes.default.svc',
+  kubernetesServicePort: 443,
+  ingressAnnotations: undefined,
+  ingressClassName: 'nginx',
+  databaseHost: undefined,
+  databasePort: 5432,
+  databaseUser: undefined,
+  databasePassword: undefined,
+  databaseName: undefined,
+  databaseSsl: false,
+  databaseUrl: undefined,
+  interval: 5,
+  migrateTo: undefined,
+  ssl: false,
+  sslKey: undefined,
+  sslCert: undefined,
+  smtpFrom: undefined,
+  smtpHost: undefined,
+  smtpPort: undefined,
+  smtpUser: undefined,
+  smtpPass: undefined,
+  smtpSecure: false,
+  sentryDsn: undefined,
+  sentryEnvironment: undefined,
+  githubClientId: undefined,
+  githubClientSecret: undefined,
+  gitlabClientId: undefined,
+  gitlabClientSecret: undefined,
+  googleClientId: undefined,
+  googleClientSecret: undefined,
+  disableRegistration: false,
+  remote: null,
+};
+
+export const argv = { ...defaults };
+
+/**
+ * Reset argv using the specified options.
+ *
+ * Unspecified options will be reset to their default values.
+ *
