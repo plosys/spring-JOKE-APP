@@ -327,3 +327,9 @@ export const argv = { ...defaults };
  *
  * Unspecified options will be reset to their default values.
  *
+ * @param options The argument overrides to set.
+ * @returns The argv instance.
+ */
+export function setArgv(options: Partial<Argv>): Argv {
+  return Object.assign(argv, defaults, options);
+}
