@@ -36,4 +36,29 @@ interface Options {
  */
 export function createJWTResponse(
   sub: string,
-  { aud = argv.host, expires = 3600, refreshToke
+  { aud = argv.host, expires = 3600, refreshToken = true, scope }: Options = {},
+): TokenResponse {
+  const iat = Math.floor(Date.now() / 1000);
+  const payload = {
+    // The audience this token is for, i.e. the web platform host or an OAuth2 client id.
+    aud,
+    // This token is issued at the current time.
+    iat,
+    // This token was issued by the Appsemble host.
+    iss: argv.host,
+    scope,
+    // This token can be used to authenticate the user having this id.
+    sub,
+  };
+  const response: TokenResponse = {
+    // The access token token expires in an hour.
+    access_token: jwt.sign({ ...payload, exp: iat + expires }, argv.secret),
+    expires_in: expires,
+    token_type: 'bearer',
+  };
+  if (refreshToken) {
+    // The refresh token token expires in a month.
+    response.refresh_token = jwt.sign({ ...payload, exp: iat + 60 * 60 * 24 * 30 }, argv.secret);
+  }
+  return response;
+}
