@@ -1,0 +1,172 @@
+
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`sendTranslatedEmail appMemberEmailChange en should render appMemberEmailChange 0 for locale en 1`] = `undefined`;
+
+exports[`sendTranslatedEmail appMemberEmailChange en should render appMemberEmailChange 0 for locale en 2`] = `
+{
+  "attachments": [],
+  "from": "Appsemble <test@example.com>",
+  "html": "<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<p>Hello,</p>
+<p>You have changed your email address for Test App. Before you can use your account, we need to verify your email address.</p>
+<p>Please click <a href="https://example.com">here</a> to verify your email address.</p>
+<p>Kind regards</p>
+<p>, <em>Test App</em></p>
+</body>
+</html>
+",
+  "subject": "Email changed",
+  "text": "Hello,
+
+You have changed your email address for Test App. Before you can use your account, we need to verify your email address.
+
+Please click [here](https://example.com) to verify your email address.
+
+Kind regards
+
+, _Test App_
+",
+  "to": "null <test@example.com>",
+}
+`;
+
+exports[`sendTranslatedEmail appMemberEmailChange en should render appMemberEmailChange 1 for locale en 1`] = `undefined`;
+
+exports[`sendTranslatedEmail appMemberEmailChange en should render appMemberEmailChange 1 for locale en 2`] = `
+{
+  "attachments": [],
+  "from": "Appsemble <test@example.com>",
+  "html": "<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<p>Hello John Doe,</p>
+<p>You have changed your email address for Test App. Before you can use your account, we need to verify your email address.</p>
+<p>Please click <a href="https://example.com">here</a> to verify your email address.</p>
+<p>Kind regards</p>
+<p>, <em>Test App</em></p>
+</body>
+</html>
+",
+  "subject": "Email changed",
+  "text": "Hello John Doe,
+
+You have changed your email address for Test App. Before you can use your account, we need to verify your email address.
+
+Please click [here](https://example.com) to verify your email address.
+
+Kind regards
+
+, _Test App_
+",
+  "to": "John Doe <test@example.com>",
+}
+`;
+
+exports[`sendTranslatedEmail appMemberEmailChange nl should render appMemberEmailChange 0 for locale nl 1`] = `undefined`;
+
+exports[`sendTranslatedEmail appMemberEmailChange nl should render appMemberEmailChange 0 for locale nl 2`] = `
+{
+  "attachments": [],
+  "from": "Appsemble <test@example.com>",
+  "html": "<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<p>Hallo,</p>
+<p>Je hebt je e-mailadres voor Test App gewijzigd. Voordat je jouw account kunt gebruiken, moeten we jouw e-mailadres verifiëren.</p>
+<p>Klik <a href="https://example.com">hier</a> om jouw e-mailadres te verifiëren.</p>
+<p>Met vriendelijke groet,</p>
+<p><em>Test App</em></p>
+</body>
+</html>
+",
+  "subject": "E-mail gewijzigd",
+  "text": "Hallo,
+
+Je hebt je e-mailadres voor Test App gewijzigd. Voordat je jouw account kunt gebruiken, moeten we jouw e-mailadres verifiëren.
+
+Klik [hier](https://example.com) om jouw e-mailadres te verifiëren.
+
+Met vriendelijke groet,
+
+_Test App_
+",
+  "to": "null <test@example.com>",
+}
+`;
+
+exports[`sendTranslatedEmail appMemberEmailChange nl should render appMemberEmailChange 1 for locale nl 1`] = `undefined`;
+
+exports[`sendTranslatedEmail appMemberEmailChange nl should render appMemberEmailChange 1 for locale nl 2`] = `
+{
+  "attachments": [],
+  "from": "Appsemble <test@example.com>",
+  "html": "<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<p>Beste John Doe,</p>
+<p>Je hebt je e-mailadres voor Test App gewijzigd. Voordat je jouw account kunt gebruiken, moeten we jouw e-mailadres verifiëren.</p>
+<p>Klik <a href="https://example.com">hier</a> om jouw e-mailadres te verifiëren.</p>
+<p>Met vriendelijke groet,</p>
+<p><em>Test App</em></p>
+</body>
+</html>
+",
+  "subject": "E-mail gewijzigd",
+  "text": "Beste John Doe,
+
+Je hebt je e-mailadres voor Test App gewijzigd. Voordat je jouw account kunt gebruiken, moeten we jouw e-mailadres verifiëren.
+
+Klik [hier](https://example.com) om jouw e-mailadres te verifiëren.
+
+Met vriendelijke groet,
+
+_Test App_
+",
+  "to": "John Doe <test@example.com>",
+}
+`;
+
+exports[`sendTranslatedEmail resend en should render resend 0 for locale en 1`] = `undefined`;
+
+exports[`sendTranslatedEmail resend en should render resend 0 for locale en 2`] = `
+{
+  "attachments": [],
+  "from": "Appsemble <test@example.com>",
+  "html": "<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<p>Hello,</p>
+<p>Someone has requested to resend the verification key for your account. Before you can use your account, we need to verify your email address.</p>
+<p>Please click <a href="https://example.com">this link</a> to vervify your email address.</p>
+<p><strong>Didn’t request this email?</strong></p>
+<p>No worries! Your address may have been entered by mistake. If you ignore or delete this email, nothing will happen to your account.</p>
+<p>Kind regards,</p>
+<p><em>Test App</em></p>
+</body>
+</html>
+",
+  "subject": "Confirm account registration",
+  "text": "Hello,
