@@ -148,4 +148,32 @@ describe('getUserInfo', () => {
         zoneinfo: undefined,
       },
     ]);
-    const userInfo = await getUserInfo('', null, '
+    const userInfo = await getUserInfo('', null, '/user', [
+      {
+        'object.from': {
+          email: [{ prop: 'emailAddress' }],
+          name: [{ prop: 'fullName' }],
+          profile: [{ prop: 'profileUrl' }],
+          picture: [{ prop: 'avatarUrl' }],
+          sub: [{ prop: 'userId' }],
+        },
+      },
+    ]);
+    expect(userInfo).toStrictEqual({
+      email: 'user@example.com',
+      email_verified: false,
+      name: 'User',
+      profile: 'https://example.com/user',
+      picture: 'https://example.com/user.png',
+      sub: '1337',
+      locale: undefined,
+      zoneinfo: undefined,
+    });
+  });
+
+  it('should throw if no subject could be found', async () => {
+    await expect(getUserInfo('')).rejects.toThrow(
+      new AppsembleError('No subject could be found while logging in using OAuth2'),
+    );
+  });
+});
