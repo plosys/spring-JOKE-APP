@@ -214,4 +214,43 @@ function processLogicalExpression(token: Token, model: PartialModel, rename: Ren
     token.type === TokenType.AndExpression
       ? Op.and
       : token.type === TokenType.OrExpression
-      ? Op.o
+      ? Op.or
+      : undefined;
+  if (!op) {
+    return processToken(token, model, rename) as WhereOptions;
+  }
+  const flatten = (expr: any): WhereOptions => (op in expr ? expr[op] : expr);
+  const left = flatten(processLogicalExpression(token.value.left, model, rename));
+  const right = flatten(processLogicalExpression(token.value.right, model, rename));
+  return { [op]: [].concat(left).concat(right) };
+}
+
+/**
+ * https://docs.oasis-open.org/odata/odata/v4.01/odata-v4.01-part2-url-conventions.html
+ *
+ * @param query The OData query to convert to a Sequelize query.
+ * @param model The model to do a query for.
+ * @param rename A function for renaming incoming property names.
+ * @returns The OData filter converted to a Sequelize query.
+ */
+export function odataFilterToSequelize(
+  query: Token | string,
+  model: PartialModel,
+  rename: Rename = defaultRename,
+): WhereOptions {
+  if (!query) {
+    return {};
+  }
+  const ast = typeof query === 'string' ? defaultParser.filter(query) : query;
+  return processLogicalExpression(ast, model, rename);
+}
+
+export function odataOrderbyToSequelize(value: string, rename: Rename = defaultRename): Order {
+  if (!value) {
+    return [];
+  }
+  return value.split(/,/g).map((line) => {
+    const [name, direction] = line.split(' ');
+    return [rename(name), direction?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC'];
+  });
+}
