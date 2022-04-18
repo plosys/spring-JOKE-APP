@@ -33,3 +33,7 @@ export function handleDBError(error: Error): void {
     );
   }
   if (error instanceof ConnectionError) {
+    throw new AppsembleError(`ConnectionError: ${original.sqlMessage}`);
+  }
+  throw error;
+}
