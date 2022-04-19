@@ -19,4 +19,42 @@ export function useTestDatabase(meta: ImportMeta, options: InitDBParams = {}): v
 
   beforeAll(async () => {
     const database =
-      process.env.DATABASE_URL || 'postgres://admin:password@localhost
+      process.env.DATABASE_URL || 'postgres://admin:password@localhost:54321/appsemble';
+    rootDB = new Sequelize(database, {
+      logging: false,
+      retry: { max: 3 },
+    });
+
+    // eslint-disable-next-line unicorn/prefer-string-slice
+    dbName = rootDB
+      .escape(`appsemble_test_${parse(meta.url).name}_${new Date().toISOString()}`)
+      .replace(/'/g, '')
+      .replace(/\W+/g, '_')
+      .substring(0, 63)
+      .toLowerCase();
+
+    await rootDB.query(`CREATE DATABASE ${dbName}`);
+    db = initDB({
+      ...options,
+      uri: `${database.replace(/\/\w+$/, '')}/${dbName}`,
+    });
+    await db.sync();
+  });
+
+  afterEach(async () => {
+    if (db) {
+      const tables = Object.values(db.models).map(({ tableName }) => `"${tableName}"`);
+      await db.query(`TRUNCATE ${tables.join(', ')} RESTART IDENTITY`);
+    }
+  });
+
+  afterAll(async () => {
+    if (db) {
+      await db.close();
+    }
+    if (rootDB) {
+      await rootDB.query(`DROP DATABASE ${dbName}`);
+      await rootDB.close();
+    }
+  });
+}
