@@ -1,0 +1,36 @@
+
+{
+  "name": "@appsemble/service-worker",
+  "version": "0.20.40",
+  "private": true,
+  "description": "The service worker that makes sure Appsemble apps work offline",
+  "keywords": [
+    "app",
+    "apps",
+    "appsemble",
+    "framework",
+    "low-code",
+    "lowcode"
+  ],
+  "homepage": "https://appsemble.app",
+  "bugs": "https://gitlab.com/appsemble/appsemble/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/appsemble/appsemble.git",
+    "directory": "packages/service-worker"
+  },
+  "license": "LGPL-3.0-only",
+  "author": "Appsemble <info@appsemble.com> (https://appsemble.com)",
+  "type": "module",
+  "scripts": {
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest"
+  },
+  "dependencies": {
+    "@appsemble/utils": "0.20.40",
+    "type-fest": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/service-worker-mock": "^2.0.0",
+    "service-worker-mock": "^2.0.0"
+  }
+}

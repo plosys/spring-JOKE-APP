@@ -59,4 +59,11 @@ export function onFetch(event: FetchEvent): void {
   }
 
   // If the URL either consists of a normalized path, it should be remapped to the cached url which
-  // consists of the client URL path. E.g. '/', '/home', '/my-
+  // consists of the client URL path. E.g. '/', '/home', '/my-page''
+  const match = pathname.match(`^/${partialNormalized.source}?`);
+  if (match) {
+    event.respondWith(requestFirst(new Request(`${origin}${match[0]}`)));
+  }
+
+  // This is unhandled. Let’s just use the default browser behaviour to be safe.
+}
