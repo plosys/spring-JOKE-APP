@@ -53,4 +53,37 @@ export function CardHeaderControl({
   children,
   controls,
   description,
-  details
+  details,
+  icon,
+  subtitle,
+  title,
+  titleLevel,
+}: CardHeaderControlProps): ReactElement {
+  return (
+    <div className="card my-3">
+      <div className="is-flex card-content">
+        <figure className={`image is-128x128 ${styles.logo}`}>{icon}</figure>
+        <div className={`is-flex ${styles.metaWrapper}`}>
+          <div className={`ml-4 ${styles.meta}`}>
+            <header>
+              <Title className={`is-marginless ${styles.ellipsis}`} level={titleLevel}>
+                {title}
+              </Title>
+              <Subtitle className={`is-marginless ${styles.ellipsis}`} size={4}>
+                {subtitle}
+              </Subtitle>
+            </header>
+            {description ? (
+              <p className={styles.ellipsis} title={description}>
+                {description}
+              </p>
+            ) : null}
+            {details}
+          </div>
+          <div className={`is-flex ${styles.buttonContainer}`}>{controls}</div>
+        </div>
+      </div>
+      {children}
+    </div>
+  );
+}
