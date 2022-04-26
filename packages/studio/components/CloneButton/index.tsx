@@ -111,4 +111,90 @@ export function CloneButton({ app }: CloneButtonProps): ReactElement {
             <SimpleFormField
               help={<FormattedMessage {...messages.nameDescription} />}
               label={<FormattedMessage {...messages.name} />}
-              maxLeng
+              maxLength={30}
+              name="name"
+              required
+            />
+            <SimpleFormField
+              component={SelectField}
+              disabled={organizations.length <= 1}
+              label={<FormattedMessage {...messages.organization} />}
+              name="organizationId"
+              required
+            >
+              {createOrganizations.map((org) => (
+                <option key={org.id} value={org.id}>
+                  {org.name || org.id}
+                </option>
+              ))}
+            </SimpleFormField>
+            <SimpleFormField
+              help={<FormattedMessage {...messages.descriptionDescription} />}
+              label={<FormattedMessage {...messages.description} />}
+              maxLength={80}
+              name="description"
+            />
+            <SimpleFormField
+              component={SelectField}
+              help={<FormattedMessage {...messages.visibilityDescription} />}
+              label={<FormattedMessage {...messages.visibilityLabel} />}
+              name="visibility"
+            >
+              <option value="public">{formatMessage(messages.public)}</option>
+              <option value="unlisted">{formatMessage(messages.unlisted)}</option>
+              <option value="private">{formatMessage(messages.private)}</option>
+            </SimpleFormField>
+            {app.resources ? (
+              <SimpleFormField
+                component={CheckboxField}
+                label={<FormattedMessage {...messages.resources} />}
+                name="resources"
+                title={<FormattedMessage {...messages.resourcesDescription} />}
+              />
+            ) : null}
+          </ModalCard>
+        ) : (
+          <CreateOrganizationModal
+            disabled={!userInfo.email_verified}
+            help={
+              <div className="mb-4">
+                <span>
+                  <FormattedMessage {...messages.cloneOrganizationInstructions} />
+                </span>
+                {userInfo.email_verified ? null : (
+                  <div className="is-flex is-flex-direction-column is-align-items-center">
+                    <span className="my-2">
+                      <FormattedMessage {...messages.cloneVerifyMessage} />
+                    </span>
+                    <ResendEmailButton className="is-outlined" email={userInfo.email} />
+                  </div>
+                )}
+              </div>
+            }
+            isActive={hash === '#clone'}
+            onClose={closeCloneDialog}
+            title={<FormattedMessage {...messages.clone} />}
+          />
+        )
+      ) : (
+        <Modal isActive={hash === '#clone'} onClose={closeCloneDialog}>
+          <Box>
+            <FormattedMessage
+              {...messages.cloneLoginMessage}
+              values={{
+                loginLink: (content) => (
+                  <Link to={`/${lang}/login?${new URLSearchParams({ redirect })}`}>{content}</Link>
+                ),
+                registerLink: (content) => (
+                  <Link to={`/${lang}/register?${new URLSearchParams({ redirect })}`}>
+                    {content}
+                  </Link>
+                ),
+              }}
+            />
+          </Box>
+        </Modal>
+      )}
+    </>
+  );
+}
