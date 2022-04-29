@@ -1,0 +1,9 @@
+.root {
+  background-color: hsl(0deg 0% 0% / 1%);
+  border-left: 2px solid hsl(0deg 0% 86%);
+}
+
+.title {
+  /* This matches the add button height. */
+  min-height: 40px;
+}

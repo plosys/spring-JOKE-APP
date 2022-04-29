@@ -11,4 +11,12 @@ export const messages = defineMessages({
   description: 'Description',
   descriptionDescription: 'A short description about the organization',
   email: 'Email',
-  emailDescription: 'The email address users can use to contact
+  emailDescription: 'The email address users can use to contact this organization.',
+  website: 'Website',
+  websiteDescription: 'The website of your organization.',
+  conflict: 'An organization with the given ID already exists',
+  error: 'There was a problem creating the organization.',
+  logo: 'Logo',
+  logoDescription: 'The logo that represents this organization',
+  selectFile: 'Select logo',
+});
