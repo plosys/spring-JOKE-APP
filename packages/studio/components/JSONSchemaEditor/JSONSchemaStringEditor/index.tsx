@@ -31,4 +31,37 @@ export function JSONSchemaStringEditor({
     maxLength,
     minLength,
     name,
-    placehold
+    placeholder: example,
+    required,
+    step: multipleOf,
+    value,
+  };
+
+  if (schema.multiline) {
+    return <TextAreaField {...commonProps} onChange={onChange} />;
+  }
+
+  if (format === 'password') {
+    return <PasswordField {...commonProps} onChange={onChange} />;
+  }
+
+  if (format === 'date-time') {
+    return <DateTimeField {...commonProps} enableTime iso onChange={onChange} />;
+  }
+
+  if (format === 'binary') {
+    const blob = value as unknown as File | string;
+    return (
+      <FileUpload
+        {...commonProps}
+        fileLabel={typeof blob === 'string' ? blob : null}
+        onChange={onChange as any}
+        value={blob instanceof Blob ? blob : null}
+      />
+    );
+  }
+
+  return (
+    <InputField {...commonProps} onChange={onChange} type={format === 'email' ? format : 'text'} />
+  );
+}
