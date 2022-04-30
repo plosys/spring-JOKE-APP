@@ -1,0 +1,7 @@
+.root {
+  cursor: pointer;
+
+  &:hover {
+    background-color: hsl(0deg 0% 96%);
+  }
+}

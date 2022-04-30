@@ -1,0 +1,48 @@
+
+.root {
+  max-width: 960px;
+  position: relative;
+
+  & :global(.is-pulled-right) {
+    display: none;
+
+    & + * {
+      float: right;
+    }
+  }
+
+  /* stylelint-disable-next-line selector-max-type */
+  & h1 img {
+    vertical-align: middle;
+  }
+
+  & h1,
+  & h2,
+  & h3,
+  & h4,
+  & h5,
+  & h6 {
+    position: relative;
+
+    /* stylelint-disable-next-line selector-max-type */
+    & > a:only-of-type {
+      left: -1em;
+      position: absolute;
+
+      /* stylelint-disable-next-line selector-max-compound-selectors, selector-max-type */
+      & > :global(.fas):global(.fa-link) {
+        opacity: 0;
+        transition: 300ms;
+      }
+    }
+
+    /* stylelint-disable-next-line selector-max-compound-selectors, selector-max-type */
+    &:hover > a > :global(.fas):global(.fa-link) {
+      opacity: 1;
+    }
+  }
+
+  & pre {
+    margin-bottom: 1em;
+  }
+}

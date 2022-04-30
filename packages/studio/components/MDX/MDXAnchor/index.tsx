@@ -26,4 +26,5 @@ export function MDXAnchor({ children, href }: MDXAnchorProps): ReactElement {
       </a>
     );
   }
-  return <Link to={href.startsWith('#') ? 
+  return <Link to={href.startsWith('#') ? href : `/${lang}${href}`}>{children}</Link>;
+}
