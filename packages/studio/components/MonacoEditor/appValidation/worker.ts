@@ -194,3 +194,100 @@ initialize<AppValidationWorker, unknown>((ctx: worker.IWorkerContext) => ({
       },
     });
     return result;
+  },
+
+  async doValidation(uri) {
+    const [doc, lineCounter, definition] = parseYamlCached(ctx, uri);
+    if (!doc) {
+      return;
+    }
+    const { errors } = await validateAppDefinition(definition, getCachedBlockVersions);
+
+    return errors.map((error) => {
+      const node = doc.getIn(error.path, true);
+      const range: IRange = isNode(node)
+        ? getNodeRange(node, lineCounter)
+        : { startColumn: 1, startLineNumber: 1, endColumn: 1, endLineNumber: 1 };
+
+      return {
+        // The severity matches MarkerSeverity.Warning, but since this runs in a web worker and
+        // `monaco-editor` uses DOM APIs, it may not be imported.
+        severity: 4,
+        message: error.message,
+        ...range,
+      };
+    });
+  },
+
+  async getDecorations(uri) {
+    const [doc, lineCounter, definition] = parseYamlCached(ctx, uri);
+    if (!doc) {
+      return;
+    }
+    const decorationsPromises: Promise<editor.IModelDeltaDecoration[]>[] = [];
+    iterApp(definition, {
+      onBlock(block, prefix) {
+        decorationsPromises.push(
+          Promise.resolve().then(async () => {
+            const blockNode = doc.getIn(prefix, true);
+            if (!isMap(blockNode)) {
+              return;
+            }
+
+            const type = blockNode.get('type', true);
+
+            if (!isScalar(type) || typeof type.value !== 'string') {
+              return;
+            }
+            let href = `/blocks/${normalizeBlockName(type.value)}`;
+            const version = blockNode.get('version');
+            let manifest: BlockManifest | undefined;
+            if (typeof version === 'string') {
+              href += `/${version}`;
+              [manifest] = await getCachedBlockVersions([block]);
+            }
+
+            if (!manifest) {
+              return;
+            }
+
+            const description = manifest?.longDescription || manifest?.description || '';
+            const url = new URL(href, self.location.origin);
+
+            return [
+              {
+                range: getNodeRange(type, lineCounter),
+                options: {
+                  afterContentClassName: 'ml-1 fas fa-circle-info has-text-info is-clickable',
+                  hoverMessage: {
+                    value: `**${stripBlockName(
+                      block.type,
+                    )}**\n\n${description}\n\n[Full documentation](${url})`,
+                    isTrusted: true,
+                  },
+                },
+              },
+              ...processEventsOrActions(
+                manifest.actions,
+                blockNode.get('actions', true),
+                lineCounter,
+              ),
+              ...processEventsOrActions(
+                manifest.events?.listen,
+                blockNode.getIn(['events', 'listen'], true),
+                lineCounter,
+              ),
+              ...processEventsOrActions(
+                manifest.events?.emit,
+                blockNode.getIn(['events', 'emit'], true),
+                lineCounter,
+              ),
+            ];
+          }),
+        );
+      },
+    });
+    const decorations = await Promise.all(decorationsPromises);
+    return Promise.all(decorations.flat());
+  },
+}));
