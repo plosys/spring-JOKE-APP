@@ -22,4 +22,60 @@ window.MonacoEnvironment = {
       case appValidationLabel:
         return new Worker(new URL('appValidation/worker', import.meta.url));
       case 'css':
-        return new Worker(new URL('monaco-editor/esm/vs/language/css/css.work
+        return new Worker(new URL('monaco-editor/esm/vs/language/css/css.worker', import.meta.url));
+      case 'editorWorkerService':
+        return new Worker(new URL('monaco-editor/esm/vs/editor/editor.worker', import.meta.url));
+      case 'json':
+        return new Worker(
+          new URL('monaco-editor/esm/vs/language/json/json.worker', import.meta.url),
+        );
+      case 'yaml':
+        return new Worker(new URL('monaco-yaml/yaml.worker', import.meta.url));
+      default:
+        throw new Error(`Unknown label ${label}`);
+    }
+  },
+};
+
+/**
+ * Create a deep clone of a JSON schema with `markdownDescriptions` set to the description.
+ *
+ * @param schema The schema to process.
+ * @returns The schema with a markdown description.
+ */
+function addMarkdownDescriptions(schema: Schema): Schema {
+  const result = { ...schema } as Schema & { markdownDescription?: string };
+  if (result.properties) {
+    result.properties = mapValues(result.properties, addMarkdownDescriptions);
+  }
+  if (result.patternProperties) {
+    result.patternProperties = mapValues(result.patternProperties, addMarkdownDescriptions);
+  }
+  if (typeof result.additionalProperties === 'object') {
+    result.additionalProperties = addMarkdownDescriptions(result.additionalProperties);
+  }
+  if (Array.isArray(result.items)) {
+    result.items = result.items.map(addMarkdownDescriptions);
+  }
+  result.markdownDescription = result.description;
+  return result;
+}
+
+setDiagnosticsOptions({
+  completion: true,
+  validate: true,
+  format: true,
+  enableSchemaRequest: false,
+  schemas: [
+    {
+      fileMatch: ['app.yaml'],
+      uri: String(new URL('/docs/reference', window.location.origin)),
+      schema: {
+        $ref: '#/components/schemas/AppDefinition',
+        components: {
+          schemas: mapValues(schemas, addMarkdownDescriptions),
+        },
+      },
+    },
+  ],
+});
