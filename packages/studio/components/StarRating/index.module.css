@@ -1,0 +1,38 @@
+.container {
+  display: block;
+  overflow: hidden;
+  position: relative;
+}
+
+.wrapper {
+  display: inline-flex;
+  position: relative;
+}
+
+.starsActive {
+  float: left;
+  overflow: hidden;
+  position: relative;
+  white-space: nowrap;
+}
+
+.starsInactive {
+  left: 0;
+  position: absolute;
+  top: 0;
+}
+
+.starButton,
+.starButton:hover,
+.starButton:focus,
+.starButton:active {
+  background: none;
+  border: none;
+  cursor: pointer;
+  outline: none;
+  padding: 0;
+}
+
+.starIcon {
+  color: hsl(48deg 99% 47%) !important;
+}
