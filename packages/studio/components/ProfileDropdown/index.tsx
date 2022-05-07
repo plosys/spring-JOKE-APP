@@ -83,4 +83,8 @@ export function ProfileDropdown({ className }: LanguageDropdownProps): ReactElem
       ) : (
         <NavbarItem icon="sign-in-alt" to={{ pathname: '/login', search: `?${search}` }}>
           <FormattedMessage {...messages.login} />
-        <
+        </NavbarItem>
+      )}
+    </NavbarDropdown>
+  );
+}
