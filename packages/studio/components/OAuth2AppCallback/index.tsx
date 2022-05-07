@@ -20,4 +20,28 @@ export function OAuth2AppCallback({ session }: OAuth2AppCallbackProps): ReactEle
     const appRequest = new URLSearchParams(session.appRequest);
 
     if (error) {
-      o
+      oauth2Redirect(appRequest, { error });
+      return;
+    }
+    const [, appId] = appRequest.get('client_id').split(':');
+
+    axios
+      .post<Record<string, string>>(`/api/apps/${appId}/secrets/oauth2/${session.id}/verify`, {
+        code,
+        scope: appRequest.get('scope'),
+        redirectUri: appRequest.get('redirect_uri'),
+        timezone,
+      })
+      .then(({ data }) => oauth2Redirect(appRequest, data))
+      .catch((err) =>
+        oauth2Redirect(appRequest, {
+          code:
+            axios.isAxiosError(err) && err.response.status < 500
+              ? 'invalid_request'
+              : 'server_error',
+        }),
+      );
+  }, [qs, session]);
+
+  return <Loader />;
+}
