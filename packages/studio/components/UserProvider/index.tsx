@@ -123,4 +123,42 @@ export function UserProvider({ children }: UserProviderProps): ReactElement {
   useEffect(() => {
     if (!tokenResponse.access_token || !tokenResponse.refresh_token) {
       logout();
-      setInitialized(true)
+      setInitialized(true);
+      return;
+    }
+
+    setAccessToken(tokenResponse.access_token);
+
+    const { exp } = jwtDecode<JwtPayload>(tokenResponse.access_token);
+    const timeout = exp * 1e3 - REFRESH_BUFFER - Date.now();
+    const timeoutId = setTimeout(async () => {
+      try {
+        const { data } = await axios.post<TokenResponse>('/api/refresh', {
+          refresh_token: tokenResponse.refresh_token,
+        });
+        setToken(data);
+        refreshUserInfo();
+      } catch {
+        logout();
+      }
+    }, timeout);
+
+    Promise.all([refreshUserInfo(), fetchOrganizations()]).finally(() => {
+      setInitialized(true);
+    });
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [fetchOrganizations, logout, refreshUserInfo, setToken, tokenResponse]);
+
+  if (!initialized) {
+    return <Loader />;
+  }
+
+  return <Context.Provider value={value}>{children}</Context.Provider>;
+}
+
+export function useUser(): UserContext {
+  return useContext(Context);
+}

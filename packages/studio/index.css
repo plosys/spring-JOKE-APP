@@ -1,0 +1,24 @@
+html {
+  overflow-y: auto;
+}
+
+body {
+  height: 100vh;
+}
+
+/* stylelint-disable-next-line selector-max-id */
+#app {
+  height: 100%;
+}
+
+.browsers {
+  margin: auto;
+  text-align: center;
+}
+
+.browser-logo {
+  display: inline-block;
+  margin: 8px 48px;
+  max-width: 196px;
+  width: 50%;
+}

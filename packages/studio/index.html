@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,minimum-scale=1,width=device-width" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <title>Appsemble</title>
+    <script nonce="{{{ nonce }}}">
+      window.addEventListener('load', function () {
+        if (!window.appsembleHasLoaded) {
+          document.getElementById('app').innerHTML =
+            document.getElementById('legacy-browser-support').innerHTML;
+        }
+      });
+    </script>
+    {{{settings}}}
+  </head>
+  <body class="has-navbar-fixed-top">
+    <div id="app">
+      <noscript>
+        <div class="is-fixed-top is-primary navbar">
+          <header class="navbar-brand">
+            <h2 class="has-text-white navbar-item title">Appsemble</h2>
+          </header>
+        </div>
+        <section class="section">
+          <p class="container">
+            JavaScript seems to be disabled. <br />
+            Please enable JavaScript in your browser settings.
+          </p>
+        </section>
+      </noscript>
+      <script id="legacy-browser-support" type="text/x-template">
+        <div class="is-fixed-top is-primary navbar">
+          <header class="navbar-brand">
+            <h2 class="has-text-white navbar-item title">Appsemble</h2>
+          </header>
+        </div>
+        <div class="content section">
+          <h3>Error loading Appsemble</h3>
+          <p>There was a problem loading Appsemble. This is most likely caused by an unstable internet connection. Please try again later.</p>
+          <p>Another cause can be that your browser is unsupported. Appsemble is built using the latest web technology. This requires a modern browser.</p>
+          <p>Please make sure you’re using the latest version of one of the following browsers to use Appsemble.</p>
+          <div class="browsers">
+            <div class="browser-logo">
+              <a href="https://www.google.com/chrome" rel="noopener noreferrer" target="_blank">
+                <img alt="Google Chrome" src="<%= require('@browser-logos/chrome/chrome.png').default %>" />
+                <h5>Google Chrome</h5>
+              </a>
+              <p>The world’s most popular browser by Google</p>
+            </div>
+            <div class="browser-logo">
+              <a href="https://www.microsoft.com/edge" rel="noopener noreferrer" target="_blank">
+                <img alt="Microsoft Edge" src="<%= require('@browser-logos/edge/edge.png').default %>" />
+                <h5>Microsoft Edge</h5>
+              </a>
+              <p>The new Microsoft browser to replace Internet Explorer</p>
+            </div>
+            <div class="browser-logo">
+              <a href="https://www.mozilla.org/firefox" rel="noopener noreferrer" target="_blank">
+                <img
+                  alt="Mozilla Firefox"
+                  src="<%= require('@browser-logos/firefox/firefox.png').default %>"
+                />
+                <h5>Mozilla Firefox</h5>
+              </a>
+  
