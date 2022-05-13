@@ -72,4 +72,44 @@ export function IndexPage(): ReactElement {
           <option value="name.desc">
             {`${formatMessage(messages.name)} (${formatMessage(messages.descending)})`}
           </option>
-          <option value="organization.
+          <option value="organization.asc">
+            {`${formatMessage(messages.organization)} (${formatMessage(messages.ascending)})`}
+          </option>
+          <option value="organization.desc">
+            {`${formatMessage(messages.organization)} (${formatMessage(messages.descending)})`}
+          </option>
+          <option value="$created.asc">
+            {`${formatMessage(messages.created)} (${formatMessage(messages.ascending)})`}
+          </option>
+          <option value="$created.desc">
+            {`${formatMessage(messages.created)} (${formatMessage(messages.descending)})`}
+          </option>
+          <option value="$updated.asc">
+            {`${formatMessage(messages.updated)} (${formatMessage(messages.ascending)})`}
+          </option>
+          <option value="$updated.desc">
+            {`${formatMessage(messages.updated)} (${formatMessage(messages.descending)})`}
+          </option>
+        </SelectField>
+        {userInfo ? <CreateAppButton className={styles.createAppButton} /> : null}
+      </div>
+
+      {userInfo ? (
+        <CollapsibleAppList
+          filter={filter}
+          reverse={sort?.reverse}
+          sortFunction={sortFunctions[sort?.name]}
+          target={`/api/user/apps?language=${lang}`}
+          title={<FormattedMessage {...messages.myApps} />}
+        />
+      ) : null}
+      <CollapsibleAppList
+        filter={filter}
+        reverse={sort?.reverse}
+        sortFunction={sortFunctions[sort?.name]}
+        target={`/api/apps?language=${lang}`}
+        title={<FormattedMessage {...messages.allApps} />}
+      />
+    </Content>
+  );
+}
