@@ -89,4 +89,60 @@ export function AppScreenshots(): ReactElement {
               className={`is-medium ${styles.scrollButton}`}
               icon="chevron-left"
               onClick={scrollLeft}
-      
+            />
+            <div className={`px-4 ${styles.screenshots}`} ref={screenshotDiv}>
+              {app.screenshotUrls.map((url) => (
+                <AppScreenshot key={url} mayManageScreenshots={mayManageScreenshots} url={url} />
+              ))}
+            </div>
+            <Button
+              className={`is-medium ${styles.scrollButton}`}
+              icon="chevron-right"
+              onClick={scrollRight}
+            />
+          </div>
+        )}
+      </div>
+      <ModalCard
+        footer={
+          <>
+            <CardFooterButton onClick={closeModal}>
+              <FormattedMessage {...messages.cancel} />
+            </CardFooterButton>
+            <CardFooterButton
+              color="primary"
+              disabled={!uploadingScreenshot}
+              onClick={onSubmitScreenshot}
+            >
+              <FormattedMessage {...messages.submit} />
+            </CardFooterButton>
+          </>
+        }
+        isActive={screenshotModal.enabled}
+        onClose={closeModal}
+        title={<FormattedMessage {...messages.submit} />}
+      >
+        <FileUpload
+          accept="image/jpeg, image/png, image/tiff, image/webp"
+          fileButtonLabel={<FormattedMessage {...messages.screenshot} />}
+          fileLabel={uploadingScreenshot?.name ?? <FormattedMessage {...messages.noFile} />}
+          label={<FormattedMessage {...messages.screenshot} />}
+          name="screenshot"
+          onChange={onScreenshotChange}
+          preview={
+            uploadingScreenshot ? (
+              <figure className={`mb-2 ${styles.screenshotPreview}`}>
+                <img
+                  alt={formatMessage(messages.screenshot)}
+                  className={styles.screenshotPreview}
+                  src={uploadingScreenshotPreview}
+                />
+              </figure>
+            ) : null
+          }
+          required
+        />
+      </ModalCard>
+    </>
+  );
+}

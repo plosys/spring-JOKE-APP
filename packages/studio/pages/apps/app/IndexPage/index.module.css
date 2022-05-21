@@ -1,0 +1,26 @@
+.root {
+  max-width: 960px;
+}
+
+.descriptionHidden {
+  height: 12rem;
+  overflow: hidden;
+  position: relative;
+
+  &::after {
+    background: linear-gradient(to bottom, rgb(0 0 0 / 0%), rgb(255 255 255 / 100%) 90%);
+    bottom: 0;
+    content: '';
+    height: 6em;
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+  }
+}
+
+.descriptionToggle {
+  bottom: 12px;
+  position: absolute;
+  right: 12px;
+  z-index: 1;
+}
