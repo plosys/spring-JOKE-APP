@@ -124,4 +124,140 @@ export function AssetsPage(): ReactElement {
 
       push({
         body: formatMessage(messages.deleteSuccess, {
-          amount: select
+          amount: selectedAssets.length,
+          assets: selectedAssets.sort(compareStrings).join(', '),
+        }),
+        color: 'info',
+      });
+      setData((assets) => assets.filter((asset) => !selectedAssets.includes(String(asset.id))));
+      setSelectedAssets([]);
+      updatePagination(count - selectedAssets.length);
+    },
+  });
+
+  const onAssetCheckboxClick = useCallback(
+    (event: ChangeEvent<HTMLInputElement>, checked: boolean) => {
+      const id = event.currentTarget.name.replace(/^asset/, '');
+
+      setSelectedAssets((assets) => (checked ? [...assets, id] : assets.filter((a) => a !== id)));
+    },
+    [],
+  );
+
+  const onSelectAll = useCallback(() => {
+    setSelectedAssets((selected) =>
+      selected.length === assetsResult.data?.length
+        ? []
+        : assetsResult.data.map((asset) => asset.id),
+    );
+  }, [assetsResult]);
+
+  const onPageChange = useCallback(
+    (updatedPage: number) => {
+      setSelectedAssets([]);
+      setSearchParams(
+        Number.isFinite(rowsPerPage)
+          ? { offset: String((updatedPage - 1) * rowsPerPage), limit: String(rowsPerPage) }
+          : { offset: '0', limit: 'none' },
+      );
+    },
+    [rowsPerPage, setSearchParams],
+  );
+
+  const onRowsPerPageChange = useCallback(
+    (updatedRowsPerPage: number) => {
+      setSelectedAssets([]);
+      setSearchParams(
+        Number.isFinite(updatedRowsPerPage)
+          ? {
+              offset: String(offset - (offset % updatedRowsPerPage)),
+              limit: String(updatedRowsPerPage),
+            }
+          : { offset: '0', limit: 'none' },
+      );
+    },
+    [offset, setSearchParams],
+  );
+
+  return (
+    <>
+      <Title>
+        <FormattedMessage {...messages.title} />
+      </Title>
+      <div className="buttons">
+        <Button color="primary" icon="upload" onClick={dialog.enable}>
+          <FormattedMessage {...messages.uploadButton} />
+        </Button>
+        <Button
+          color="danger"
+          disabled={selectedAssets.length === 0}
+          icon="trash-alt"
+          onClick={onDelete}
+        >
+          <FormattedMessage {...messages.deleteButton} values={{ amount: selectedAssets.length }} />
+        </Button>
+      </div>
+      <AsyncDataView
+        emptyMessage={<FormattedMessage {...messages.empty} />}
+        errorMessage={<FormattedMessage {...messages.error} />}
+        loadingMessage={<FormattedMessage {...messages.loading} />}
+        result={assetsResult}
+      >
+        {(assets) => (
+          <>
+            <Table>
+              <thead>
+                <tr>
+                  <th>
+                    <Checkbox
+                      className={`pr-2 is-inline-block ${styles.boolean} `}
+                      indeterminate={
+                        selectedAssets.length
+                          ? selectedAssets.length !== assetsResult.data?.length
+                          : null
+                      }
+                      name="select-all"
+                      onChange={onSelectAll}
+                      value={selectedAssets.length === assetsResult.data?.length}
+                    />
+                    <span className="is-inline-block">
+                      <FormattedMessage {...messages.actions} />
+                    </span>
+                  </th>
+                  <th>
+                    <FormattedMessage {...messages.id} />
+                  </th>
+                  <th>
+                    <FormattedMessage {...messages.resource} />
+                  </th>
+                  <th>
+                    <FormattedMessage {...messages.mime} />
+                  </th>
+                  <th>
+                    <FormattedMessage {...messages.filename} />
+                  </th>
+                  <th>
+                    <FormattedMessage {...messages.preview} />
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {assets.map((asset) => (
+                  <AssetRow
+                    asset={asset}
+                    isSelected={selectedAssets.includes(asset.id)}
+                    key={asset.id}
+                    onSelect={onAssetCheckboxClick}
+                  />
+                ))}
+              </tbody>
+            </Table>
+            <PaginationNavigator
+              count={count}
+              onPageChange={onPageChange}
+              onRowsPerPageChange={onRowsPerPageChange}
+              page={page}
+              rowsPerPage={rowsPerPage}
+              rowsPerPageOptions={[10, 25, 100, 500, Number.POSITIVE_INFINITY]}
+            />
+          </>
