@@ -54,4 +54,17 @@ export function AssetRow({ asset, isSelected, onSelect }: AssetRowProps): ReactE
       <td>{asset.mime}</td>
       <td>{asset.filename}</td>
       <td>
-        <Button onCl
+        <Button onClick={preview.enable}>
+          <FormattedMessage {...messages.preview} />
+        </Button>
+      </td>
+      <ModalCard
+        isActive={preview.enabled}
+        onClose={preview.disable}
+        title={<FormattedMessage {...messages.preview} />}
+      >
+        <AssetPreview asset={asset} />
+      </ModalCard>
+    </tr>
+  );
+}
