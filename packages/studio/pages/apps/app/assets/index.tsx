@@ -261,3 +261,49 @@ export function AssetsPage(): ReactElement {
               rowsPerPageOptions={[10, 25, 100, 500, Number.POSITIVE_INFINITY]}
             />
           </>
+        )}
+      </AsyncDataView>
+      <ModalCard
+        component={SimpleForm}
+        defaultValues={defaultFormValues}
+        footer={
+          <SimpleModalFooter
+            cancelLabel={<FormattedMessage {...messages.cancel} />}
+            onClose={dialog.disable}
+            submitLabel={<FormattedMessage {...messages.upload} />}
+          />
+        }
+        isActive={dialog.enabled}
+        onClose={dialog.disable}
+        onSubmit={submitAsset}
+        resetOnSuccess
+        title={<FormattedMessage {...messages.uploadTitle} />}
+      >
+        <Content>
+          <SimpleFormError>{() => <FormattedMessage {...messages.uploadError} />}</SimpleFormError>
+          <SimpleFormField
+            className={`${styles.filePicker} has-text-centered`}
+            component={FileUpload}
+            fileButtonLabel={<FormattedMessage {...messages.chooseFile} />}
+            fileLabel={<FormattedMessage {...messages.noFile} />}
+            formComponentClassName="has-text-centered"
+            label={<FormattedMessage {...messages.file} />}
+            name="file"
+            required
+          />
+          <SimpleFormField
+            addonLeft={
+              <label className="button is-static" htmlFor="name">
+                /api/apps/{app.id}/assets/
+              </label>
+            }
+            help={<FormattedMessage {...messages.nameDescription} />}
+            label={<FormattedMessage {...messages.name} />}
+            name="name"
+            preprocess={(value) => normalize(value, false)}
+          />
+        </Content>
+      </ModalCard>
+    </>
+  );
+}
