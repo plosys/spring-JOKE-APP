@@ -42,4 +42,37 @@ export function DefinitionPage(): ReactElement {
         icon={<AppIcon app={app} />}
         subtitle={
           <Link to={`/${lang}/organizations/${app.OrganizationId}`}>
-            {app.Organiza
+            {app.OrganizationName || app.OrganizationId}
+          </Link>
+        }
+        title={app.definition.name}
+        titleLevel={2}
+      >
+        <div className="card-content content">
+          <p>
+            <FormattedMessage
+              {...messages.cloneText}
+              values={{ name: <strong>{app.definition.name}</strong> }}
+            />
+          </p>
+        </div>
+      </CardHeaderControl>
+      <div className="card">
+        <div className="card-content">
+          <Title>
+            <FormattedMessage {...messages.title} />
+          </Title>
+          <p className="content">
+            <FormattedMessage {...messages.explanation} />{' '}
+            <Link to={`/${lang}/docs/guide`}>
+              <FormattedMessage {...messages.learnMore} />
+            </Link>
+          </p>
+          <CodeBlock copy filename="app-definition.yaml" language="yaml">
+            {app.yaml}
+          </CodeBlock>
+        </div>
+      </div>
+    </main>
+  );
+}

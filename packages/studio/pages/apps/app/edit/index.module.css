@@ -1,0 +1,15 @@
+.root {
+  flex: 1 1 auto;
+}
+
+.leftPanel {
+  flex: 1 1 auto;
+}
+
+.editorForm {
+  flex: 1 1 auto;
+}
+
+.editor {
+  height: 100%;
+}
