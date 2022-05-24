@@ -63,4 +63,129 @@ export function AppRoutes(): ReactElement {
   const { id, lang } = useParams<{ id: string; lang: string }>();
   const url = `/${lang}/apps/${id}`;
 
-  const { organization
+  const { organizations } = useUser();
+  const {
+    data: app,
+    error,
+    loading,
+    setData: setApp,
+  } = useData<App>(`/api/apps/${id}?language=${lang}`);
+  const value = useMemo(() => ({ app, setApp }), [app, setApp]);
+  const { formatMessage } = useIntl();
+
+  const organization = organizations?.find((org) => org.id === app?.OrganizationId);
+
+  const editPermission = organization && checkRole(organization.role, Permission.EditApps);
+  const editMessagePermission =
+    organization && checkRole(organization.role, Permission.EditAppMessages);
+  const pushNotificationPermission =
+    organization && checkRole(organization.role, Permission.PushNotifications);
+
+  const resourceNames = app?.definition.resources && Object.keys(app?.definition.resources);
+  const mayViewResources = organization && checkRole(organization.role, Permission.ReadResources);
+  const mayViewAssets = organization && checkRole(organization.role, Permission.ReadAssets);
+  const canViewResources = Boolean(mayViewResources && resourceNames?.length);
+
+  useSideMenu(
+    app && (
+      <MenuSection
+        label={
+          <>
+            {app.locked ? <Icon icon="lock" title={formatMessage(messages.locked)} /> : null}
+            <span className={classNames({ 'pl-1': !app.locked })}>{app.definition.name}</span>
+          </>
+        }
+      >
+        <MenuItem exact icon="info" to={url}>
+          <FormattedMessage {...messages.details} />
+        </MenuItem>
+        {editPermission ? (
+          <MenuItem icon="edit" to={`${url}/edit`}>
+            <FormattedMessage {...messages.editor} />
+          </MenuItem>
+        ) : app.yaml ? (
+          <MenuItem icon="code" to={`${url}/definition`}>
+            <FormattedMessage {...messages.definition} />
+          </MenuItem>
+        ) : null}
+        {mayViewAssets ? (
+          <MenuItem icon="layer-group" to={`${url}/assets`}>
+            <FormattedMessage {...messages.assets} />
+          </MenuItem>
+        ) : null}
+        {canViewResources ? (
+          <MenuItem icon="cubes" to={`${url}/resources`}>
+            <FormattedMessage {...messages.resources} />
+          </MenuItem>
+        ) : null}
+        {canViewResources ? (
+          <MenuSection>
+            {resourceNames.sort(compareStrings).map((resource) => (
+              <MenuItem key={resource} to={`${url}/resources/${resource}`}>
+                {resource}
+              </MenuItem>
+            ))}
+          </MenuSection>
+        ) : null}
+        {editMessagePermission ? (
+          <MenuItem icon="language" to={`${url}/translations`}>
+            <FormattedMessage {...messages.translations} />
+          </MenuItem>
+        ) : null}
+        {pushNotificationPermission ? (
+          <MenuItem icon="paper-plane" to={`${url}/notifications`}>
+            <FormattedMessage {...messages.notifications} />
+          </MenuItem>
+        ) : null}
+        {editPermission && app.definition.security ? (
+          <MenuItem icon="users" to={`${url}/users`}>
+            <FormattedMessage {...messages.users} />
+          </MenuItem>
+        ) : null}
+        {editPermission && app.definition.security?.teams ? (
+          <MenuItem icon="hands-helping" to={`${url}/teams`}>
+            <FormattedMessage {...messages.teams} />
+          </MenuItem>
+        ) : null}
+        {editPermission ? (
+          <MenuItem icon="clock" to={`${url}/snapshots`}>
+            <FormattedMessage {...messages.snapshots} />
+          </MenuItem>
+        ) : null}
+        {editPermission ? (
+          <MenuItem icon="cogs" to={`${url}/settings`}>
+            <FormattedMessage {...messages.settings} />
+          </MenuItem>
+        ) : null}
+        {editPermission ? (
+          <MenuItem icon="key" to={`${url}/secrets`}>
+            <FormattedMessage {...messages.secrets} />
+          </MenuItem>
+        ) : null}
+      </MenuSection>
+    ),
+  );
+
+  if (error) {
+    return (
+      <Message color="danger">
+        {error.response?.status === 404 ? (
+          <FormattedMessage {...messages.notFound} />
+        ) : error.response?.status === 401 ? (
+          <FormattedMessage {...messages.permissionError} />
+        ) : (
+          <FormattedMessage {...messages.uncaughtError} />
+        )}
+      </Message>
+    );
+  }
+
+  if (!organizations || loading) {
+    return <Loader />;
+  }
+
+  return (
+    <Context.Provider value={value}>
+      <MetaSwitch
+        description={app.messages?.app?.description || app.definition.description}
+        title={app.messages?.app?.name || 
