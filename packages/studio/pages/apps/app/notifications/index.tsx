@@ -59,4 +59,34 @@ export function NotificationsPage(): ReactElement {
                   >
                     <code>notifications</code>
                   </Link>
-             
+                ),
+              }}
+            />
+          </p>
+        ) : null}
+
+        <SimpleForm defaultValues={{ title: '', body: '' }} onSubmit={submit} resetOnSuccess>
+          <SimpleFormField
+            disabled={disabled}
+            label={<FormattedMessage {...messages.titleLabel} />}
+            maxLength={30}
+            name="title"
+            required
+          />
+          <SimpleFormField
+            disabled={disabled}
+            label={<FormattedMessage {...messages.bodyLabel} />}
+            maxLength={100}
+            name="body"
+            required
+          />
+          <FormButtons>
+            <SimpleSubmit disabled={disabled}>
+              <FormattedMessage {...messages.requestButton} />
+            </SimpleSubmit>
+          </FormButtons>
+        </SimpleForm>
+      </div>
+    </Content>
+  );
+}
