@@ -188,4 +188,92 @@ export function AppRoutes(): ReactElement {
     <Context.Provider value={value}>
       <MetaSwitch
         description={app.messages?.app?.description || app.definition.description}
-        title={app.messages?.app?.name || 
+        title={app.messages?.app?.name || app.definition.name}
+      >
+        <Route element={<IndexPage />} path="/" />
+
+        <Route
+          element={<ProtectedRoute organization={organization} permission={Permission.EditApps} />}
+        >
+          <Route
+            element={
+              <Suspense fallback={<Loader />}>
+                <EditPage />
+              </Suspense>
+            }
+            path="/edit"
+          />
+          <Route element={<SecretsPage />} path="/secrets" />
+          <Route element={<SnapshotsRoutes />} path="/snapshots/*" />
+        </Route>
+
+        <Route
+          element={
+            <ProtectedRoute organization={organization} permission={Permission.ReadAssets} />
+          }
+        >
+          <Route element={<AssetsPage />} path="/assets" />
+        </Route>
+
+        <Route
+          element={
+            <ProtectedRoute organization={organization} permission={Permission.ReadResources} />
+          }
+        >
+          <Route element={<ResourcesRoutes />} path="/resources/*" />
+        </Route>
+
+        <Route
+          element={
+            <ProtectedRoute organization={organization} permission={Permission.EditAppMessages} />
+          }
+        >
+          <Route element={<TranslationsPage />} path="/translations" />
+        </Route>
+        {app.yaml ? <Route element={<DefinitionPage />} path="/definition" /> : null}
+
+        {app.definition.security ? (
+          <Route
+            element={
+              <ProtectedRoute organization={organization} permission={Permission.EditApps} />
+            }
+          >
+            <Route element={<UsersPage />} path="/users" />
+          </Route>
+        ) : null}
+
+        {app.definition.security?.teams ? (
+          <Route
+            element={
+              <ProtectedRoute organization={organization} permission={Permission.InviteMember} />
+            }
+          >
+            <Route element={<TeamsRoutes />} path="/teams/*" />
+          </Route>
+        ) : null}
+
+        <Route
+          element={
+            <ProtectedRoute organization={organization} permission={Permission.EditAppSettings} />
+          }
+        >
+          <Route element={<SettingsPage />} path="/settings" />
+        </Route>
+
+        <Route
+          element={
+            <ProtectedRoute organization={organization} permission={Permission.PushNotifications} />
+          }
+        >
+          <Route element={<NotificationsPage />} path="/notifications" />
+        </Route>
+
+        <Route element={<Navigate to={url} />} path="*" />
+      </MetaSwitch>
+    </Context.Provider>
+  );
+}
+
+export function useApp(): AppValueContext {
+  return useContext(Context);
+}
