@@ -211,4 +211,87 @@ export function ResourceRow({
               className={`${styles.noBorder} pl-5 dropdown-item`}
               color="danger"
               icon="trash-alt"
-              
+              inverted
+              onClick={handleDeleteResource}
+            >
+              <FormattedMessage {...messages.deleteButton} />
+            </Button>
+          </Dropdown>
+          <ModalCard
+            cardClassName={styles.modal}
+            component={Form}
+            footer={
+              <>
+                <CardFooterButton onClick={closeEditModal}>
+                  <FormattedMessage {...messages.cancelButton} />
+                </CardFooterButton>
+                <CardFooterButton color="primary" type="submit">
+                  <FormattedMessage {...messages.editButton} />
+                </CardFooterButton>
+              </>
+            }
+            isActive={modal.enabled}
+            onClose={closeEditModal}
+            onSubmit={onEditSubmit}
+            title={
+              <FormattedMessage
+                {...messages.editTitle}
+                values={{ resource: resourceName, id: resource.id }}
+              />
+            }
+          >
+            <JSONSchemaEditor
+              name="resource"
+              onChange={onEditChange}
+              schema={schema}
+              value={editingResource}
+            />
+          </ModalCard>
+        </td>
+      )}
+      {!filter.has('id') && <td className={styles.id}>{resource.id}</td>}
+      {!filter.has('$author') && (
+        <td className={styles.author}>{resource.$author?.name ?? resource.$author?.id}</td>
+      )}
+      {!filter.has('$editor') && (
+        <td className={styles.author}>{resource.$editor?.name ?? resource.$editor?.id}</td>
+      )}
+      {!filter.has('$created') && (
+        <td>
+          <time dateTime={resource.$created}>
+            <FormattedDate day="numeric" month="short" value={resource.$created} year="numeric" />
+          </time>
+        </td>
+      )}
+
+      {!filter.has('$updated') && (
+        <td>
+          <time dateTime={resource.$updated}>
+            <FormattedDate day="numeric" month="short" value={resource.$updated} year="numeric" />
+          </time>
+        </td>
+      )}
+
+      {has(app, 'resources') && !filter.has('$clonable') ? (
+        <td>
+          <AsyncCheckbox
+            id={`clonable${resource.id}`}
+            onChange={onSetClonable}
+            value={resource.$clonable}
+          />
+        </td>
+      ) : null}
+
+      {Object.entries(schema?.properties ?? {})
+        .filter(([key]) => !filteredKeys.has(key) && !filter.has(key))
+        .map(([key, subSchema]) => (
+          <ResourceCell
+            key={key}
+            required={Boolean(schema.required?.includes(key))}
+            schema={subSchema}
+            value={resource[key]}
+          />
+        ))}
+    </tr>
+  );
+}
