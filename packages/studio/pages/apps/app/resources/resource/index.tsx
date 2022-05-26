@@ -18,4 +18,34 @@ export function ResourceRoutes(): ReactElement {
   if (!definition) {
     return (
       <Message color="warning">
-        <Formatte
+        <FormattedMessage {...messages.notFound} />
+      </Message>
+    );
+  }
+
+  if (definition.url) {
+    return (
+      <p className="content">
+        <FormattedMessage
+          {...messages.notManaged}
+          values={{
+            link: (
+              <a href={definition.url} rel="noopener noreferrer" target="blank">
+                {definition.url}
+              </a>
+            ),
+          }}
+        />
+      </p>
+    );
+  }
+
+  return (
+    <MetaSwitch title={resourceName}>
+      <Route element={<IndexPage />} path="/" />
+      <Route element={<ResourceDefinitionDetailsPage />} path="/details" />
+      <Route element={<ResourceDetailsPage />} path="/:resourceId" />
+      <Route element={<Navigate to="/" />} path="*" />
+    </MetaSwitch>
+  );
+}
