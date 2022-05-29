@@ -219,3 +219,5 @@ export function ResourceDetailsPage(): ReactElement {
         </AsyncDataView>
       </div>
     </>
+  );
+}
