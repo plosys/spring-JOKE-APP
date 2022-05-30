@@ -153,4 +153,64 @@ export function OAuth2Modal({
         disabled={locked}
         help={<FormattedMessage {...messages.clientIdHelp} />}
         icon="fingerprint"
-        label={<Form
+        label={<FormattedMessage {...messages.clientIdLabel} />}
+        name="clientId"
+        required
+      />
+      <SimpleFormField
+        // https://stackoverflow.com/questions/15738259
+        autoComplete="one-time-code"
+        component={PasswordField}
+        disabled={locked}
+        help={<FormattedMessage {...messages.clientSecretHelp} />}
+        label={<FormattedMessage {...messages.clientSecretLabel} />}
+        name="clientSecret"
+        required
+      />
+      <SimpleFormField
+        component={TagsField}
+        delimiter=" "
+        disabled={locked}
+        help={<FormattedMessage {...messages.scopeHelp} />}
+        label={<FormattedMessage {...messages.scopeLabel} />}
+        name="scope"
+        required
+      />
+      <SimpleFormField
+        disabled={locked}
+        help={<FormattedMessage {...messages.userInfoUrlHelp} />}
+        icon="id-card"
+        label={<FormattedMessage {...messages.userInfoUrlLabel} />}
+        name="userInfoUrl"
+        placeholder="https://example.com/oauth2/token"
+        type="url"
+        validityMessages={{
+          typeMismatch: <FormattedMessage {...messages.badUrl} />,
+        }}
+      />
+      <SimpleFormField
+        component={JSONField}
+        disabled={locked}
+        help={
+          <FormattedMessage
+            {...messages.remapperHelp}
+            values={{
+              link: (link) => (
+                <Link target="_blank" to={`/${lang}/docs/guide/remappers`}>
+                  {link}
+                </Link>
+              ),
+            }}
+          />
+        }
+        label={<FormattedMessage {...messages.remapperLabel} />}
+        name="remapper"
+      />
+      {onDeleted ? (
+        <Button className={styles.deleteButton} color="danger" icon="trash" onClick={onDelete}>
+          <FormattedMessage {...messages.deleteButton} />
+        </Button>
+      ) : null}
+    </ModalCard>
+  );
+}
