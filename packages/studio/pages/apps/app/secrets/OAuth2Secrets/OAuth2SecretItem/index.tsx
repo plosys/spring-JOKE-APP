@@ -30,4 +30,36 @@ interface OAuth2SecretItemProps {
 /**
  * Render an OAuth2 app secret that may be updated.
  */
-export functio
+export function OAuth2SecretItem({
+  onDeleted,
+  onUpdated,
+  secret,
+}: OAuth2SecretItemProps): ReactElement {
+  const modal = useToggle();
+  const { app } = useApp();
+
+  const onSubmit = useCallback(
+    async ({ remapper, scope, ...values }: AppOAuth2Secret) => {
+      const { data } = await axios.put<AppOAuth2Secret>(
+        `/api/apps/${app.id}/secrets/oauth2/${secret.id}`,
+        { ...values, remapper: remapper || undefined, scope: [].concat(scope).sort().join(' ') },
+      );
+      modal.disable();
+      onUpdated(data, secret);
+    },
+    [app, modal, onUpdated, secret],
+  );
+
+  return (
+    <>
+      <ListButton
+        description={secret.scope}
+        icon={secret.icon}
+        onClick={modal.enable}
+        subtitle={new URL(secret.authorizationUrl).origin}
+        title={secret.name}
+      />
+      <OAuth2Modal onDeleted={onDeleted} onSubmit={onSubmit} secret={secret} toggle={modal} />
+    </>
+  );
+}
