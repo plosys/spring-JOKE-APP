@@ -50,4 +50,28 @@ export function SamlSecretItem({
       modal.disable();
       onUpdated(data, secret);
     },
-    [app, modal, onUpdat
+    [app, modal, onUpdated, secret],
+  );
+
+  const ssoUrl = new URL(secret.ssoUrl);
+  const entityId = secret.entityId ? new URL(secret.entityId) : null;
+
+  return (
+    <>
+      <ListButton
+        description={
+          entityId
+            ? entityId.origin === ssoUrl.origin
+              ? entityId.pathname
+              : secret.entityId
+            : formatMessage(messages.certificateUploaded)
+        }
+        icon={secret.icon}
+        onClick={modal.enable}
+        subtitle={ssoUrl.origin}
+        title={secret.name}
+      />
+      <SamlModal onDeleted={onDeleted} onSubmit={onSubmit} secret={secret} toggle={modal} />
+    </>
+  );
+}
