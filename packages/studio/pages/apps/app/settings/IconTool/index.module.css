@@ -34,4 +34,22 @@
   transition: clip-path 1s;
 }
 
-.contain 
+.contain {
+  /*
+   * https://css-tricks.com/maskable-icons-android-maskable-icons-for-your-pwa/
+   *
+   * The safe are is a radius of 40%, or a diameter of 80%.
+   * The width and height of a square inside a circle is sine(π / 4)
+   * This means the allowed width and height is sine(π / 4) * 80%.
+   * The square surrounding the safe area is
+   */
+  object-fit: contain;
+}
+
+.fill {
+  object-fit: cover;
+}
+
+.deleteButton {
+  width: 100%;
+}
