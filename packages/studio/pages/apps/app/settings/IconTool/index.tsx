@@ -130,4 +130,115 @@ export function IconTool({ disabled }: IconToolProps): ReactElement {
   const onDeleteMaskableIcon = useConfirmation({
     title: <FormattedMessage {...messages.deleteIconWarningTitle} />,
     body: <FormattedMessage {...messages.deleteIconWarning} />,
-    cancelLabel: <FormattedMessage {...mes
+    cancelLabel: <FormattedMessage {...messages.cancel} />,
+    confirmLabel: <FormattedMessage {...messages.delete} />,
+    async action() {
+      const { id } = app;
+
+      try {
+        await axios.delete(`/api/apps/${id}/maskableIcon`);
+        push({
+          body: formatMessage(messages.deleteIconSuccess),
+          color: 'info',
+        });
+        setApp({
+          ...app,
+          hasMaskableIcon: false,
+        });
+        setValue('maskableIcon', null);
+      } catch {
+        push(formatMessage(messages.errorIconDelete));
+      }
+    },
+  });
+
+  return (
+    <div>
+      <span className="label">
+        <FormattedMessage {...messages.icon} />
+      </span>
+      <Link className="help" to={`/${lang}/docs/guide/app-icons`}>
+        <FormattedMessage {...messages.more} />
+      </Link>
+      <div className="is-flex">
+        <div className="mb-2 mr-2">
+          <IconPicker disabled={disabled} name="icon" onChange={handleChange}>
+            <figure className={`image is-flex is-128x128 ${styles.icon}`}>
+              {icon ? (
+                <img
+                  alt={formatMessage(messages.iconPreview)}
+                  className={styles.preview}
+                  src={icon}
+                />
+              ) : (
+                <Icon className={styles.iconFallback} icon="mobile-alt" />
+              )}
+            </figure>
+          </IconPicker>
+          <Button
+            className={`${styles.deleteButton} mt-1`}
+            color="danger"
+            disabled={!app.hasIcon}
+            icon="trash-alt"
+            onClick={onDeleteIcon}
+          />
+        </div>
+        <div className="mb-2 mr-2">
+          <IconPicker disabled={disabled} name="maskableIcon" onChange={handleChange}>
+            <figure
+              className={`image is-flex is-128x128 ${styles.maskableIcon}`}
+              // eslint-disable-next-line react/forbid-dom-props
+              style={{
+                clipPath: shapes[shape],
+                backgroundColor: values.iconBackground || 'white',
+              }}
+            >
+              {maskableIcon ? (
+                // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+                <img
+                  alt={formatMessage(messages.maskableIconPreview)}
+                  className={scaleMaskableIcon ? styles.contain : styles.fill}
+                  onLoad={handleMaskableIconLoad}
+                  src={maskableIcon}
+                />
+              ) : (
+                <Icon className={styles.maskableIconFallback} icon="mobile-alt" />
+              )}
+            </figure>
+          </IconPicker>
+          <Button
+            className={`${styles.deleteButton} mt-1`}
+            color="danger"
+            disabled={!app.hasMaskableIcon}
+            icon="trash-alt"
+            onClick={onDeleteMaskableIcon}
+          />
+        </div>
+        <div>
+          <RadioGroup name="shape" onChange={shapeShift} value={shape}>
+            <RadioButton id="shape-minimal" value="minimal">
+              <FormattedMessage {...messages.minimal} />
+            </RadioButton>
+            <RadioButton id="shape-circle" value="circle">
+              <FormattedMessage {...messages.circle} />
+            </RadioButton>
+            <RadioButton id="shape-rounded" value="rounded">
+              <FormattedMessage {...messages.rounded} />
+            </RadioButton>
+            <RadioButton id="shape-square" value="square">
+              <FormattedMessage {...messages.square} />
+            </RadioButton>
+          </RadioGroup>
+          <Input
+            className="is-paddingless"
+            disabled={disabled}
+            name="iconBackground"
+            onChange={handleChange}
+            type="color"
+            value={values.iconBackground}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
