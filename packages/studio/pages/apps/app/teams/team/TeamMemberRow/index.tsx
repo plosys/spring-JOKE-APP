@@ -39,4 +39,26 @@ export function TeamMemberRow({
       <td>{member.name || member.primaryEmail || member.id}</td>
       <td align="right">
         {mayInvite ? (
-          <AsyncSelect name="
+          <AsyncSelect name="role" onChange={editRole} value={member.role}>
+            {Object.values(TeamRole).map((role) => (
+              <option key={role} value={role}>
+                {formatMessage(messages[role])}
+              </option>
+            ))}
+          </AsyncSelect>
+        ) : (
+          <FormattedMessage {...messages[member.role]} />
+        )}
+        {mayInvite ? (
+          <Button
+            className="ml-2"
+            color="danger"
+            icon="trash-alt"
+            onClick={remove}
+            title={formatMessage(messages.removeMember)}
+          />
+        ) : null}
+      </td>
+    </tr>
+  );
+}
