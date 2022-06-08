@@ -123,4 +123,61 @@ export function MessagesForm({
       <Collapsible size={5} title={<FormattedMessage {...messages.app} />}>
         <SimpleFormObject name="app">
           {Object.entries(defaultAppMessages.messages.app).map(([id, defaultMessage]) => (
-    
+            <SimpleFormField
+              component={TextAreaField}
+              disabled={app.locked}
+              key={id}
+              label={id}
+              name={id}
+              placeholder={defaultMessage}
+              rows={2}
+            />
+          ))}
+        </SimpleFormObject>
+      </Collapsible>
+      <Collapsible size={5} title={<FormattedMessage {...messages.block} />}>
+        <SimpleFormObject name="blocks">
+          {Object.entries(defaultAppMessages.messages.blocks).map(([blockId, blockVersions]) => (
+            <SimpleFormObject key={blockId} name={blockId}>
+              {Object.entries(blockVersions).map(([version, message]) => (
+                <SimpleFormObject key={version} name={version}>
+                  {Object.entries(message).map(([messageId, defaultMessage]) => (
+                    <SimpleFormField
+                      component={TextAreaField}
+                      disabled={app.locked}
+                      key={`${blockId}.${version}.${messageId}`}
+                      label={`${blockId}/${version}/${messageId}`}
+                      name={messageId}
+                      placeholder={defaultMessage}
+                      rows={2}
+                    />
+                  ))}
+                </SimpleFormObject>
+              ))}
+            </SimpleFormObject>
+          ))}
+        </SimpleFormObject>
+      </Collapsible>
+      <Collapsible collapsed size={5} title={<FormattedMessage {...messages.core} />}>
+        <SimpleFormObject name="core">
+          {Object.entries(defaultAppMessages.messages.core).map(([id, defaultMessage]) => (
+            <SimpleFormField
+              component={TextAreaField}
+              disabled={app.locked}
+              key={id}
+              label={id}
+              name={id}
+              placeholder={defaultMessage}
+              rows={2}
+            />
+          ))}
+        </SimpleFormObject>
+      </Collapsible>
+      <FormButtons>
+        <SimpleSubmit className={`${styles.submitButton} mb-4`} disabled={app.locked}>
+          <FormattedMessage {...messages.submit} />
+        </SimpleSubmit>
+      </FormButtons>
+    </SimpleForm>
+  );
+}
