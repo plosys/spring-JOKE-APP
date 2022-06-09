@@ -163,4 +163,18 @@ export function TranslationsPage(): ReactElement {
         <SimpleFormError>{() => <FormattedMessage {...messages.addError} />}</SimpleFormError>
         <SimpleFormField
           component={SelectField}
-          label={<Formatted
+          label={<FormattedMessage {...messages.language} />}
+          name="language"
+          required
+        >
+          <option hidden> </option>
+          {Object.entries(langmap).map(([lang, { englishName, nativeName }]) => (
+            <option key={lang} value={lang}>
+              {`${englishName}${englishName === nativeName ? '' : ` (${nativeName})`} [${lang}]`}
+            </option>
+          ))}
+        </SimpleFormField>
+      </ModalCard>
+    </>
+  );
+}
