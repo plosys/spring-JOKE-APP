@@ -25,4 +25,21 @@ export function IndexPage(): ReactElement {
     return <Loader />;
   }
 
-  const appsembleBlocks 
+  const appsembleBlocks = blocks
+    .filter((b) => b.name.startsWith('@appsemble'))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const thirdPartyBlocks = blocks
+    .filter((b) => !b.name.startsWith('@appsemble'))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
+  return (
+    <div className={styles.blockList}>
+      {appsembleBlocks.map((block) => (
+        <BlockCard block={block} key={block.name} />
+      ))}
+      {thirdPartyBlocks.map((block) => (
+        <BlockCard block={block} key={block.name} />
+      ))}
+    </div>
+  );
+}

@@ -1,0 +1,21 @@
+.content {
+  max-width: 960px;
+}
+
+.content a {
+  scroll-margin-top: 52px;
+}
+
+.description img {
+  width: 300px;
+}
+
+.iconFallback {
+  font-size: 3rem;
+  height: 64px;
+  width: 64px;
+}
+
+.examples {
+  overflow-x: scroll;
+}
