@@ -11,3 +11,6 @@ export const messages = defineMessages({
   deny: 'Deny',
   allow: 'Allow',
   readProfile: 'Read your public profile (primary email and display name).',
+  manageResource: 'Link your account to the resources created on your behalf.',
+  returnToApp: 'Return to app',
+});
