@@ -37,4 +37,12 @@ Appsemble uses [Gravatar](https://gravatar.com) by Automattic to get a user prof
 so, Appsemble must share an MD5 hash of the user’s primary email address with Gravatar. MD5 hashes
 can’t be decrypted, meaning the email address isn’t directly shared with Gravatar.
 
-[Automattic privacy policy](https://automattic.c
+[Automattic privacy policy](https://automattic.com/privacy)
+
+### Error tracking & user feedback
+
+Appsemble uses [Sentry](https://sentry.io) to track errors and user feedback. Anonymized user
+information is sent to Sentry in case of an unexpected error. The user may send feedback. If they do
+so, the name and email address entered in the feedback form, will be shared with Sentry.
+
+[Sentry privacy policy](https://sentry.io/privacy)
