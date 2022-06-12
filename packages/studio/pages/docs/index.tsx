@@ -62,4 +62,33 @@ export function DocsRoutes(): ReactElement {
         <FormattedMessage {...messages.reference} />
       </MenuItem>
       <MenuSection>
-        <MenuItem exact to={`${url}/r
+        <MenuItem exact to={`${url}/reference/app`}>
+          <FormattedMessage {...messages.app} />
+        </MenuItem>
+        <MenuItem exact to={`${url}/reference/action`}>
+          <FormattedMessage {...messages.action} />
+        </MenuItem>
+        <MenuItem exact to={`${url}/reference/remapper`}>
+          <FormattedMessage {...messages.remapper} />
+        </MenuItem>
+      </MenuSection>
+      <MenuItem exact icon="scroll" to={`${url}/changelog`}>
+        <FormattedMessage {...messages.changelog} />
+      </MenuItem>
+    </MenuSection>,
+  );
+
+  return (
+    <MetaSwitch title={messages.title}>
+      <Route element={<Changelog />} path="/changelog" />
+      <Route element={<ReferenceRoutes />} path="/reference/*" />
+      {docs.map(({ Component, p, title }) => (
+        <Route element={<Doc component={Component} title={title} />} key={p} path={getUrl(p, '')} />
+      ))}
+      {docs.map(({ p }) => (
+        <Route element={<Navigate to={getUrl(p, '')} />} key={p} path="*" />
+      ))}
+      <Route element={<Navigate to={url} />} path="*" />
+    </MetaSwitch>
+  );
+}
