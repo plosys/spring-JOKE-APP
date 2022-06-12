@@ -1,0 +1,19 @@
+.root {
+  box-sizing: border-box;
+  flex-flow: column;
+  margin: 10px auto;
+  max-width: 480px;
+}
+
+.noInviteIcon {
+  height: auto;
+  margin: 0 auto;
+}
+
+.noInviteIcon > i {
+  font-size: 6em;
+}
+
+.noInvite {
+  display: grid;
+}

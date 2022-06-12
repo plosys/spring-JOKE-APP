@@ -49,4 +49,24 @@ export function LoginPage(): ReactElement {
         registerLink={`/${lang}/register`}
         resetPasswordLink={`/${lang}/reset-password`}
       />
-      <div className={`${styles.socialLogins} mt
+      <div className={`${styles.socialLogins} mt-5`}>
+        {logins.map((provider) => (
+          <OAuth2LoginButton
+            authorizationUrl={provider.authorizationUrl}
+            className="mr-2"
+            clientId={provider.clientId}
+            disabled={busy.enabled}
+            icon={provider.icon}
+            key={provider.authorizationUrl}
+            onClick={busy.enable}
+            redirect={qs.get('redirect')}
+            redirectUrl="/callback"
+            scope={provider.scope}
+          >
+            <FormattedMessage {...messages.loginWith} values={{ name: provider.name }} />
+          </OAuth2LoginButton>
+        ))}
+      </div>
+    </Content>
+  );
+}
