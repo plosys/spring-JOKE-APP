@@ -68,4 +68,13 @@ export function AppPage(): ReactElement {
                 <CodeBlock className="mb-5" language="yaml">
                   {stringify(schema)}
                 </CodeBlock>
-        
+              ) : (
+                <Schema anchors idPrefix={id} renderRef={Ref} schema={schema} />
+              )}
+            </div>
+          </Fragment>
+        );
+      })}
+    </main>
+  );
+}
