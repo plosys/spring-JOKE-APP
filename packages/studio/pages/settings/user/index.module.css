@@ -1,0 +1,7 @@
+.field {
+  max-width: 480px;
+}
+
+.buttonGroup > button:not(:first-child) {
+  margin-left: 0.75rem;
+}

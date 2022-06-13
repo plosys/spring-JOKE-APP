@@ -29,4 +29,24 @@ export function SettingsRoutes(): ReactElement {
           <FormattedMessage {...messages.socialLogin} />
         </MenuItem>
         <MenuItem to={`${url}/apps`}>
-          <FormattedMessage {
+          <FormattedMessage {...messages.connectedApps} />
+        </MenuItem>
+      </MenuSection>
+      <MenuItem icon="key" to={`${url}/client-credentials`}>
+        <FormattedMessage {...messages.clientCredentials} />
+      </MenuItem>
+    </MenuSection>,
+  );
+
+  return (
+    <Content fullwidth>
+      <MetaSwitch title={messages.title}>
+        <Route element={<UserPage />} path="/user" />
+        <Route element={<SocialPage />} path="/social" />
+        <Route element={<ClientCredentialsPage />} path="/client-credentials" />
+        <Route element={<AppsRoutes />} path="/apps/*" />
+        <Route element={<Navigate to={`${url}/user`} />} path="*" />
+      </MetaSwitch>
+    </Content>
+  );
+}
