@@ -3,4 +3,12 @@
  */
 export interface Author {
   /**
-   * The
+   * The user id.
+   */
+  id: string;
+
+  /**
+   * The display name of the user.
+   */
+  name: string;
+}
