@@ -199,4 +199,209 @@ export interface TokenResponse {
   /**
    * The OpenID ID token as a JWT.
    *
-   * This field is o
+   * This field is only present on OpenID connect providers.
+   */
+  id_token?: string;
+
+  /**
+   * A refresh token for getting a new access token.
+   */
+  refresh_token?: string;
+
+  token_type: 'bearer';
+}
+
+interface BaseICSRemapper {
+  /**
+   * The start of the icalendar event.
+   */
+  start: Remapper;
+
+  /**
+   * The title of the event.
+   */
+  title: Remapper;
+
+  /**
+   * An optional description of the event.
+   */
+  description?: Remapper;
+
+  /**
+   * An optional link to attach to the event.
+   */
+  url?: Remapper;
+
+  /**
+   * An optional location description to attach to the event.
+   */
+  location?: Remapper;
+
+  /**
+   * An optional geolocation description to attach to the event.
+   *
+   * This must be an object with the properties `lat` or `latitude`, and `lon`, `lng` or
+   * `longitude`.
+   */
+  coordinates?: Remapper;
+}
+
+interface DurationICSRemapper extends BaseICSRemapper {
+  /**
+   * The duration of the event.
+   *
+   * @example '1w 3d 10h 30m'
+   */
+  duration: Remapper;
+}
+
+interface EndTimeICSRemapper extends BaseICSRemapper {
+  /**
+   * The end time of the event as a date or a date string.
+   */
+  end: Remapper;
+}
+
+export interface Remappers {
+  /**
+   * Get app metadata.
+   *
+   * Supported properties:
+   *
+   * - `id`: Get the app id.
+   * - `locale`: Get the current locale of the app.
+   * - `url`: Get the base URL of the app.
+   */
+  app: 'id' | 'locale' | 'url';
+
+  /**
+   * Get page metadata.
+   *
+   * Supported properties:
+   *
+   * - `data`: Get the current page data.
+   * - `url`: Get the URL of the current page.
+   */
+  page: 'data' | 'url';
+
+  /**
+   * Get a property from the context.
+   */
+  context: string;
+
+  /**
+   * Convert a string to a date using a given format.
+   */
+  'date.parse': string;
+
+  /**
+   * Returns the current date.
+   */
+  'date.now': unknown;
+
+  /**
+   * Adds to a date.
+   */
+  'date.add': string;
+
+  /**
+   * Format a date to an iso8601 / rfc3339 compatible string.
+   */
+  'date.format': null;
+
+  /**
+   * Compare all computed remapper values against each other.
+   *
+   * Returns `true` if all entries are equal, otherwise `false`.
+   */
+  equals: Remapper[];
+
+  /**
+   * Get data stored at the current flow page step
+   */
+  step: string;
+
+  /**
+   * Compares the first computed remapper value with the second computed remapper value.
+   *
+   * Returns `true` of the first entry is greater than the second entry.
+   */
+  gt: [Remapper, Remapper];
+
+  /**
+   * Compares the first computed remapper value with the second computed remapper value.
+   *
+   * Returns `true` of the first entry is less than the second entry.
+   */
+  lt: [Remapper, Remapper];
+
+  /**
+   * Builds an array based on the given data and remappers.
+   *
+   * The remappers gets applied to each item in the array.
+   *
+   * Always returns an array, can be empty if supplied data isn’t an array.
+   */
+  'array.map': Remapper;
+
+  /**
+   * Filters out unique entries from an array.
+   *
+   * The value Remapper is applied to each entry in the array,
+   * using its result to determine uniqueness.
+   *
+   * If the value Remapper result in `undefined` or `null`, the entire entry is used for uniqueness.
+   *
+   * If the input is not an array, the input is returned without any modifications.
+   */
+  'array.unique': Remapper;
+
+  /**
+   * Create an icalendar event.
+   */
+  ics: DurationICSRemapper | EndTimeICSRemapper;
+
+  /**
+   * Checks if condition results in a truthy value.
+   *
+   * Returns value of then if condition is truthy, otherwise it returns the value of else.
+   */
+  if: { condition: Remapper; then: Remapper; else: Remapper };
+
+  /**
+   * Get the current array.map’s index or length.
+   *
+   * Returns nothing if array.map’s context isn’t set.
+   */
+  array: 'index' | 'length';
+
+  /**
+   * Create a new array with an array of predefined remappers.
+   */
+  'array.from': Remapper[];
+
+  /**
+   * Append new values to the end of an array.
+   *
+   * If the input is not an array an empty array is returned.
+   */
+  'array.append': Remapper[];
+
+  /**
+   * Remove item(s) from an array given a predefined array of remappable indices.
+   *
+   * Only the remapped values that are turned into numbers are applied.
+   *
+   * If the input is not an array an empty array is returned.
+   */
+  'array.omit': Remapper[];
+
+  /**
+   * Create a new object given some predefined mapper keys.
+   */
+  'object.from': Record<string, Remapper>;
+
+  /**
+   * Assign properties to an existing object given some predefined mapper keys.
+   */
+  'object.assign': Record<stri
