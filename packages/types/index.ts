@@ -404,4 +404,192 @@ export interface Remappers {
   /**
    * Assign properties to an existing object given some predefined mapper keys.
    */
-  'object.assign': Record<stri
+  'object.assign': Record<string, Remapper>;
+
+  /**
+   * Remove properties from an existing object based on the given the object keys.
+   *
+   * Nested properties can be removed using arrays of keys.
+   *
+   * @example
+   * ```yaml
+   * object.omit:
+   *   - foo   # Removes the property foo
+   *   - - bar # Removes the property baz inside of bar
+   *     - baz
+   * ```
+   */
+  'object.omit': (string[] | string)[];
+
+  /**
+   * Use a static value.
+   */
+  static: any;
+
+  /**
+   * Get a property from an object.
+   *
+   * If the prop is an array, nested properties will be retrieved in sequence.
+   */
+  prop: number[] | string[] | number | string;
+
+  /**
+   * Recursively strip all nullish values from an object or array.
+   */
+  'null.strip': {
+    depth: number;
+  } | null;
+
+  /**
+   * Pick and return a random entry from an array.
+   *
+   * If the input is not an array, the input is returned as-is.
+   */
+  'random.choice': null;
+  /**
+   * Pick and return a random entry from an array.
+   *
+   * If the input is not an array, the input is returned as-is.
+   */
+  'random.integer': [number, number];
+
+  /**
+   * Pick and return a random entry from an array.
+   *
+   * If the input is not an array, the input is returned as-is.
+   */
+  'random.float': [number, number];
+
+  /**
+   * Pick and return a random entry from an array.
+   *
+   * If the input is not an array, the input is returned as-is.
+   */
+  'random.string': { choice: string; length: number };
+
+  /**
+   * Get the input data as it was initially passed to the remap function.
+   */
+  root: null;
+
+  /**
+   * Get the data at a certain index from the history stack prior to an action.
+   *
+   * 0 is the index of the first item in the history stack.
+   */
+  history: number;
+
+  /**
+   * Create a new object with properties from the history stack at a certain index.
+   */
+  'from.history': {
+    /**
+     * The index of the history stack item to apply.
+     *
+     * 0 is the index of the first item in the history stack.
+     */
+    index: number;
+
+    /**
+     * Predefined mapper keys to choose what properties to apply.
+     */
+    props: Record<string, Remapper>;
+  };
+
+  /**
+   * Assign properties from the history stack at a certain index to an existing object.
+   */
+  'assign.history': {
+    /**
+     * The index of the history stack item to assign.
+     *
+     * 0 is the index of the first item in the history stack.
+     */
+    index: number;
+
+    /**
+     * Predefined mapper keys to choose what properties to assign.
+     */
+    props: Record<string, Remapper>;
+  };
+
+  /**
+   * Assign properties from the history stack at a certain index and exclude the unwanted.
+   */
+  'omit.history': {
+    /**
+     * The index of the history stack item to assign.
+     *
+     * 0 is the index of the first item in the history stack.
+     */
+    index: number;
+
+    /**
+     * Exclude properties from the history stack item, based on the given object keys.
+     *
+     * Nested properties can be excluded using arrays of keys.
+     *
+     * @example
+     * ```yaml
+     * omit.history:
+     *   index: 0
+     *   keys:
+     *     - foo   # Excludes the property foo
+     *     - - bar # Excludes the property baz inside of bar
+     *       - baz
+     * ```
+     */
+    keys: (string[] | string)[];
+  };
+
+  /**
+   * Convert an input to lower or upper case.
+   */
+  'string.case': 'lower' | 'upper';
+
+  /**
+   * Format a string using remapped input variables.
+   */
+  'string.format': {
+    /**
+     * The message id pointing to the template string to format.
+     */
+    messageId?: string;
+
+    /**
+     * The template default string to format.
+     */
+    template?: string;
+
+    /**
+     * A set of remappers to convert the input to usable values.
+     */
+    values?: Record<string, Remapper>;
+  };
+
+  /**
+   * Match the content with the regex in the key, and replace it with its value.
+   */
+  'string.replace': Record<string, string>;
+
+  /**
+   * Translate using a messageID.
+   *
+   * This does not support parameters, for more nuanced translations use `string.format`.
+   */
+  translate: string;
+
+  user: keyof UserInfo;
+}
+
+export type ObjectRemapper = RequireExactlyOne<Remappers>;
+
+export type ArrayRemapper = (ArrayRemapper | ObjectRemapper)[];
+
+export type Remapper = ArrayRemapper | ObjectRemapper | boolean | number | string;
+
+export interface SubscriptionResponseResource {
+  create: boolean;
+  update: boolean;
+  delete: boolean;
+  subscriptions?: Record
