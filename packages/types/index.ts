@@ -814,4 +814,203 @@ export interface BaseActionDefinition<T extends Action['type']> {
   remapAfter?: Remapper;
 
   /**
-   * Another action that is dispatched when the action has be
+   * Another action that is dispatched when the action has been dispatched successfully.
+   */
+  onSuccess?: ActionDefinition;
+
+  /**
+   * Another action that is dispatched when the action has failed to dispatch successfully.
+   */
+  onError?: ActionDefinition;
+}
+
+export interface AnalyticsAction extends BaseActionDefinition<'analytics'> {
+  /**
+   * The analytics event target name.
+   */
+  target: string;
+
+  /**
+   * Additional config to pass to analytics.
+   */
+  config?: Remapper;
+}
+
+export interface ConditionActionDefinition extends BaseActionDefinition<'condition'> {
+  /**
+   * The condition to check for.
+   */
+  if: Remapper;
+
+  /**
+   * The action to run if the condition is true.
+   */
+  then: ActionDefinition;
+
+  /**
+   * The action to run if the condition is false.
+   */
+  else: ActionDefinition;
+}
+
+export interface MatchActionDefinition extends BaseActionDefinition<'match'> {
+  /**
+   * Run another action if one of the cases is true.
+   *
+   * Only the first case that equals true is called.
+   */
+  match: {
+    /**
+     * The case to be matched.
+     */
+    case: Remapper;
+    /**
+     * Action to be called if the case equals true.
+     */
+    action: ActionDefinition;
+  }[];
+}
+
+export interface DialogActionDefinition extends BaseActionDefinition<'dialog'> {
+  /**
+   * If false, the dialog cannot be closed by clicking outside of the dialog or on the close button.
+   */
+  closable?: boolean;
+
+  /**
+   * If true, the dialog will be displayed full screen.
+   */
+  fullscreen?: boolean;
+
+  /**
+   * Blocks to render on the dialog.
+   */
+  blocks: BlockDefinition[];
+
+  /**
+   * The title to show in the dialog.
+   */
+  title?: Remapper;
+}
+
+export interface DownloadActionDefinition extends BaseActionDefinition<'download'> {
+  /**
+   * The filename to download the file as. It must include a file extension.
+   */
+  filename: string;
+}
+
+export interface EachActionDefinition extends BaseActionDefinition<'each'> {
+  /**
+   * Run the actions in series instead of parallel.
+   */
+  serial?: boolean;
+  /**
+   * Run an action for each entry in an array.
+   *
+   * The actions are run in parallel.
+   *
+   * If the input is not an array, the action will be applied to the input instead.
+   */
+  do: ActionDefinition;
+}
+
+export interface EmailActionDefinition extends BaseActionDefinition<'email'> {
+  /**
+   * The recipient of the email.
+   */
+  to?: Remapper;
+
+  /**
+   * The name of the sender.
+   *
+   * The default value depends on the email server.
+   */
+  from?: Remapper;
+
+  /**
+   * The recipients to CC the email to.
+   */
+  cc?: Remapper;
+
+  /**
+   * The recipients to BCC the email to.
+   */
+  bcc?: Remapper;
+
+  /**
+   * The subject of the email.
+   */
+  subject: Remapper;
+
+  /**
+   * The body of the email.
+   */
+  body: Remapper;
+
+  /**
+   * The attachments to include in the email.
+   *
+   * The remapper must resolve to an object containing the following properties:
+   *
+   * - \`target\`: The asset ID or link to download contents from to add as an attachment. This is
+   * mutually exclusive with \`content\`.
+   * - \`content\`: The raw content to include as the file content. This is mutually exclusive with
+   * \`target\`.
+   * - \`filename\`: The filename to include the attachment as.
+   * - \`accept\` If the target is a URL, this will be set as the HTTP \`Accept\` header when
+   * downloading the file.
+   *
+   * If the attachment is a string, it will be treated as the target.
+   */
+  attachments?: Remapper;
+}
+
+export interface FlowToActionDefinition extends BaseActionDefinition<'flow.to'> {
+  /**
+   * The flow step to go to.
+   */
+  step: Remapper;
+}
+
+export interface LinkActionDefinition extends BaseActionDefinition<'link'> {
+  /**
+   * Where to link to.
+   *
+   * This should be a page name.
+   */
+  to: string[] | string;
+}
+
+export interface NotifyActionDefinition extends BaseActionDefinition<'notify'> {
+  /**
+   * The title of the notification.
+   */
+  title: Remapper;
+
+  /**
+   * The description of the notification.
+   */
+  body: Remapper;
+
+  /**
+   * To whom the notification should be sent.
+   *
+   * Use `all` to send the notification to all app subscribed users.
+   * Or notify specific users by passing either a single user id or an array of user ids.
+   *
+   * Nothing is sent if the value is **not** a valid user id.
+   */
+  to: Remapper;
+}
+
+export interface LogActionDefinition extends BaseActionDefinition<'log'> {
+  /**
+   * The logging level on which to log.
+   *
+   * @default `info`.
+   */
+  level?: LogAction['level'];
+}
+
+export interface ShareActionDefinition extends BaseActionDefinitio
