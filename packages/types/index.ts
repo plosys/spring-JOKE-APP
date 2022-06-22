@@ -1013,4 +1013,233 @@ export interface LogActionDefinition extends BaseActionDefinition<'log'> {
   level?: LogAction['level'];
 }
 
-export interface ShareActionDefinition extends BaseActionDefinitio
+export interface ShareActionDefinition extends BaseActionDefinition<'share'> {
+  /**
+   * The URL that is being shared.
+   */
+  url?: Remapper;
+
+  /**
+   * The main body that is being shared.
+   */
+  text?: Remapper;
+
+  /**
+   * The title that is being shared, if supported.
+   */
+  title?: Remapper;
+}
+
+export type StorageType = 'appStorage' | 'indexedDB' | 'localStorage' | 'sessionStorage';
+
+export interface StorageAppendActionDefinition extends BaseActionDefinition<'storage.append'> {
+  /**
+   * The key of the entry to write to the app’s storage.
+   */
+  key: Remapper;
+
+  /**
+   * The data to write to the app’s storage.
+   */
+  value: Remapper;
+
+  /**
+   * The mechanism used to read the data from.
+   *
+   * @default 'indexedDB'
+   */
+  storage?: StorageType;
+}
+
+export interface StorageDeleteActionDefinition extends BaseActionDefinition<'storage.delete'> {
+  /**
+   * The key of the entry to delete from the app’s storage.
+   */
+  key: Remapper;
+
+  /**
+   * The mechanism used to delete the data from.
+   *
+   * @default 'indexedDB'
+   */
+  storage?: StorageType;
+}
+
+export interface StorageSubtractActionDefinition extends BaseActionDefinition<'storage.subtract'> {
+  /**
+   * The key of the entry to subtract the last entry from
+   */
+  key: Remapper;
+
+  /**
+   * The mechanism used to read the data from.
+   *
+   * @default 'indexedDB'
+   */
+  storage?: StorageType;
+}
+
+export interface StorageUpdateActionDefinition extends BaseActionDefinition<'storage.update'> {
+  /**
+   * The key of the entry to write to the app’s storage.
+   */
+  key: Remapper;
+
+  /**
+   * The key of the item to update.
+   */
+  item: Remapper;
+
+  /**
+   * The data to update the specified item with.
+   */
+  value: Remapper;
+
+  /**
+   * The mechanism used to read the data from.
+   *
+   * @default 'indexedDB'
+   */
+  storage?: StorageType;
+}
+
+export interface StorageReadActionDefinition extends BaseActionDefinition<'storage.read'> {
+  /**
+   * The key of the entry to read from the app’s storage.
+   */
+  key: Remapper;
+
+  /**
+   * The mechanism used to read the data from.
+   *
+   * @default 'indexedDB'
+   */
+  storage?: StorageType;
+}
+
+export interface StorageWriteActionDefinition extends BaseActionDefinition<'storage.write'> {
+  /**
+   * The key of the entry to write to the app’s storage.
+   */
+  key: Remapper;
+
+  /**
+   * The data to write to the app’s storage.
+   */
+  value: Remapper;
+
+  /**
+   * The mechanism used to read the data from.
+   *
+   * @default 'indexedDB'
+   */
+  storage?: StorageType;
+}
+
+export interface TeamInviteActionDefinition extends BaseActionDefinition<'team.invite'> {
+  /**
+   * The ID of the team to invite the user to.
+   */
+  id?: Remapper;
+
+  /**
+   * The email address of the user to invite.
+   */
+  email?: Remapper;
+}
+
+export interface UserLoginAction extends BaseActionDefinition<'user.login'> {
+  /**
+   * The email address to login with.
+   */
+  email: Remapper;
+
+  /**
+   * The password to login with.
+   */
+  password: Remapper;
+}
+
+export interface UserRegisterAction extends BaseActionDefinition<'user.register'> {
+  /**
+   * The email address to login with.
+   */
+  email: Remapper;
+
+  /**
+   * The password to login with.
+   */
+  password: Remapper;
+
+  /**
+   * The display name of the user.
+   */
+  displayName: Remapper;
+
+  /**
+   * The profile picture to use.
+   *
+   * This must be a file, otherwise it’s discarded.
+   */
+  picture?: Remapper;
+
+  /**
+   * Custom properties that can be assigned freely.
+   *
+   * Every value will be converted to a string.
+   */
+  properties?: Remapper;
+}
+
+export interface UserUpdateAction extends BaseActionDefinition<'user.update'> {
+  /**
+   * The email address to update.
+   */
+  email?: Remapper;
+
+  /**
+   * The password to update.
+   */
+  password?: Remapper;
+
+  /**
+   * The display name to update.
+   */
+  displayName?: Remapper;
+
+  /**
+   * The profile picture to update.
+   *
+   * This must be a file, otherwise it’s ignored.
+   */
+  picture?: Remapper;
+
+  /**
+   * Custom properties that can be assigned freely.
+   *
+   * Every value will be converted to a string.
+   */
+  properties?: Remapper;
+}
+
+export interface RequestLikeActionDefinition<T extends Action['type'] = Action['type']>
+  extends BaseActionDefinition<T> {
+  /**
+   * The HTTP method to use for making a request.
+   */
+  method?: HTTPMethods;
+
+  /**
+   * Whether or not to proxy the request through the Appsemble proxy endpoint.
+   *
+   * @default true
+   */
+  proxy?: boolean;
+
+  /**
+   * A JSON schema against which to validate data before uploading.
+   */
+  schema?: OpenAPIV3.SchemaObject;
+
+  /**
+   * Query p
