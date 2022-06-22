@@ -1242,4 +1242,167 @@ export interface RequestLikeActionDefinition<T extends Action['type'] = Action['
   schema?: OpenAPIV3.SchemaObject;
 
   /**
-   * Query p
+   * Query parameters to pass along with the request.
+   */
+  query?: Remapper;
+
+  /**
+   * The URL to which to make the request.
+   */
+  url?: Remapper;
+
+  /**
+   * A remapper for the request body.
+   *
+   * If this isn’t specified, the raw input data is used.
+   */
+  body?: Remapper;
+}
+
+interface ResourceActionDefinition<T extends Action['type']>
+  extends RequestLikeActionDefinition<T> {
+  /**
+   * The name of the resource.
+   */
+  resource: string;
+}
+
+interface ViewResourceDefinition {
+  /**
+   * The view to use for the request.
+   */
+  view?: string;
+}
+
+export type RequestActionDefinition = RequestLikeActionDefinition<'request'>;
+export type ResourceCreateActionDefinition = ResourceActionDefinition<'resource.create'>;
+export type ResourceDeleteActionDefinition = ResourceActionDefinition<'resource.delete'>;
+export type ResourceGetActionDefinition = ResourceActionDefinition<'resource.get'> &
+  ViewResourceDefinition;
+export type ResourceQueryActionDefinition = ResourceActionDefinition<'resource.query'> &
+  ViewResourceDefinition;
+export type ResourceCountActionDefinition = ResourceActionDefinition<'resource.count'>;
+export type ResourceUpdateActionDefinition = ResourceActionDefinition<'resource.update'>;
+export type ResourcePatchActionDefinition = ResourceActionDefinition<'resource.patch'>;
+
+export interface BaseResourceSubscribeActionDefinition<T extends Action['type']>
+  extends BaseActionDefinition<T> {
+  /**
+   * The name of the resource.
+   */
+  resource: string;
+
+  /**
+   * The action to subscribe to. Defaults to `update` if not specified.
+   */
+  action?: 'create' | 'delete' | 'update';
+}
+
+export type ResourceSubscriptionSubscribeActionDefinition =
+  BaseResourceSubscribeActionDefinition<'resource.subscription.subscribe'>;
+
+export type ResourceSubscriptionUnsubscribeActionDefinition =
+  BaseResourceSubscribeActionDefinition<'resource.subscription.unsubscribe'>;
+
+export type ResourceSubscriptionToggleActionDefinition =
+  BaseResourceSubscribeActionDefinition<'resource.subscription.toggle'>;
+
+export type ResourceSubscriptionStatusActionDefinition = Omit<
+  BaseResourceSubscribeActionDefinition<'resource.subscription.status'>,
+  'action'
+>;
+
+export interface EventActionDefinition extends BaseActionDefinition<'event'> {
+  /**
+   * The name of the event to emit to.
+   */
+  event: string;
+
+  /**
+   * An event to wait for before resolving.
+   *
+   * If this is unspecified, the action will resolve with the input data.
+   */
+  waitFor?: string;
+}
+
+export interface StaticActionDefinition extends BaseActionDefinition<'static'> {
+  /**
+   * The value to return.
+   */
+  value: any;
+}
+
+export interface BaseMessage {
+  /**
+   * The color to use for the message.
+   *
+   * @default 'info'
+   */
+  color?: BulmaColor;
+
+  /**
+   * The timeout period for this message (in milliseconds).
+   *
+   * @default 5000
+   */
+  timeout?: number;
+
+  /**
+   * Whether or not to show the dismiss button.
+   *
+   * @default false
+   */
+  dismissable?: boolean;
+
+  /**
+   * The position of the message on the screen.
+   *
+   * @default 'bottom'
+   */
+  layout?: 'bottom' | 'top';
+}
+
+export type MessageActionDefinition = BaseActionDefinition<'message'> &
+  BaseMessage & {
+    /**
+     * The content of the message to display.
+     */
+    body: Remapper;
+  };
+
+export type ActionDefinition =
+  | AnalyticsAction
+  | BaseActionDefinition<'dialog.error'>
+  | BaseActionDefinition<'dialog.ok'>
+  | BaseActionDefinition<'flow.back'>
+  | BaseActionDefinition<'flow.cancel'>
+  | BaseActionDefinition<'flow.finish'>
+  | BaseActionDefinition<'flow.next'>
+  | BaseActionDefinition<'link.back'>
+  | BaseActionDefinition<'link.next'>
+  | BaseActionDefinition<'noop'>
+  | BaseActionDefinition<'team.join'>
+  | BaseActionDefinition<'team.list'>
+  | BaseActionDefinition<'throw'>
+  | ConditionActionDefinition
+  | DialogActionDefinition
+  | DownloadActionDefinition
+  | EachActionDefinition
+  | EmailActionDefinition
+  | EventActionDefinition
+  | FlowToActionDefinition
+  | LinkActionDefinition
+  | LogActionDefinition
+  | MatchActionDefinition
+  | MessageActionDefinition
+  | NotifyActionDefinition
+  | RequestActionDefinition
+  | ResourceCountActionDefinition
+  | ResourceCreateActionDefinition
+  | ResourceDeleteActionDefinition
+  | ResourceGetActionDefinition
+  | ResourcePatchActionDefinition
+  | ResourceQueryActionDefinition
+  | ResourceSubscriptionStatusActionDefinition
+  | Resourc
