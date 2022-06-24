@@ -1605,4 +1605,231 @@ export interface BasicPageDefinition extends BasePageDefinition {
   blocks: BlockDefinition[];
 }
 
-export inte
+export interface FlowPageDefinition extends BasePageDefinition {
+  type: 'flow';
+
+  steps: SubPage[];
+
+  /**
+   * A mapping of actions that can be fired by the page to action handlers.
+   */
+  actions?: {
+    onFlowCancel?: ActionDefinition;
+    onFlowFinish?: ActionDefinition;
+  };
+
+  /**
+   * The method used to display the progress of the flow page.
+   *
+   * @default 'corner-dots'
+   */
+  progress?: 'corner-dots' | 'hidden';
+
+  /**
+   * Whether to retain the flow data when navigating away to another page outside the flow.
+   *
+   * By default the flow page retains it's data after navigating once. Set to false to clear it.
+   *
+   * @default true
+   */
+  retainFlowData?: boolean;
+}
+
+export interface LoopPageDefinition extends BasePageDefinition {
+  type: 'loop';
+
+  /**
+   * Template step that the loop will pass data onto
+   */
+  foreach?: SubPage;
+
+  /**
+   * A mapping of actions that can be fired by the page to action handlers.
+   */
+  actions?: {
+    onFlowCancel?: ActionDefinition;
+    onFlowFinish?: ActionDefinition;
+    onLoad?: ActionDefinition;
+  };
+
+  /**
+   * The method used to display the progress of the flow page.
+   *
+   * @default 'corner-dots'
+   */
+  progress?: 'corner-dots' | 'hidden';
+
+  /**
+   * Whether to retain the flow data when navigating away to another page outside the flow.
+   *
+   * By default the flow page retains it's data after navigating once. Set to false to clear it.
+   *
+   * @default true
+   */
+  retainFlowData?: boolean;
+}
+
+export interface TabsPageDefinition extends BasePageDefinition {
+  type: 'tabs';
+  tabs: SubPage[];
+}
+
+export type PageDefinition =
+  | BasicPageDefinition
+  | FlowPageDefinition
+  | LoopPageDefinition
+  | TabsPageDefinition;
+
+export interface AppDefinition {
+  /**
+   * The name of the app.
+   *
+   * This determines the default path of the app.
+   */
+  name?: string;
+
+  /**
+   * The description of the app.
+   */
+  description?: string;
+
+  /**
+   * The default language of the app.
+   *
+   * @default 'en'
+   */
+  defaultLanguage?: string;
+
+  /**
+   * The security definition of the app.
+   *
+   * This determines user roles and login behavior.
+   */
+  security?: Security;
+
+  /**
+   * A list of roles that are required to view pages. Specific page roles override this property.
+   */
+  roles?: string[];
+
+  /**
+   * The default page of the app.
+   */
+  defaultPage: string;
+
+  /**
+   * The settings for the layout of the app.
+   */
+  layout?: {
+    /**
+     * The location of the login button.
+     *
+     * @default 'navbar'
+     */
+    login?: LayoutPosition;
+
+    /**
+     * The location of the settings button.
+     *
+     * If set to `navigation`, it will only be visible if `login` is also visible in `navigation`.
+     *
+     * @default 'navbar'
+     */
+    settings?: LayoutPosition;
+
+    /**
+     * The location of the feedback button
+     *
+     * If set to `navigation`, it will only be visible if `login` is also visible in `navigation`.
+     *
+     * @default 'navbar'
+     */
+    feedback?: LayoutPosition;
+
+    /**
+     * The navigation type to use.
+     *
+     * If this is omitted, a collapsable side navigation menu will be rendered on the left.
+     *
+     * @default 'left-menu'
+     */
+    navigation?: Navigation;
+  };
+
+  /**
+   * The strategy to use for apps to subscribe to push notifications.
+   *
+   * If this is omitted, push notifications can not be sent.
+   */
+  notifications?: 'login' | 'opt-in' | 'startup';
+
+  /**
+   * The pages of the app.
+   */
+  pages: PageDefinition[];
+
+  /**
+   * Resource definitions that may be used by the app.
+   */
+  resources?: Record<string, ResourceDefinition>;
+
+  /**
+   * The global theme for the app.
+   */
+  theme?: Partial<Theme>;
+
+  /**
+   * Helper property that can be used to store YAML anchors.
+   *
+   * This is omitted any time the API serves the app definition.
+   */
+  anchors?: any[];
+
+  /**
+   * Cron jobs associated with the app.
+   */
+  cron?: Record<string, CronDefinition>;
+}
+
+/**
+ * The definition of a cron job for an app.
+ */
+export interface CronDefinition {
+  schedule: string;
+  action: ActionDefinition;
+}
+
+export interface App {
+  /**
+   * The unique identifier for the app.
+   *
+   * This value will be generated automatically by the API.
+   */
+  id?: number;
+
+  /*
+   * A domain name on which this app should be served.
+   */
+  domain?: string;
+
+  /**
+   * The name used for emails
+   */
+  emailName?: string;
+
+  /**
+   * The id of the organization this app belongs to.
+   */
+  OrganizationId?: string;
+
+  /**
+   * The name of the organization this app belongs to.
+   */
+  OrganizationName?: string;
+
+  /**
+   * The long description of the app.
+   */
+  longDescription: string;
+
+  
