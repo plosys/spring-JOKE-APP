@@ -1405,4 +1405,204 @@ export type ActionDefinition =
   | ResourcePatchActionDefinition
   | ResourceQueryActionDefinition
   | ResourceSubscriptionStatusActionDefinition
-  | Resourc
+  | ResourceSubscriptionSubscribeActionDefinition
+  | ResourceSubscriptionToggleActionDefinition
+  | ResourceSubscriptionUnsubscribeActionDefinition
+  | ResourceUpdateActionDefinition
+  | ShareActionDefinition
+  | StaticActionDefinition
+  | StorageAppendActionDefinition
+  | StorageDeleteActionDefinition
+  | StorageReadActionDefinition
+  | StorageSubtractActionDefinition
+  | StorageUpdateActionDefinition
+  | StorageWriteActionDefinition
+  | TeamInviteActionDefinition
+  | UserLoginAction
+  | UserRegisterAction
+  | UserUpdateAction;
+
+export interface ActionType {
+  /**
+   * Whether or not app creators are required to define this action.
+   */
+  required?: boolean;
+
+  /**
+   * The description of the action.
+   */
+  description?: string;
+}
+
+export interface EventType {
+  /**
+   * The description of the action.
+   */
+  description?: string;
+}
+
+export interface BlockManifest {
+  /**
+   * A block manifest as it is available to the app and in the SDK.
+   * pattern: ^@[a-z]([a-z\d-]{0,30}[a-z\d])?\/[a-z]([a-z\d-]{0,30}[a-z\d])$
+   * The name of a block.
+   */
+  name: string;
+
+  /**
+   * The description of the block.
+   */
+  description?: string;
+
+  /**
+   * The long description of the block.
+   *
+   * This is displayed when rendering block documentation and supports Markdown.
+   */
+  longDescription?: string;
+
+  /**
+   * A [semver](https://semver.org) representation of the block version.
+   *
+   * Pattern:
+   * ^\d+\.\d+\.\d+$
+   */
+  version: string;
+
+  /**
+   * The type of layout to be used for the block.
+   */
+  layout?: 'float' | 'grow' | 'hidden' | 'static' | null;
+
+  /**
+   * Array of urls associated to the files of the block.
+   */
+  files: string[];
+
+  /**
+   * The actions that are supported by a block.
+   */
+  actions?: Record<string, ActionType>;
+
+  /**
+   * The messages that are supported by a block.
+   */
+  messages?: Record<string, Record<string, any> | never>;
+
+  /**
+   * The events that are supported by a block.
+   */
+  events?: {
+    listen?: Record<string, EventType>;
+    emit?: Record<string, EventType>;
+  };
+
+  /**
+   * A JSON schema to validate block parameters.
+   */
+  parameters?: Schema;
+
+  /**
+   * The URL that can be used to fetch this block’s icon.
+   */
+  iconUrl?: string;
+
+  /**
+   * The languages that are supported by the block by default.
+   *
+   * If the block has no messages, this property is `null`.
+   */
+  languages: string[] | null;
+
+  examples?: string[];
+
+  /**
+   * Whether the block should be listed publicly
+   * for users who aren’t part of the block’s organization.
+   *
+   * - **`public`**: The block is visible for everyone.
+   * - **`unlisted`**: The block will only be visible if the user is
+   * logged in and is part of the block’s organization.
+   */
+  visibility?: 'public' | 'unlisted';
+
+  /**
+   * Whether action validation for wildcard action is skipped.
+   */
+  wildcardActions?: boolean;
+}
+
+/**
+ * This describes what a page will look like in the app.
+ */
+export interface BasePageDefinition {
+  /**
+   * The name of the page.
+   *
+   * This will be displayed at the *app bar* of each page and in the side menu,
+   * unless @see navTitle is set.
+   *
+   * The name of the page is used to determine the URL path of the page.
+   */
+  name: string;
+
+  /**
+   * Whether or not the page name should be displayed in the *app bar*.
+   */
+  hideName?: boolean;
+
+  /**
+   * The name of the page when displayed in the navigation menu.
+   *
+   * Context property `name` can be used to access the name of the page.
+   */
+  navTitle?: Remapper;
+
+  /**
+   * Whether or not the page should be displayed in navigational menus.
+   */
+  hideNavTitle?: boolean;
+
+  /**
+   * The navigation type to use for the page.
+   * Setting this will override the default navigation for the app.
+   */
+  navigation?: Navigation;
+
+  /**
+   * A list of roles that may view the page.
+   */
+  roles?: string[];
+
+  /**
+   * An optional icon from the fontawesome icon set
+   *
+   * This will be displayed in the navigation menu.
+   */
+  icon?: IconName;
+
+  /**
+   * Page parameters can be used for linking to a page that should display a single resource.
+   */
+  parameters?: string[];
+
+  /**
+   * The global theme for the page.
+   */
+  theme?: Partial<Theme>;
+}
+
+/**
+ * A subset of page for use within flow pages and tab pages.
+ */
+export interface SubPage {
+  name: string;
+  blocks: BlockDefinition[];
+}
+
+export interface BasicPageDefinition extends BasePageDefinition {
+  type?: 'page';
+  blocks: BlockDefinition[];
+}
+
+export inte
