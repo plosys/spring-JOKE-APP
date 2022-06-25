@@ -1832,4 +1832,263 @@ export interface App {
    */
   longDescription: string;
 
-  
+  /**
+   * The path the app is available from.
+   */
+  path: string;
+
+  /**
+   * Visibility of the app in the public app store.
+   */
+  visibility: AppVisibility;
+
+  /**
+   * Whether or not the app definition is exposed for display in Appsemble Studio.
+   */
+  showAppDefinition: boolean;
+
+  /**
+   * The Google analytics ID of the app.
+   */
+  googleAnalyticsID?: string;
+
+  /**
+   * Whether the app is currently locked.
+   */
+  locked: boolean;
+
+  /**
+   * Whether the Appsemble password login method should be shown.
+   */
+  showAppsembleLogin: boolean;
+
+  /**
+   * Whether the Appsemble OAuth2 login method should be shown.
+   */
+  showAppsembleOAuth2Login: boolean;
+
+  /**
+   * The Sentry DSN of the app.
+   */
+  sentryDsn: string;
+
+  /**
+   * The Sentry environment associated with the Sentry DSN.
+   */
+  sentryEnvironment: string;
+
+  /**
+   * The app definition.
+   */
+  definition: AppDefinition;
+
+  /**
+   * The app definition formatted as YAML.
+   */
+  yaml: string;
+
+  /**
+   * An app rating.
+   */
+  rating?: {
+    /**
+     * The number of people who rated the app.
+     */
+    count: number;
+
+    /**
+     * The average app rating.
+     */
+    average: number;
+  };
+
+  /**
+   * Whether the app has clonable resources.
+   */
+  resources?: boolean;
+
+  /**
+   * A list of URLs to app screenshots
+   */
+  screenshotUrls?: string[];
+
+  /**
+   * True if the app has its own icon.
+   */
+  hasIcon: boolean;
+
+  /**
+   * True if the app supports a maskable icon.
+   */
+  hasMaskableIcon: boolean;
+
+  /**
+   * The background color used for maskable icons.
+   */
+  iconBackground: string;
+
+  /**
+   * An app icon url
+   */
+  iconUrl?: string;
+
+  /**
+   * The creation date of the app.
+   */
+  $created?: string;
+
+  /**
+   * The date when the app was last updated.
+   */
+  $updated?: string;
+
+  /**
+   * Any pre-included translations of the app.
+   */
+  messages?: AppsembleMessages;
+}
+
+/**
+ * A rating given to an app.
+ */
+export interface Rating {
+  /**
+   * A value ranging between 1 and 5 representing the rating
+   */
+  rating: number;
+
+  /**
+   * An optional description of why the rating was given
+   */
+  description?: string;
+
+  /**
+   * The name of the user who rated the app.
+   */
+  name: string;
+
+  /**
+   * The ID of the user who rated the app.
+   */
+  UserId: string;
+
+  /**
+   * The creation date of the rating.
+   */
+  $created: string;
+
+  /**
+   * The date of the last time the rating was updated
+   */
+  $updated: string;
+}
+
+/**
+ * The representation of an organization within Appsemble.
+ */
+export interface Organization {
+  /**
+   * The ID of the organization.
+   *
+   * This typically is prepended with an `@`
+   */
+  id: string;
+
+  /**
+   * The display name of the organization.
+   */
+  name: string;
+
+  /**
+   * The description of the organization.
+   */
+  description: string;
+
+  /**
+   * The website of the organization.
+   */
+  website: string;
+
+  /**
+   * The email address that can be used to contact the organization.
+   */
+  email: string;
+
+  /**
+   * The URL at which the organization’s icon can be found.
+   */
+  iconUrl: string;
+}
+
+/**
+ * An invite for an organization.
+ */
+export interface OrganizationInvite {
+  /**
+   * The email address of the user to invite.
+   */
+  email: string;
+
+  /**
+   * The role the user should get when accepting the invite.
+   */
+  role: string;
+}
+
+/**
+ * A member of an app.
+ */
+export interface AppMember {
+  id: string;
+  name: string;
+  primaryEmail: string;
+  role: string;
+}
+
+/**
+ * The layout used to store Appsemble messages.
+ */
+export interface AppsembleMessages {
+  /**
+   * Messages related to the Appsemble core.
+   *
+   * This may be an empty object if the language is the default locale.
+   */
+  core: Record<string, string>;
+
+  /**
+   * Translations for global block messages and meta properties of the app.
+   *
+   * This may be an empty object if the language is the default locale.
+   */
+  app: Record<string, string>;
+
+  /**
+   * A list of messages specific to the app.
+   */
+  messageIds: Record<string, string>;
+
+  /**
+   * A list of messages specific to each block used in the app.
+   *
+   * At root the keys represent a block type.
+   * One layer deep the keys represent a block version.
+   * Two layers deep the keys represent the key/message pairs.
+   *
+   * @example
+   * {
+   *   "<at>example/test": {
+   *     "0.0.0": {
+   *       "exampleKey": "Example Message"
+   *     }
+   *   }
+   * }
+   */
+  blocks: Record<string, Record<string, Record<string, string>>>;
+}
+
+/**
+ * Translated messages for an app or block.
+ */
+export interface Messages {
+  /**
