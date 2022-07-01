@@ -21,4 +21,6 @@ export interface Snapshot {
 
   /**
    * The app definition code represented by this snapshot.
-   *
+   */
+  yaml?: string;
+}
