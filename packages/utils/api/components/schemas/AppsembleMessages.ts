@@ -22,4 +22,20 @@ export const AppsembleMessages: OpenAPIV3.NonArraySchemaObject = {
       description: 'Translations for the core of the app.',
       additionalProperties: {
         type: 'object',
-        description: 'The name of the block typ
+        description: 'The name of the block type.',
+        pattern: `^@${partialNormalized.source}/${partialNormalized.source}$`,
+        additionalProperties: {
+          type: 'object',
+          description: 'The version of the block.',
+          pattern: semver.source,
+          additionalProperties: { type: 'string' },
+        },
+      },
+    },
+    messageIds: {
+      type: 'object',
+      description: 'A list of custom message IDs used by the app.',
+      additionalProperties: { type: 'string' },
+    },
+  },
+};
