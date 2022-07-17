@@ -18,4 +18,13 @@ match the name of an emitted event on the same page.
     },
     emit: {
       type: 'object',
-      description: `This propert
+      description: `This property defines the events this block will emit.
+
+The key is the name of the event will emit. The value is a user defined event name which should
+match the name of a event on the same page that’s being listened on.
+`,
+      minProperties: 1,
+      additionalProperties: { type: 'string' },
+    },
+  },
+};
