@@ -8,4 +8,14 @@ export const JSONSchema: OpenAPIV3.NonArraySchemaObject = {
     { $ref: '#/components/schemas/JSONSchemaBoolean' },
     { $ref: '#/components/schemas/JSONSchemaConst' },
     { $ref: '#/components/schemas/JSONSchemaEnum' },
-    { $ref: '#/compon
+    { $ref: '#/components/schemas/JSONSchemaInteger' },
+    { $ref: '#/components/schemas/JSONSchemaMultiType' },
+    { $ref: '#/components/schemas/JSONSchemaNot' },
+    { $ref: '#/components/schemas/JSONSchemaNull' },
+    { $ref: '#/components/schemas/JSONSchemaNumber' },
+    { $ref: '#/components/schemas/JSONSchemaObject' },
+    { $ref: '#/components/schemas/JSONSchemaOneOf' },
+    { $ref: '#/components/schemas/JSONSchemaRemapper' },
+    { $ref: '#/components/schemas/JSONSchemaString' },
+  ],
+};
