@@ -34,4 +34,6 @@ export const OAuth2ClientCredentials: OpenAPIV3.NonArraySchemaObject = {
       items: {
         enum: [...scopes],
       },
-  
+    },
+  },
+};
