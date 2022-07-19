@@ -59,4 +59,16 @@ It’s recommended to set this to \`false\`.
       anyOf: [
         {
           type: 'boolean',
-          description: `If false
+          description: `If false, the object may not have any additional properties.
+
+If true, the object may have **any** type of additional properties. This is **not** recommended.
+`,
+        },
+        {
+          $ref: '#/components/schemas/JSONSchema',
+          description: 'If this is a JSON schema, it describes any additional properties.',
+        },
+      ],
+    },
+  },
+});
