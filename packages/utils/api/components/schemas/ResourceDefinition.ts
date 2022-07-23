@@ -102,4 +102,128 @@ name of the resource and how it should behave.
     query: {
       type: 'object',
       description: "Overrides for 'query' requests.",
-      additionalProperties: fals
+      additionalProperties: false,
+      properties: {
+        roles,
+        query,
+        method: {
+          type: 'string',
+          default: 'GET',
+          description: 'HTTP method to use for this type of request.',
+        },
+        url: {
+          type: 'string',
+          default: '/api/apps/{appId}/{resource}',
+          description: 'URL to use for this type of request.',
+        },
+      },
+    },
+    get: {
+      type: 'object',
+      description: "Overrides for 'get' requests.",
+      additionalProperties: false,
+      properties: {
+        roles,
+        query,
+        method: {
+          type: 'string',
+          default: 'GET',
+          description: 'HTTP method to use for this type of request.',
+        },
+        url: {
+          type: 'string',
+          default: '/api/apps/{appId}/{resource}/{id}',
+          description: 'URL to use for this type of request.',
+        },
+      },
+    },
+    count: {
+      type: 'object',
+      description: "Overrides for 'count' requests.",
+      additionalProperties: false,
+      properties: {
+        roles,
+        query,
+        method: {
+          type: 'string',
+          default: 'GET',
+          description: 'HTTP method to use for this type of request.',
+        },
+        url: {
+          type: 'string',
+          default: '/api/apps/{appId}/{resource}/$count',
+          description: 'URL to use for this type of request.',
+        },
+      },
+    },
+    create: {
+      type: 'object',
+      description: "Overrides for 'create' requests.",
+      additionalProperties: false,
+      properties: {
+        roles,
+        query,
+        method: {
+          type: 'string',
+          default: 'POST',
+          description: 'HTTP method to use for this type of request.',
+        },
+        url: {
+          type: 'string',
+          default: '/api/apps/{appId}/{resource}/{id}',
+          description: 'URL to use for this type of request.',
+        },
+        hooks: {
+          $ref: '#/components/schemas/ResourceHooksDefinition',
+        },
+      },
+    },
+    update: {
+      type: 'object',
+      description: "Overrides for 'update' requests.",
+      additionalProperties: false,
+      properties: {
+        roles,
+        query,
+        method: {
+          type: 'string',
+          default: 'PUT',
+          description: 'HTTP method to use for this type of request.',
+        },
+        url: {
+          type: 'string',
+          default: '/api/apps/{appId}/{resource}/{id}',
+          description: 'URL to use for this type of request.',
+        },
+        hooks: {
+          $ref: '#/components/schemas/ResourceHooksDefinition',
+        },
+      },
+    },
+    delete: {
+      type: 'object',
+      description: "Overrides for 'delete' requests.",
+      additionalProperties: false,
+      properties: {
+        roles,
+        query,
+        method: {
+          type: 'string',
+          default: 'DELETE',
+          description: 'HTTP method to use for this type of request.',
+        },
+        url: {
+          type: 'string',
+          default: '/api/apps/{appId}/{resource}/{id}',
+          description: 'URL to use for this type of request.',
+        },
+        hooks: {
+          $ref: '#/components/schemas/ResourceHooksDefinition',
+        },
+      },
+    },
+    views: {
+      $ref: '#/components/schemas/ResourceViewDefinition',
+    },
+  },
+};
