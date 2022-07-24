@@ -9,4 +9,18 @@ export const ResourceQueryActionDefinition = extendJSONSchema(
     required: ['type', 'resource'],
     properties: {
       type: {
-        enum: ['reso
+        enum: ['resource.query'],
+        description: 'Query a list of resources.',
+      },
+      resource: {
+        type: 'string',
+        description: 'The type of the resource to query.',
+      },
+      view: {
+        type: 'string',
+        description: 'The view to use for the resource.',
+      },
+    },
+  },
+  ['url'],
+);
