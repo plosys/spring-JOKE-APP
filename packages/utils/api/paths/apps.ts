@@ -628,4 +628,154 @@ This will return a 404 if the user has not uploaded one.`,
     },
   },
   '/api/apps/{appId}/ratings': {
-    parameters: [{ $ref: '#/components/parameters/appI
+    parameters: [{ $ref: '#/components/parameters/appId' }],
+    get: {
+      tags: ['app'],
+      description: 'Fetch all ratings of an app.',
+      operationId: 'getAppRatings',
+      responses: {
+        200: {
+          description: 'The list of apps ratings.',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'array',
+                items: {
+                  $ref: '#/components/schemas/Rating',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    post: {
+      tags: ['app'],
+      description: 'Submit an app rating.',
+      operationId: 'submitAppRating',
+      requestBody: {
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              required: ['rating'],
+              properties: {
+                rating: {
+                  $ref: '#/components/schemas/Rating/properties/rating',
+                },
+                description: {
+                  $ref: '#/components/schemas/Rating/properties/description',
+                },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: 'The submitted app rating.',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Asset/properties/id' },
+            },
+          },
+        },
+      },
+      security: [{ studio: [] }],
+    },
+  },
+  '/api/apps/{appId}/broadcast': {
+    parameters: [{ $ref: '#/components/parameters/appId' }],
+    post: {
+      tags: ['app'],
+      description: 'Broadcast a push notification to every subscriber of the app.',
+      operationId: 'broadcast',
+      requestBody: {
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              description: 'The data to include in the notification',
+              required: ['body'],
+              properties: {
+                title: {
+                  description:
+                    'The title of the notification. This defaults to the name of the app if not otherwise specified.',
+                  type: 'string',
+                },
+                body: {
+                  description: 'The content of the notification',
+                  type: 'string',
+                },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        204: {
+          description: 'The notification has been successfully broadcasted.',
+        },
+      },
+      security: [{ studio: [] }],
+    },
+  },
+  '/api/apps/{appId}/snapshots': {
+    parameters: [{ $ref: '#/components/parameters/appId' }],
+    get: {
+      tags: ['app'],
+      description: 'Get a list of snapshots made of the app.',
+      operationId: 'getAppSnapshots',
+      responses: {
+        200: {
+          description: 'The available snapshots',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'number', description: 'The ID of the snapshot.' },
+                    $created: {
+                      type: 'string',
+                      format: 'date-time',
+                      description: 'The creation date of the snapshot.',
+                    },
+                    $author: {
+                      type: 'object',
+                      properties: {
+                        id: { $ref: '#/components/schemas/User/properties/id' },
+                        name: { $ref: '#/components/schemas/User/properties/name' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      security: [{ studio: [] }, { cli: ['apps:write'] }],
+    },
+  },
+  '/api/apps/{appId}/snapshots/{snapshotId}': {
+    parameters: [
+      { $ref: '#/components/parameters/appId' },
+      {
+        name: 'snapshotId',
+        in: 'path',
+        description: 'The ID of the snapshot',
+        required: true,
+        schema: { type: 'number', description: 'The ID of the snapshot.' },
+      },
+    ],
+    get: {
+      tags: ['app'],
+      description: 'Get a single snapshot made of the app.',
+      operationId: 'getAppSnapshot',
+      responses: {
+        200: {
+          description: 'The snapshot',
+          content: {
+            'application
