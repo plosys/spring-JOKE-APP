@@ -463,4 +463,169 @@ export const paths: OpenAPIV3.PathsObject = {
               type: 'object',
               required: ['endpoint', 'resource', 'action'],
               properties: {
-                endpoint:
+                endpoint: {
+                  type: 'string',
+                  format: 'uri',
+                },
+                resource: {
+                  type: 'string',
+                },
+                action: {
+                  type: 'string',
+                  enum: ['create', 'update', 'delete'],
+                },
+                value: {
+                  type: 'boolean',
+                },
+                resourceId: {
+                  type: 'number',
+                },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        204: {
+          description: 'The subscription has successfully been updated.',
+        },
+      },
+      security: [{ app: ['openid'] }, {}],
+    },
+  },
+  '/api/apps/{appId}/members': {
+    parameters: [{ $ref: '#/components/parameters/appId' }],
+    get: {
+      tags: ['app'],
+      description: 'Fetch all members of an app.',
+      operationId: 'getAppMembers',
+      responses: {
+        200: {
+          description: 'The list of app members.',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'array',
+                items: {
+                  $ref: '#/components/schemas/Member',
+                },
+              },
+            },
+          },
+        },
+      },
+      security: [{ studio: [] }, { app: ['openid'] }],
+    },
+  },
+  '/api/apps/{appId}/members/{memberId}': {
+    parameters: [
+      { $ref: '#/components/parameters/appId' },
+      {
+        name: 'memberId',
+        in: 'path',
+        description: 'The ID of the member on which to perform an operation',
+        required: true,
+        schema: { $ref: '#/components/schemas/User/properties/id' },
+      },
+    ],
+    get: {
+      tags: ['app'],
+      description: 'Get an app member.',
+      operationId: 'getAppMember',
+      responses: {
+        200: {
+          description: 'The resulting app member.',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/Member',
+              },
+            },
+          },
+        },
+      },
+      security: [{ studio: [] }, { app: ['openid'] }],
+    },
+    post: {
+      tags: ['app'],
+      description: 'Assign an app role to a member.',
+      operationId: 'setAppMember',
+      requestBody: {
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              required: ['role'],
+              properties: {
+                role: {
+                  type: 'string',
+                  description: 'The role to assign.',
+                },
+                properties: {
+                  type: 'object',
+                  additionalProperties: { type: 'string' },
+                  description: 'Any additional properties that are allowed to be set for members.',
+                },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: 'The resulting app member.',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/Member',
+              },
+            },
+          },
+        },
+      },
+      security: [{ studio: [] }],
+    },
+    delete: {
+      tags: ['app'],
+      description: 'Delete an app member.',
+      operationId: 'deleteAppMember',
+      responses: {
+        204: {
+          description: 'The app member was deleted successfully.',
+        },
+      },
+      security: [{ studio: [] }],
+    },
+  },
+  '/api/apps/{appId}/members/{memberId}/picture': {
+    parameters: [
+      { $ref: '#/components/parameters/appId' },
+      {
+        name: 'memberId',
+        in: 'path',
+        description: 'The ID of the member on which to perform an operation',
+        required: true,
+        schema: { $ref: '#/components/schemas/User/properties/id' },
+      },
+    ],
+    get: {
+      tags: ['app'],
+      description: `Get an app member’s profile picture.
+
+This will return a 404 if the user has not uploaded one.`,
+      operationId: 'getAppMemberPicture',
+      responses: {
+        200: {
+          description: 'The profile picture of the app member.',
+          content: {
+            'image/png': {},
+            'image/jpeg': {},
+            'image/tiff': {},
+            'image/webp': {},
+          },
+        },
+      },
+    },
+  },
+  '/api/apps/{appId}/ratings': {
+    parameters: [{ $ref: '#/components/parameters/appI
