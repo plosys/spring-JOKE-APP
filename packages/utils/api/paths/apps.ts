@@ -319,4 +319,148 @@ export const paths: OpenAPIV3.PathsObject = {
       operationId: 'getAppEmailSettings',
       responses: {
         200: {
-          description: 'The current app email 
+          description: 'The current app email settings',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  emailName: {
+                    type: 'string',
+                    description: 'The name used for emails.',
+                  },
+                  emailHost: {
+                    type: 'string',
+                    description: 'The hostname of the SMTP server.',
+                  },
+                  emailPassword: {
+                    type: 'boolean',
+                    description: 'Whether a password is set.',
+                  },
+                  emailUser: {
+                    type: 'string',
+                    description: 'The username used to authenticate against the SMTP server.',
+                  },
+                  emailPort: {
+                    type: 'string',
+                    description: 'The port used for the SMTP server.',
+                  },
+                  emailSecure: {
+                    type: 'boolean',
+                    description: 'Whether TLS is being used.',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      security: [{ studio: [] }, { cli: ['apps:write'] }],
+    },
+  },
+  '/api/apps/{appId}/icon': {
+    parameters: [{ $ref: '#/components/parameters/appId' }],
+    get: {
+      tags: ['app'],
+      description: 'Get the current app icon.',
+      operationId: 'getAppIcon',
+      responses: {
+        200: {
+          description: 'The icon of the app that matches the given id.',
+          content: {
+            'image/png': {},
+            'image/jpeg': {},
+            'image/tiff': {},
+            'image/webp': {},
+          },
+        },
+      },
+    },
+    delete: {
+      tags: ['app'],
+      description: 'Delete the current app icon.',
+      operationId: 'deleteAppIcon',
+      responses: {
+        204: {
+          description: 'The icon has been successfully removed',
+        },
+      },
+      security: [{ studio: [] }, { cli: ['apps:write'] }],
+    },
+  },
+  '/api/apps/{appId}/maskableIcon': {
+    parameters: [{ $ref: '#/components/parameters/appId' }],
+    delete: {
+      tags: ['app'],
+      description: 'Delete the current app’s maskable icon.',
+      operationId: 'deleteAppMaskableIcon',
+      responses: {
+        204: {
+          description: 'The icon has been successfully removed',
+        },
+      },
+      security: [{ studio: [] }, { cli: ['apps:write'] }],
+    },
+  },
+  '/api/apps/{appId}/subscriptions': {
+    parameters: [{ $ref: '#/components/parameters/appId' }],
+    get: {
+      tags: ['app'],
+      parameters: [{ $ref: '#/components/parameters/endpoint' }],
+      description: 'Fetch all subscription settings of an app.',
+      operationId: 'getSubscription',
+      responses: {
+        200: {
+          description: 'The subscription settings.',
+          $ref: '#/components/responses/subscriptions',
+        },
+      },
+    },
+    post: {
+      tags: ['app'],
+      description: 'Subscribe to an app’s push notifications',
+      operationId: 'addSubscription',
+      requestBody: {
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              description: 'A serialized PushSubscription object',
+              required: ['endpoint', 'keys'],
+              properties: {
+                endpoint: {
+                  type: 'string',
+                },
+                keys: {
+                  type: 'object',
+                  required: ['p256dh', 'auth'],
+                  properties: {
+                    p256dh: { type: 'string' },
+                    auth: { type: 'string' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        204: {
+          description: 'The subscription has successfully been registered.',
+        },
+      },
+      security: [{ app: ['openid'] }, {}],
+    },
+    patch: {
+      tags: ['app'],
+      description:
+        'Subscribe to an app’s push notifications. If value isn’t set it will toggle between subscribing and unsubscribing.',
+      operationId: 'updateSubscription',
+      requestBody: {
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              required: ['endpoint', 'resource', 'action'],
+              properties: {
+                endpoint:
