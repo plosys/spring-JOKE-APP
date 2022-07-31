@@ -1088,4 +1088,168 @@ This will return a 404 if the user has not uploaded one.`,
     },
     patch: {
       tags: ['app'],
-      description: '
+      description: 'Update an existing team.',
+      operationId: 'patchTeam',
+      requestBody: {
+        description: 'The team to update.',
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              required: ['name'],
+              properties: {
+                name: {
+                  type: 'string',
+                },
+                annotations: {
+                  type: 'object',
+                  additionalProperties: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          description: 'The updated team',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  id: { type: 'number' },
+                  name: { type: 'string' },
+                  role: {
+                    type: 'string',
+                    description: 'The role of the user who updated the team',
+                    enum: Object.values(TeamRole),
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      security: [{ studio: [] }, { cli: ['teams:write'] }],
+    },
+    delete: {
+      tags: ['app'],
+      description: 'Delete an existing team.',
+      operationId: 'deleteTeam',
+      responses: {
+        204: { description: 'The team has successfully been deleted.' },
+      },
+      security: [{ studio: [] }, { cli: ['teams:write'] }],
+    },
+  },
+  '/api/apps/{appId}/teams/{teamId}/members': {
+    parameters: [
+      { $ref: '#/components/parameters/appId' },
+      {
+        name: 'teamId',
+        in: 'path',
+        description: 'The ID of the team',
+        required: true,
+        schema: { type: 'number', readOnly: true },
+      },
+    ],
+    get: {
+      tags: ['app'],
+      description: 'Fetch the members of a team and their roles within the team.',
+      operationId: 'getTeamMembers',
+      responses: {
+        200: {
+          description: 'The list of all members.',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'array',
+                items: {
+                  $ref: '#/components/schemas/Member',
+                },
+              },
+            },
+          },
+        },
+      },
+      security: [{ studio: [] }],
+    },
+    post: {
+      tags: ['app'],
+      description: 'Add an app member member to a team.',
+      operationId: 'addTeamMember',
+      requestBody: {
+        description: 'The team to update.',
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              required: ['id'],
+              properties: {
+                id: { $ref: '#/components/schemas/User/properties/id' },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        201: {
+          description: 'The added member',
+          content: {
+            'application/json': {
+              schema: {
+                $ref: '#/components/schemas/Member',
+              },
+            },
+          },
+        },
+      },
+      security: [{ studio: [] }, { app: ['teams:write'] }, { cli: ['teams:write'] }],
+    },
+  },
+  '/api/apps/{appId}/teams/{teamId}/members/{memberId}': {
+    parameters: [
+      { $ref: '#/components/parameters/appId' },
+      {
+        name: 'teamId',
+        in: 'path',
+        description: 'The ID of the team',
+        required: true,
+        schema: { type: 'number', readOnly: true },
+      },
+      {
+        name: 'memberId',
+        in: 'path',
+        description: 'The ID of the team member',
+        required: true,
+        schema: { $ref: '#/components/schemas/User/properties/id' },
+      },
+    ],
+    put: {
+      tags: ['app'],
+      description: 'Update the role of a team member.',
+      operationId: 'updateTeamMember',
+      requestBody: {
+        description: 'The team to update.',
+        required: true,
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              required: ['role'],
+              properties: {
+                role: {
+                  type: 'string',
+                  enum: Object.values(TeamRole),
+                },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        200: {
+          d
