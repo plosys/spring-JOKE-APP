@@ -778,4 +778,152 @@ This will return a 404 if the user has not uploaded one.`,
         200: {
           description: 'The snapshot',
           content: {
-            'application
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  id: { type: 'integer', description: 'The ID of the snapshot.' },
+                  yaml: { type: 'string', description: 'The app definition.' },
+                  $created: {
+                    type: 'string',
+                    format: 'date-time',
+                    description: 'The creation date of the snapshot.',
+                  },
+                  $author: {
+                    type: 'object',
+                    properties: {
+                      id: { $ref: '#/components/schemas/User/properties/id' },
+                      name: { $ref: '#/components/schemas/User/properties/name' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      security: [{ studio: [] }, { cli: ['apps:write'] }],
+    },
+  },
+  '/api/apps/{appId}/screenshots': {
+    parameters: [{ $ref: '#/components/parameters/appId' }],
+    post: {
+      tags: ['app'],
+      description: 'Add one or multiple screenshots of an app.',
+      operationId: 'createAppScreenshot',
+      requestBody: {
+        content: {
+          'multipart/form-data': {
+            schema: {
+              type: 'object',
+              properties: {
+                screenshots: {
+                  type: 'array',
+                  description: 'Screenshots to showcase in the store',
+                  minItems: 1,
+                  items: {
+                    type: 'string',
+                    format: 'binary',
+                  },
+                },
+              },
+            },
+            encoding: {
+              screenshots: {
+                contentType: 'image/png,image/jpeg,image/tiff,image/webp',
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        201: {
+          description: 'The screenshots have been successfully created.',
+          content: {
+            'application/json': {
+              schema: {
+                type: 'array',
+                items: {
+                  type: 'integer',
+                  description: 'The ID of the newly created screenshot.',
+                },
+              },
+            },
+          },
+        },
+      },
+      security: [{ studio: [] }, { cli: ['apps:write'] }],
+    },
+  },
+  '/api/apps/{appId}/screenshots/{screenshotId}': {
+    parameters: [
+      { $ref: '#/components/parameters/appId' },
+      { $ref: '#/components/parameters/screenshotId' },
+    ],
+    get: {
+      tags: ['app'],
+      description: 'Get a screenshot of an app.',
+      operationId: 'getAppScreenshot',
+      responses: {
+        200: {
+          description: 'The app screenshot',
+        },
+      },
+    },
+    delete: {
+      tags: ['app'],
+      description: 'Delete an existing screenshot.',
+      operationId: 'deleteAppScreenshot',
+      responses: {
+        200: {
+          description: 'The screenshot has been successfully deleted.',
+        },
+      },
+      security: [{ studio: [] }, { cli: ['apps:write'] }],
+    },
+  },
+  '/api/apps/{appId}/style/core': {
+    parameters: [{ $ref: '#/components/parameters/appId' }],
+    get: {
+      tags: ['app'],
+      description: 'Get the core style for this app.',
+      operationId: 'getAppCoreStyle',
+      responses: {
+        200: {
+          description: 'The core stylesheet associated with this app.',
+          content: {
+            'text/css': {},
+          },
+        },
+      },
+    },
+  },
+  '/api/apps/{appId}/style/shared': {
+    parameters: [{ $ref: '#/components/parameters/appId' }],
+    get: {
+      tags: ['app'],
+      description: 'Get the shared style for this app.',
+      operationId: 'getAppSharedStyle',
+      responses: {
+        200: {
+          description: 'The shared stylesheet associated with this app.',
+          content: {
+            'text/css': {},
+          },
+        },
+      },
+    },
+  },
+  '/api/apps/{appId}/style/block/@{organizationId}/{blockId}': {
+    parameters: [
+      { $ref: '#/components/parameters/appId' },
+      { $ref: '#/components/parameters/organizationId' },
+      { $ref: '#/components/parameters/blockId' },
+    ],
+    get: {
+      tags: ['app'],
+      description: 'Get the app style for a block.',
+      operationId: 'getAppBlockStyle',
+      responses: {
+        200: {
+          description: 'The stylesheet associated with this block for this app.
