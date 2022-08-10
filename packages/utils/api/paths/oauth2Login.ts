@@ -115,4 +115,6 @@ export const paths: OpenAPIV3.PathsObject = {
         },
       },
       security: [{ studio: [] }],
-   
+    },
+  },
+};
