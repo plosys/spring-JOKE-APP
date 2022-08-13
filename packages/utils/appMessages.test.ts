@@ -403,4 +403,30 @@ describe('extractAppMessages', () => {
     });
   });
 
-  it('should extract names from
+  it('should extract names from tabs pages', () => {
+    const result = extractAppMessages({
+      defaultPage: '',
+      pages: [
+        {
+          name: 'Tabs',
+          type: 'tabs',
+          tabs: [{ name: 'Tab', blocks: [] }],
+        },
+      ],
+    });
+    expect(result).toMatchObject({ app: { 'pages.tabs': 'Tabs', 'pages.tabs.tabs.0': 'Tab' } });
+  });
+
+  it('should append any messages returned by onBlock', () => {
+    const onBlock = import.meta.jest.fn().mockReturnValue({ foo: 'bar' });
+    const result = extractAppMessages(
+      {
+        defaultPage: '',
+        pages: [{ name: 'Page', blocks: [{ type: '', version: '' }] }],
+      },
+      onBlock,
+    );
+    expect(onBlock).toHaveBeenCalledWith({ type: '', version: '' }, ['pages', 'page', 'blocks', 0]);
+    expect(result).toMatchObject({ app: { 'pages.page': 'Page' } });
+  });
+});
