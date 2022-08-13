@@ -68,3 +68,27 @@ describe('getAppBlocks', () => {
       defaultPage: '',
       pages: [
         {
+          name: '',
+          blocks: [
+            { type: 'foo', version: '0.0.0' },
+            { type: '@appsemble/foo', version: '0.0.0' },
+            { type: 'foo', version: '0.0.1' },
+            { type: 'bar', version: '0.0.1' },
+          ],
+        },
+      ],
+    });
+    expect(result).toStrictEqual([
+      { type: '@appsemble/foo', version: '0.0.0' },
+      { type: '@appsemble/foo', version: '0.0.1' },
+      { type: '@appsemble/bar', version: '0.0.1' },
+    ]);
+  });
+});
+
+describe('prefixBlockURL', () => {
+  it('should populate the API url with block properties', () => {
+    const result = prefixBlockURL({ type: '@appsemble/test', version: '1.0.0' }, 'test.css');
+    expect(result).toBe('/api/blocks/@appsemble/test/versions/1.0.0/test.css');
+  });
+});
