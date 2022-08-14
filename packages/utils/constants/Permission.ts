@@ -84,4 +84,12 @@ export enum Permission {
   ReadResources,
 
   /**
-   * The permission to view private apps of an organiz
+   * The permission to view private apps of an organization.
+   */
+  ViewApps,
+
+  /**
+   * The permission to view the list of members in an organization.
+   */
+  ViewMembers,
+}
