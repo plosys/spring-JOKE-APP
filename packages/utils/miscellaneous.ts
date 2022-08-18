@@ -62,4 +62,9 @@ export function stripNullValues(
 
   const result: Record<string, unknown> = {};
   for (const [key, val] of Object.entries(value)) {
-    i
+    if (val != null) {
+      result[key] = stripNullValues(val, { depth: depth - 1, ...options });
+    }
+  }
+  return result;
+}
