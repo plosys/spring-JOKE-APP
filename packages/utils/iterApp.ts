@@ -93,3 +93,99 @@ export function iterBlock(
  * If a callback returns true, the iteration is aborted.
  *
  * @param blockList The block definition list to iterate over.
+ * @param callbacks The callbacks to call if a sub definition is found.
+ * @param prefix The initial path prefix. This is mainly used for nested iteration.
+ * @returns True if any callback returns true, false otherwise.
+ */
+export function iterBlockList(
+  blockList: BlockDefinition[],
+  callbacks: IterCallbacks,
+  prefix: Prefix = [],
+): boolean {
+  if (callbacks.onBlockList?.(blockList, prefix)) {
+    return true;
+  }
+
+  return blockList.some((block, index) => iterBlock(block, callbacks, [...prefix, index]));
+}
+
+/**
+ * Iterate over a page definition and call each callback if relevant.
+ *
+ * If a callback returns true, the iteration is aborted.
+ *
+ * @param page The page definition to iterate over.
+ * @param callbacks The callbacks to call if a sub definition is found.
+ * @param prefix The initial path prefix. This is mainly used for nested iteration.
+ * @returns True if any callback returns true, false otherwise.
+ */
+export function iterPage(
+  page: PageDefinition,
+  callbacks: IterCallbacks,
+  prefix: Prefix = [],
+): boolean {
+  if (callbacks.onPage?.(page, prefix)) {
+    return true;
+  }
+
+  if (page.type === 'flow' || page.type === 'tabs') {
+    let result = false;
+    if ('actions' in page) {
+      result = Object.entries(page.actions).some(([key, action]) =>
+        iterAction(action, callbacks, [...prefix, 'actions', key]),
+      );
+    }
+
+    return (
+      result ||
+      (page.type === 'flow'
+        ? page.steps.some((step, index) =>
+            iterBlockList(step.blocks, callbacks, [...prefix, 'steps', index, 'blocks']),
+          )
+        : page.tabs.some((tab, index) =>
+            iterBlockList(tab.blocks, callbacks, [...prefix, 'tabs', index, 'blocks']),
+          ))
+    );
+  }
+
+  if (page.type === 'loop') {
+    let result = false;
+    if ('actions' in page) {
+      result = Object.entries(page.actions).some(([key, action]) =>
+        iterAction(action, callbacks, [...prefix, 'actions', key]),
+      );
+    }
+    return (
+      result ||
+      ['steps.first', 'steps', 'steps.last'].some((suffix) =>
+        iterBlockList(page.foreach.blocks, callbacks, [...prefix, suffix, 'blocks']),
+      )
+    );
+  }
+
+  return iterBlockList(page.blocks, callbacks, [...prefix, 'blocks']);
+}
+
+/**
+ * Iterate over an app definition and call each callback if relevant.
+ *
+ * @param app The app definition to iterate over.
+ * @param callbacks The callbacks to call if a sub definition is found.
+ * @returns True if any callback returns true, false otherwise.
+ */
+export function iterApp(app: AppDefinition, callbacks: IterCallbacks): boolean {
+  if (
+    Array.isArray(app.pages) &&
+    app.pages.some((page, index) => iterPage(page, callbacks, ['pages', index]))
+  ) {
+    return true;
+  }
+  if (app.cron) {
+    for (const [name, job] of Object.entries(app.cron)) {
+      if (job?.action && iterAction(job.action, callbacks, ['cron', name, 'action'])) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
