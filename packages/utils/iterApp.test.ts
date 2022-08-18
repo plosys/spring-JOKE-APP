@@ -343,4 +343,170 @@ describe('iterPage', () => {
     const onBlockList = import.meta.jest.fn();
     const onPage = import.meta.jest.fn();
 
-    const pa
+    const page: PageDefinition = {
+      name: 'Page',
+      type: 'tabs',
+      tabs: [
+        {
+          name: 'Tabs page 1',
+          blocks: [],
+        },
+      ],
+    };
+
+    const result = iterPage(page, { onBlockList, onPage });
+
+    expect(onBlockList).toHaveBeenCalledWith(page.tabs[0].blocks, ['tabs', 0, 'blocks']);
+    expect(onPage).toHaveBeenCalledWith(page, []);
+    expect(result).toBe(false);
+  });
+
+  it('should call onAction for page actions', () => {
+    const onAction = import.meta.jest.fn();
+    const onPage = import.meta.jest.fn();
+
+    const page: PageDefinition = {
+      name: 'Page',
+      type: 'flow',
+      actions: {
+        onFlowFinish: {
+          type: 'log',
+        },
+      },
+      steps: [],
+    };
+
+    const result = iterPage(page, { onAction, onPage });
+
+    expect(onAction).toHaveBeenCalledWith(page.actions.onFlowFinish, ['actions', 'onFlowFinish']);
+    expect(onPage).toHaveBeenCalledWith(page, []);
+    expect(result).toBe(false);
+  });
+
+  it('should call onAction and onBlockList for pages with actions and sub pages', () => {
+    const onAction = import.meta.jest.fn();
+    const onPage = import.meta.jest.fn();
+    const onBlockList = import.meta.jest.fn();
+
+    const page: PageDefinition = {
+      name: 'Page',
+      type: 'flow',
+      actions: {
+        onFlowFinish: {
+          type: 'log',
+        },
+      },
+      steps: [
+        {
+          name: 'Test Subpage 1',
+          blocks: [
+            {
+              type: 'list',
+              version: '1.2.3',
+              actions: {
+                onClick: {
+                  type: 'log',
+                },
+              },
+            },
+          ],
+        },
+      ],
+    };
+
+    const result = iterPage(page, { onAction, onPage, onBlockList });
+
+    expect(onAction).toHaveBeenCalledWith(page.actions.onFlowFinish, ['actions', 'onFlowFinish']);
+    expect(onPage).toHaveBeenCalledWith(page, []);
+    expect(onBlockList).toHaveBeenCalledWith(page.steps[0].blocks, ['steps', 0, 'blocks']);
+    expect(result).toBe(false);
+  });
+});
+
+describe('iterApp', () => {
+  it('should iterate over the page of an app', () => {
+    const onPage = import.meta.jest.fn();
+
+    const app: AppDefinition = {
+      name: 'App',
+      defaultPage: 'Page',
+      pages: [
+        {
+          name: 'Page',
+          blocks: [],
+        },
+      ],
+    };
+
+    const result = iterApp(app, { onPage });
+
+    expect(onPage).toHaveBeenCalledWith(app.pages[0], ['pages', 0]);
+    expect(result).toBe(false);
+  });
+
+  it('should abort page iteration if a callback returns true', () => {
+    const onPage = import.meta.jest.fn().mockReturnValue(true);
+
+    const app: AppDefinition = {
+      name: 'App',
+      defaultPage: 'Page 1',
+      pages: [
+        {
+          name: 'Page 1',
+          blocks: [],
+        },
+        {
+          name: 'Page 2',
+          blocks: [],
+        },
+      ],
+    };
+
+    const result = iterApp(app, { onPage });
+
+    expect(onPage).toHaveBeenCalledTimes(1);
+    expect(onPage).toHaveBeenCalledWith(app.pages[0], ['pages', 0]);
+    expect(result).toBe(true);
+  });
+
+  it('should iterate over cron jobs', () => {
+    const onAction = import.meta.jest.fn();
+
+    const app: AppDefinition = {
+      name: 'App',
+      defaultPage: 'Page 1',
+      pages: [],
+      cron: {
+        foo: { schedule: '', action: { type: 'noop' } },
+        bar: { schedule: '', action: { type: 'noop' } },
+      },
+    };
+
+    const result = iterApp(app, { onAction });
+
+    expect(onAction).toHaveBeenCalledTimes(2);
+    expect(onAction).toHaveBeenCalledWith(app.cron.foo.action, ['cron', 'foo', 'action']);
+    expect(onAction).toHaveBeenCalledWith(app.cron.bar.action, ['cron', 'bar', 'action']);
+    expect(result).toBe(false);
+  });
+
+  it('should abort cron iteration if a callback returns true', () => {
+    const onAction = import.meta.jest.fn().mockReturnValue(true);
+
+    const app: AppDefinition = {
+      name: 'App',
+      defaultPage: 'Page 1',
+      pages: [],
+      cron: {
+        foo: { schedule: '', action: { type: 'noop' } },
+        bar: { schedule: '', action: { type: 'noop' } },
+      },
+    };
+
+    const result = iterApp(app, { onAction });
+
+    expect(onAction).toHaveBeenCalledTimes(1);
+    expect(onAction).toHaveBeenCalledWith(app.cron.foo.action, ['cron', 'foo', 'action']);
+    expect(result).toBe(true);
+  });
+});
