@@ -1301,3 +1301,629 @@ describe('validateAppDefinition', () => {
       () => [],
     );
     expect(result.valid).toBe(true);
+    expect(result.errors).toStrictEqual([]);
+  });
+
+  it('should report an error if a link action contains a link to a page that doesn’t exist', async () => {
+    const app = createTestApp();
+    (app.pages[0] as BasicPageDefinition).blocks.push({
+      type: 'test',
+      version: '1.2.3',
+      actions: {
+        onWhatever: {
+          type: 'link',
+          to: 'Doesn’t exist',
+        },
+      },
+    });
+    const result = await validateAppDefinition(app, () => [
+      {
+        name: '@appsemble/test',
+        version: '1.2.3',
+        files: [],
+        languages: [],
+        actions: {
+          onWhatever: {},
+        },
+      },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toStrictEqual([
+      new ValidationError('refers to a page that doesn’t exist', 'Doesn’t exist', undefined, [
+        'pages',
+        0,
+        'blocks',
+        0,
+        'actions',
+        'onWhatever',
+        'to',
+      ]),
+    ]);
+  });
+
+  it('should report an error if a link action contains a link to a sub page for a page without sub pages', async () => {
+    const app = createTestApp();
+    (app.pages[0] as BasicPageDefinition).blocks.push({
+      type: 'test',
+      version: '1.2.3',
+      actions: {
+        onWhatever: {
+          type: 'link',
+          to: ['Test Page', 'Bla'],
+        },
+      },
+    });
+    const result = await validateAppDefinition(app, () => [
+      {
+        name: '@appsemble/test',
+        version: '1.2.3',
+        files: [],
+        languages: [],
+        actions: {
+          onWhatever: {},
+        },
+      },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toStrictEqual([
+      new ValidationError(
+        'refers to a sub page on a page that isn’t of type ‘tabs’ or ‘flow’',
+        'Bla',
+        undefined,
+        ['pages', 0, 'blocks', 0, 'actions', 'onWhatever', 'to', 1],
+      ),
+    ]);
+  });
+
+  it('should report an error if a link action contains a link to a tab that doesn’t exist', async () => {
+    const app = createTestApp();
+    (app.pages[0] as BasicPageDefinition).blocks.push({
+      type: 'test',
+      version: '1.2.3',
+      actions: {
+        onWhatever: {
+          type: 'link',
+          to: ['Page with tabs', 'Bla'],
+        },
+      },
+    });
+    const result = await validateAppDefinition(app, () => [
+      {
+        name: '@appsemble/test',
+        version: '1.2.3',
+        files: [],
+        languages: [],
+        actions: {
+          onWhatever: {},
+        },
+      },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toStrictEqual([
+      new ValidationError('refers to a tab that doesn’t exist', 'Bla', undefined, [
+        'pages',
+        0,
+        'blocks',
+        0,
+        'actions',
+        'onWhatever',
+        'to',
+        1,
+      ]),
+    ]);
+  });
+
+  it('should report an error if user actions are used without a security definition', async () => {
+    const { security, ...app } = createTestApp();
+    (app.pages[0] as BasicPageDefinition).blocks.push({
+      type: 'test',
+      version: '1.2.3',
+      actions: {
+        onWhatever: {
+          type: 'user.login',
+          email: 'example@example.com',
+          password: 'password',
+        },
+      },
+    });
+    (app.pages[0] as BasicPageDefinition).blocks.push({
+      type: 'test',
+      version: '1.2.3',
+      actions: {
+        onWhatever: {
+          type: 'user.register',
+          email: 'example@example.com',
+          password: 'password',
+          displayName: 'Test User',
+        },
+      },
+    });
+    (app.pages[0] as BasicPageDefinition).blocks.push({
+      type: 'test',
+      version: '1.2.3',
+      actions: {
+        onWhatever: {
+          type: 'user.update',
+          email: 'example@example.com',
+          password: 'password',
+        },
+      },
+    });
+
+    const result = await validateAppDefinition(app, () => [
+      {
+        name: '@appsemble/test',
+        version: '1.2.3',
+        files: [],
+        languages: [],
+        actions: {
+          onWhatever: {},
+        },
+      },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toStrictEqual([
+      new ValidationError(
+        'refers to a user action but the app doesn’t have a security definition',
+        'user.login',
+        undefined,
+        ['pages', 0, 'blocks', 0, 'actions', 'onWhatever', 'type'],
+      ),
+      new ValidationError(
+        'refers to a user action but the app doesn’t have a security definition',
+        'user.register',
+        undefined,
+        ['pages', 0, 'blocks', 1, 'actions', 'onWhatever', 'type'],
+      ),
+      new ValidationError(
+        'refers to a user action but the app doesn’t have a security definition',
+        'user.update',
+        undefined,
+        ['pages', 0, 'blocks', 2, 'actions', 'onWhatever', 'type'],
+      ),
+    ]);
+  });
+
+  it('should report an error if flow actions are used on a non-flow page', async () => {
+    const app = createTestApp();
+    (app.pages[0] as BasicPageDefinition).blocks.push({
+      type: 'test',
+      version: '1.2.3',
+      actions: {
+        onWhatever: {
+          type: 'flow.next',
+        },
+      },
+    });
+
+    const result = await validateAppDefinition(app, () => [
+      {
+        name: '@appsemble/test',
+        version: '1.2.3',
+        files: [],
+        languages: [],
+        actions: {
+          onWhatever: {},
+        },
+      },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toStrictEqual([
+      new ValidationError(
+        'flow actions can only be used on pages with the type ‘flow’ or ‘loop’',
+        'flow.next',
+        undefined,
+        ['pages', 0, 'blocks', 0, 'actions', 'onWhatever', 'type'],
+      ),
+    ]);
+  });
+
+  it('should report an error if flow.back is used on the first step', async () => {
+    const app = createTestApp();
+    (app.pages[3] as FlowPageDefinition).steps[0].blocks.push({
+      type: 'test',
+      version: '1.2.3',
+      actions: {
+        onWhatever: {
+          type: 'flow.back',
+        },
+      },
+    });
+
+    const result = await validateAppDefinition(app, () => [
+      {
+        name: '@appsemble/test',
+        version: '1.2.3',
+        files: [],
+        languages: [],
+        actions: {
+          onWhatever: {},
+        },
+      },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toStrictEqual([
+      new ValidationError('is not allowed on the first step in the flow', 'flow.back', undefined, [
+        'pages',
+        3,
+        'steps',
+        0,
+        'blocks',
+        0,
+        'actions',
+        'onWhatever',
+        'type',
+      ]),
+    ]);
+  });
+
+  it('should report an error if flow.to refers to a step that doesn’t exist', async () => {
+    const app = createTestApp();
+    (app.pages[3] as FlowPageDefinition).steps[0].blocks.push({
+      type: 'test',
+      version: '1.2.3',
+      actions: {
+        onWhatever: {
+          type: 'flow.to',
+          step: 'Some Step',
+        },
+      },
+    });
+
+    const result = await validateAppDefinition(app, () => [
+      {
+        name: '@appsemble/test',
+        version: '1.2.3',
+        files: [],
+        languages: [],
+        actions: {
+          onWhatever: {},
+        },
+      },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toStrictEqual([
+      new ValidationError('refers to a step that doesn’t exist', 'flow.to', undefined, [
+        'pages',
+        3,
+        'steps',
+        0,
+        'blocks',
+        0,
+        'actions',
+        'onWhatever',
+        'step',
+      ]),
+    ]);
+  });
+
+  it('should report an error if flow.next is called on the last step without onFlowFinish', async () => {
+    const app = createTestApp();
+    (app.pages[3] as FlowPageDefinition).steps[1].blocks.push({
+      type: 'test',
+      version: '1.2.3',
+      actions: {
+        onWhatever: {
+          type: 'flow.next',
+        },
+      },
+    });
+
+    const result = await validateAppDefinition(app, () => [
+      {
+        name: '@appsemble/test',
+        version: '1.2.3',
+        files: [],
+        languages: [],
+        actions: {
+          onWhatever: {},
+        },
+      },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toStrictEqual([
+      new ValidationError(
+        'was defined on the last step but ‘onFlowFinish’ page action wasn’t defined',
+        'flow.next',
+        undefined,
+        ['pages', 3, 'steps', 1, 'blocks', 0, 'actions', 'onWhatever', 'type'],
+      ),
+    ]);
+  });
+
+  it('should report an error if flow.finish is called without onFlowFinish', async () => {
+    const app = createTestApp();
+    (app.pages[3] as FlowPageDefinition).steps[1].blocks.push({
+      type: 'test',
+      version: '1.2.3',
+      actions: {
+        onWhatever: {
+          type: 'flow.finish',
+        },
+      },
+    });
+
+    const result = await validateAppDefinition(app, () => [
+      {
+        name: '@appsemble/test',
+        version: '1.2.3',
+        files: [],
+        languages: [],
+        actions: {
+          onWhatever: {},
+        },
+      },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toStrictEqual([
+      new ValidationError(
+        'was defined but ‘onFlowFinish’ page action wasn’t defined',
+        'flow.finish',
+        undefined,
+        ['pages', 3, 'steps', 1, 'blocks', 0, 'actions', 'onWhatever', 'type'],
+      ),
+    ]);
+  });
+
+  it('should report an error if flow.cancel is called without onFlowCancel', async () => {
+    const app = createTestApp();
+    (app.pages[3] as FlowPageDefinition).steps[1].blocks.push({
+      type: 'test',
+      version: '1.2.3',
+      actions: {
+        onWhatever: {
+          type: 'flow.cancel',
+        },
+      },
+    });
+
+    const result = await validateAppDefinition(app, () => [
+      {
+        name: '@appsemble/test',
+        version: '1.2.3',
+        files: [],
+        languages: [],
+        actions: {
+          onWhatever: {},
+        },
+      },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toStrictEqual([
+      new ValidationError(
+        'was defined but ‘onFlowCancel’ page action wasn’t defined',
+        'flow.cancel',
+        undefined,
+        ['pages', 3, 'steps', 1, 'blocks', 0, 'actions', 'onWhatever', 'type'],
+      ),
+    ]);
+  });
+
+  it('should report an error if a resource action refers to a non-existent resource', async () => {
+    const app = createTestApp();
+    (app.pages[0] as BasicPageDefinition).blocks.push({
+      type: 'test',
+      version: '1.2.3',
+      actions: {
+        onWhatever: {
+          type: 'resource.get',
+          resource: 'Nonexistent',
+        },
+      },
+    });
+
+    const result = await validateAppDefinition(app, () => [
+      {
+        name: '@appsemble/test',
+        version: '1.2.3',
+        files: [],
+        languages: [],
+        actions: {
+          onWhatever: {},
+        },
+      },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toStrictEqual([
+      new ValidationError('refers to a resource that doesn’t exist', 'resource.get', undefined, [
+        'pages',
+        0,
+        'blocks',
+        0,
+        'actions',
+        'onWhatever',
+        'resource',
+      ]),
+    ]);
+  });
+
+  it('should report an error if a resource action refers to a private resource action', async () => {
+    const app = createTestApp();
+    (app.pages[0] as BasicPageDefinition).blocks.push({
+      type: 'test',
+      version: '1.2.3',
+      actions: {
+        onWhatever: {
+          type: 'resource.get',
+          resource: 'person',
+        },
+      },
+    });
+
+    const result = await validateAppDefinition(app, () => [
+      {
+        name: '@appsemble/test',
+        version: '1.2.3',
+        files: [],
+        languages: [],
+        actions: {
+          onWhatever: {},
+        },
+      },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toStrictEqual([
+      new ValidationError(
+        'refers to a resource action that is currently set to private',
+        'resource.get',
+        undefined,
+        ['pages', 0, 'blocks', 0, 'actions', 'onWhatever', 'resource'],
+      ),
+    ]);
+  });
+
+  it('should report an error if a resource action refers is private action without a security definition', async () => {
+    const { security, ...app } = createTestApp();
+    app.resources.person.roles = [];
+    (app.pages[0] as BasicPageDefinition).blocks.push({
+      type: 'test',
+      version: '1.2.3',
+      actions: {
+        onWhatever: {
+          type: 'resource.get',
+          resource: 'person',
+        },
+      },
+    });
+
+    const result = await validateAppDefinition(app, () => [
+      {
+        name: '@appsemble/test',
+        version: '1.2.3',
+        files: [],
+        languages: [],
+        actions: {
+          onWhatever: {},
+        },
+      },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toStrictEqual([
+      new ValidationError(
+        'refers to a resource action that is accessible when logged in, but the app has no security definitions',
+        'resource.get',
+        undefined,
+        ['pages', 0, 'blocks', 0, 'actions', 'onWhatever', 'resource'],
+      ),
+    ]);
+  });
+
+  it('should ignore if an app is null', async () => {
+    const result = await validateAppDefinition(null, () => []);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toStrictEqual([]);
+  });
+
+  it('should if app pages are not an array', async () => {
+    const result = await validateAppDefinition(null, () => []);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toStrictEqual([]);
+  });
+
+  it('should report an error if app validation fails for an unexpected reason', async () => {
+    const result = await validateAppDefinition(null, () => []);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toStrictEqual([]);
+  });
+
+  it('should handle if an unexpected error occurs', async () => {
+    const result = await validateAppDefinition(
+      {
+        get defaultPage(): string {
+          throw new Error('Boom!');
+        },
+        pages: [],
+      },
+      () => [],
+    );
+    expect(result.valid).toBe(false);
+    expect(result.errors).toStrictEqual([
+      new ValidationError('Unexpected error: Boom!', null, undefined, []),
+    ]);
+  });
+
+  it('should prevent block with layout float to be used in a dialog action', async () => {
+    const app = createTestApp();
+    (app.pages[0] as BasicPageDefinition).blocks.push({
+      type: 'test',
+      version: '1.2.3',
+      actions: {
+        onClick: {
+          type: 'dialog',
+          blocks: [
+            {
+              type: 'test',
+              version: '1.2.3',
+            },
+          ],
+        },
+      },
+    });
+    const result = await validateAppDefinition(app, () => [
+      {
+        name: '@appsemble/test',
+        version: '1.2.3',
+        files: [],
+        languages: [],
+        layout: 'float',
+        actions: {
+          onClick: {},
+        },
+      },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toStrictEqual([
+      new ValidationError(
+        'block with layout type: "float" is not allowed in a dialog action',
+        '1.2.3',
+        undefined,
+        ['pages', 0, 'blocks', 0, 'actions', 'onClick', 'type'],
+      ),
+    ]);
+  });
+
+  it('should check app definition for blocks that have their layout manually set to float', async () => {
+    const app = createTestApp();
+    (app.pages[0] as BasicPageDefinition).blocks.push({
+      type: 'test',
+      version: '1.2.3',
+      actions: {
+        onClick: {
+          type: 'dialog',
+          blocks: [
+            {
+              type: 'test',
+              version: '1.2.3',
+              layout: 'float',
+            },
+          ],
+        },
+      },
+    });
+    const result = await validateAppDefinition(app, () => [
+      {
+        name: '@appsemble/test',
+        version: '1.2.3',
+        files: [],
+        languages: [],
+        layout: 'hidden',
+        actions: {
+          onClick: {},
+        },
+      },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toStrictEqual([
+      new ValidationError(
+        'block with layout type: "float" is not allowed in a dialog action',
+        {
+          layout: 'float',
+          type: 'test',
+          version: '1.2.3',
+        },
+        undefined,
+        ['pages', 0, 'blocks', 0, 'actions', 'onClick', 'type'],
+      ),
+    ]);
+  });
+});
