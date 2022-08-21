@@ -243,4 +243,146 @@ function checkCyclicRoleInheritance(
 }
 
 /**
- 
+ * Validate security related definitions within the app definition.
+ *
+ * @param definition The definition of the app
+ * @param report A function used to report a value.
+ */
+function validateSecurity(definition: AppDefinition, report: Report): void {
+  const { notifications, security } = definition;
+  const defaultAllow = ['$none', '$public', '$team:member', '$team:manager'];
+
+  if (!security) {
+    if (notifications === 'login') {
+      report(notifications, 'only works if security is defined', ['notifications']);
+    }
+
+    return;
+  }
+
+  const checkRoleExists = (name: string, path: Prefix, allow = defaultAllow): boolean => {
+    if (!has(security.roles, name) && !allow.includes(name)) {
+      report(name, 'does not exist in this app’s roles', path);
+      return false;
+    }
+    return true;
+  };
+
+  const checkRoles = (object: { roles?: string[] }, path: Prefix, allow = defaultAllow): void => {
+    if (!object?.roles) {
+      return;
+    }
+    for (const [index, role] of object.roles.entries()) {
+      checkRoleExists(role, [...path, 'roles', index], allow);
+    }
+  };
+
+  checkRoleExists(security.default.role, ['security', 'default', 'role']);
+  checkRoles(definition, []);
+  if (definition.resources) {
+    for (const [resourceName, resource] of Object.entries(definition.resources)) {
+      checkRoles(resource, ['resources', resourceName], [...defaultAllow, '$author']);
+      checkRoles(
+        resource.count,
+        ['resources', resourceName, 'count'],
+        [...defaultAllow, '$author'],
+      );
+      checkRoles(resource.create, ['resources', resourceName, 'create']);
+      checkRoles(
+        resource.delete,
+        ['resources', resourceName, 'delete'],
+        [...defaultAllow, '$author'],
+      );
+      checkRoles(resource.get, ['resources', resourceName, 'get'], [...defaultAllow, '$author']);
+      checkRoles(
+        resource.query,
+        ['resources', resourceName, 'query'],
+        [...defaultAllow, '$author'],
+      );
+      checkRoles(
+        resource.update,
+        ['resources', resourceName, 'update'],
+        [...defaultAllow, '$author'],
+      );
+
+      if (resource.views) {
+        for (const [viewName, view] of Object.entries(resource.views)) {
+          checkRoles(
+            view,
+            ['resources', resourceName, 'views', viewName],
+            [...defaultAllow, '$author'],
+          );
+        }
+      }
+    }
+  }
+  iterApp(definition, { onBlock: checkRoles, onPage: checkRoles });
+
+  for (const [name, role] of Object.entries(security.roles)) {
+    if (!role?.inherits) {
+      continue;
+    }
+    let found = false;
+    for (const [index, inheritee] of role.inherits.entries()) {
+      found ||= checkRoleExists(inheritee, ['security', 'roles', name, 'inherits', index]);
+    }
+    if (found) {
+      checkCyclicRoleInheritance(security.roles, name, report);
+    }
+  }
+}
+
+/**
+ * Validates the hooks in resource definition to ensure its properties are valid.
+ *
+ * @param definition The definition of the app
+ * @param report A function used to report a value.
+ */
+function validateHooks(definition: AppDefinition, report: Report): void {
+  if (!definition.resources) {
+    return;
+  }
+  const actionTypes = ['create', 'update', 'delete'] as const;
+  for (const [resourceKey, resource] of Object.entries(definition.resources)) {
+    for (const actionType of actionTypes) {
+      if (!has(resource, actionType)) {
+        continue;
+      }
+      const tos = resource[actionType].hooks?.notification?.to;
+      if (tos) {
+        for (const [index, to] of tos.entries()) {
+          if (to !== '$author' && !has(definition.security?.roles, to)) {
+            report(to, 'is an unknown role', [
+              'resources',
+              resourceKey,
+              actionType,
+              'hooks',
+              'notifications',
+              'to',
+              index,
+            ]);
+          }
+        }
+      }
+    }
+  }
+}
+
+function validateResourceReferences(definition: AppDefinition, report: Report): void {
+  if (!definition.resources) {
+    return;
+  }
+  for (const [resourceType, resource] of Object.entries(definition.resources)) {
+    if (!resource.references) {
+      continue;
+    }
+    for (const [field, reference] of Object.entries(resource.references)) {
+      if (!has(definition.resources, reference.resource)) {
+        report(reference.resource, 'is not an existing resource', [
+          'resources',
+          resourceType,
+          'references',
+          field,
+          'resource',
+        ]);
+        conti
