@@ -385,4 +385,145 @@ function validateResourceReferences(definition: AppDefinition, report: Report): 
           field,
           'resource',
         ]);
-        conti
+        continue;
+      }
+
+      if (!has(resource.schema.properties, field)) {
+        report(field, 'does not exist on this resource', [
+          'resources',
+          resourceType,
+          'references',
+          field,
+        ]);
+      }
+    }
+  }
+}
+
+function validateLanguage({ defaultLanguage }: AppDefinition, report: Report): void {
+  if (defaultLanguage != null && !languageTags.check(defaultLanguage)) {
+    report(defaultLanguage, 'is not a valid language code', ['defaultLanguage']);
+  }
+}
+
+function validateDefaultPage({ defaultPage, pages }: AppDefinition, report: Report): void {
+  const page = pages?.find((p) => p.name === defaultPage);
+
+  if (!page) {
+    report(defaultPage, 'does not refer to an existing page', ['defaultPage']);
+    return;
+  }
+
+  if (page.parameters) {
+    report(defaultPage, 'may not specify parameters', ['defaultPage']);
+  }
+}
+
+function validateCronJobs({ cron }: AppDefinition, report: Report): void {
+  if (!cron) {
+    return;
+  }
+  for (const [id, job] of Object.entries(cron)) {
+    if (typeof job?.schedule !== 'string') {
+      continue;
+    }
+    try {
+      cronParser.parseExpression(job.schedule);
+    } catch {
+      report(job.schedule, 'contains an invalid expression', ['cron', id, 'schedule']);
+    }
+  }
+}
+
+function validateActions(definition: AppDefinition, report: Report): void {
+  const urlRegex = new RegExp(`^${partialNormalized.source}:`);
+
+  iterApp(definition, {
+    onAction(action, path) {
+      if (action.type.startsWith('user.') && !definition.security) {
+        report(
+          action.type,
+          'refers to a user action but the app doesn’t have a security definition',
+          [...path, 'type'],
+        );
+        return;
+      }
+
+      if (action.type.startsWith('resource.')) {
+        // All of the actions starting with `resource.` contain a property called `resource`.
+        const { resource: resourceName, view } = action as ResourceGetActionDefinition;
+        const resource = definition.resources?.[resourceName];
+
+        if (!resource) {
+          report(action.type, 'refers to a resource that doesn’t exist', [...path, 'resource']);
+          return;
+        }
+
+        if (!action.type.startsWith('resource.subscription.')) {
+          const type = action.type.split('.')[1] as
+            | 'count'
+            | 'create'
+            | 'delete'
+            | 'get'
+            | 'query'
+            | 'update';
+          const roles = resource?.[type]?.roles ?? resource?.roles;
+          if (!roles) {
+            report(action.type, 'refers to a resource action that is currently set to private', [
+              ...path,
+              'resource',
+            ]);
+            return;
+          }
+
+          if (roles && !roles.length && !definition.security) {
+            report(
+              action.type,
+              'refers to a resource action that is accessible when logged in, but the app has no security definitions',
+              [...path, 'resource'],
+            );
+            return;
+          }
+
+          if ((type === 'get' || type === 'query') && view) {
+            if (!resource.views?.[view]) {
+              report(action.type, 'refers to a view that doesn’t exist', [...path, 'view']);
+              return;
+            }
+
+            const viewRoles = resource?.views?.[view].roles;
+            if (!viewRoles?.length) {
+              report(action.type, 'refers to a resource view that is currently set to private', [
+                ...path,
+                'view',
+              ]);
+              return;
+            }
+
+            if (viewRoles && !viewRoles.length && !definition.security) {
+              report(
+                action.type,
+                'refers to a resource action that is accessible when logged in, but the app has no security definitions',
+                [...path, 'view'],
+              );
+              return;
+            }
+          }
+        }
+      }
+
+      if (action.type.startsWith('flow.')) {
+        const page = definition.pages?.[Number(path[1])];
+        if (page.type !== 'flow' && page.type !== 'loop') {
+          report(
+            action.type,
+            'flow actions can only be used on pages with the type ‘flow’ or ‘loop’',
+            [...path, 'type'],
+          );
+          return;
+        }
+
+        if (action.type === 'flow.cancel' && !page.actions?.onFlowCancel) {
+          report(action.type, 'was defined but ‘onFlowCancel’ page action wasn’t defined', [
+            ...path,
+       
