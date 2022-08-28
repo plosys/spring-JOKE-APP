@@ -692,4 +692,87 @@ function validateEvents(
       }
 
       if (block.events.listen) {
-        for (const [
+        for (const [prefix, name] of Object.entries(block.events.listen)) {
+          collect([...path, 'events', 'listen', prefix], name, false);
+        }
+      }
+    },
+  });
+
+  for (const { emitters, listeners } of indexMap.values()) {
+    for (const [name, prefixes] of listeners.entries()) {
+      if (!emitters.has(name)) {
+        for (const prefix of prefixes) {
+          report(name, 'does not match any event emitters', prefix);
+        }
+      }
+    }
+    for (const [name, prefixes] of emitters.entries()) {
+      if (!listeners.has(name)) {
+        for (const prefix of prefixes) {
+          report(name, 'does not match any event listeners', prefix);
+        }
+      }
+    }
+  }
+}
+
+export type BlockVersionsGetter = (blockMap: IdentifiableBlock[]) => Promisable<BlockManifest[]>;
+
+/**
+ * Validate an app definition.
+ *
+ * This check various conditions which can’t be validated using basic JSON schema validation.
+ *
+ * @param definition The app validation to check.
+ * @param getBlockVersions A function for getting block manifests from block versions.
+ * @param validatorResult If specified, error messages will be applied to this existing validator
+ * result.
+ * @returns A validator result which contains all app validation violations.
+ */
+export async function validateAppDefinition(
+  definition: AppDefinition,
+  getBlockVersions: BlockVersionsGetter,
+  validatorResult?: ValidatorResult,
+): Promise<ValidatorResult> {
+  let result = validatorResult;
+  if (!result) {
+    const validator = new Validator();
+    result = validator.validate(definition, {});
+  }
+
+  if (!definition) {
+    return result;
+  }
+  const blocks = getAppBlocks(definition);
+  const blockVersions = await getBlockVersions(blocks);
+
+  const blockVersionMap = new Map<string, Map<string, BlockManifest>>();
+  for (const version of blockVersions) {
+    if (!blockVersionMap.has(version.name)) {
+      blockVersionMap.set(version.name, new Map());
+    }
+    blockVersionMap.get(version.name).set(version.version, version);
+  }
+
+  const report: Report = (instance, message, path) => {
+    result.errors.push(new ValidationError(message, instance, undefined, path));
+  };
+
+  try {
+    validateCronJobs(definition, report);
+    validateDefaultPage(definition, report);
+    validateHooks(definition, report);
+    validateLanguage(definition, report);
+    validateResourceReferences(definition, report);
+    validateResourceSchemas(definition, report);
+    validateSecurity(definition, report);
+    validateBlocks(definition, blockVersionMap, report);
+    validateActions(definition, report);
+    validateEvents(definition, blockVersionMap, report);
+  } catch (error) {
+    report(null, `Unexpected error: ${error instanceof Error ? error.message : error}`, []);
+  }
+
+  return result;
+}
