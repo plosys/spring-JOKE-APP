@@ -27,3 +27,8 @@ export function downloadBlob(blob: Blob | string, filename: string): void {
  */
 export async function download(url: string, filename: string, accept?: string): Promise<void> {
   const { data } = await axios.get<Blob>(url, {
+    responseType: 'blob',
+    headers: { accept },
+  });
+  downloadBlob(data, filename);
+}
