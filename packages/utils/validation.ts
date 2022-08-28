@@ -526,4 +526,170 @@ function validateActions(definition: AppDefinition, report: Report): void {
         if (action.type === 'flow.cancel' && !page.actions?.onFlowCancel) {
           report(action.type, 'was defined but ‘onFlowCancel’ page action wasn’t defined', [
             ...path,
-       
+            'type',
+          ]);
+          return;
+        }
+
+        if (action.type === 'flow.finish' && !page.actions?.onFlowFinish) {
+          report(action.type, 'was defined but ‘onFlowFinish’ page action wasn’t defined', [
+            ...path,
+            'type',
+          ]);
+          return;
+        }
+
+        if (action.type === 'flow.back' && path[3] === 0) {
+          report(action.type, 'is not allowed on the first step in the flow', [...path, 'type']);
+          return;
+        }
+
+        if (
+          page.type === 'flow' &&
+          action.type === 'flow.next' &&
+          Number(path[3]) === page.steps.length - 1 &&
+          !page.actions?.onFlowFinish
+        ) {
+          report(
+            action.type,
+            'was defined on the last step but ‘onFlowFinish’ page action wasn’t defined',
+            [...path, 'type'],
+          );
+          return;
+        }
+
+        if (
+          page.type === 'flow' &&
+          action.type === 'flow.to' &&
+          !page.steps.some((step) => step.name === action.step)
+        ) {
+          report(action.type, 'refers to a step that doesn’t exist', [...path, 'step']);
+          return;
+        }
+      }
+
+      if (action.type === 'link') {
+        const { to } = action;
+        if (typeof to === 'string' && urlRegex.test(to)) {
+          return;
+        }
+
+        if (isAppLink(to)) {
+          return;
+        }
+
+        const [toBase, toSub] = [].concat(to);
+        const toPage = definition.pages.find(({ name }) => name === toBase);
+
+        if (!toPage) {
+          report(to, 'refers to a page that doesn’t exist', [...path, 'to']);
+          return;
+        }
+
+        if (toPage.type !== 'tabs' && toSub) {
+          report(toSub, 'refers to a sub page on a page that isn’t of type ‘tabs’ or ‘flow’', [
+            ...path,
+            'to',
+            1,
+          ]);
+          return;
+        }
+
+        if (toPage.type === 'tabs' && toSub) {
+          const subPage = toPage.tabs.find(({ name }) => name === toSub);
+          if (!subPage) {
+            report(toSub, 'refers to a tab that doesn’t exist', [...path, 'to', 1]);
+          }
+        }
+      }
+    },
+  });
+}
+
+function validateEvents(
+  definition: AppDefinition,
+  blockVersions: Map<string, Map<string, BlockManifest>>,
+  report: Report,
+): void {
+  const indexMap = new Map<
+    number,
+    {
+      emitters: Map<string, Prefix[]>;
+      listeners: Map<string, Prefix[]>;
+    }
+  >();
+
+  function collect(prefix: Prefix, name: string, isEmitter: boolean): void {
+    const [firstKey, pageIndex] = prefix;
+
+    // Ignore anything not part of a page. For example cron actions never support events.
+    if (firstKey !== 'pages') {
+      return;
+    }
+
+    if (typeof pageIndex !== 'number') {
+      return;
+    }
+    if (!indexMap.has(pageIndex)) {
+      indexMap.set(pageIndex, { emitters: new Map(), listeners: new Map() });
+    }
+    const { emitters, listeners } = indexMap.get(pageIndex)!;
+    const context = isEmitter ? emitters : listeners;
+    if (!context.has(name)) {
+      context.set(name, []);
+    }
+    const prefixes = context.get(name)!;
+    prefixes.push(prefix);
+  }
+
+  iterApp(definition, {
+    onAction(action, path) {
+      if (action.type === 'dialog') {
+        for (const block of action.blocks) {
+          const versions = blockVersions.get(normalizeBlockName(block.type));
+          const version = versions.get(block.version);
+          if (version.layout === 'float') {
+            report(
+              block.version,
+              'block with layout type: "'
+                .concat(version.layout)
+                .concat('" is not allowed in a dialog action'),
+              [...path, 'type'],
+            );
+          }
+
+          if (block.layout === 'float') {
+            report(
+              block,
+              'block with layout type: "'
+                .concat(block.layout)
+                .concat('" is not allowed in a dialog action'),
+              [...path, 'type'],
+            );
+          }
+        }
+        return;
+      }
+      if (action.type !== 'event') {
+        return;
+      }
+
+      collect([...path, 'event'], action.event, true);
+      if ('waitFor' in action) {
+        collect([...path, 'waitFor'], action.waitFor, false);
+      }
+    },
+
+    onBlock(block, path) {
+      if (!block.events) {
+        return;
+      }
+
+      if (block.events.emit) {
+        for (const [prefix, name] of Object.entries(block.events.emit)) {
+          collect([...path, 'events', 'emit', prefix], name, true);
+        }
+      }
+
+      if (block.events.listen) {
+        for (const [
