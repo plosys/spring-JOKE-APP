@@ -18,4 +18,14 @@ export function serializeResource(data: any): FormData | JsonValue {
     }
     return value;
   };
-  const 
+  const resource = extractAssets(data);
+  if (!assets.length) {
+    return resource;
+  }
+  const form = new FormData();
+  form.set('resource', JSON.stringify(resource));
+  for (const asset of assets) {
+    form.append('assets', asset);
+  }
+  return form;
+}
