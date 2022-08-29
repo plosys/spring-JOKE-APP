@@ -56,4 +56,14 @@ export default function webpackConfig(blockConfig, options) {
   // Add a plugin for example
   config.plugins.push(new ImageMinimizerPlugin());
 
-  // Or configure a fa
+  // Or configure a fallback
+  config.resolve.alias.fallback.fs = false;
+
+  return config;
+}
+```
+
+## License
+
+[LGPL-3.0-only](https://gitlab.com/appsemble/appsemble/-/blob/0.20.40/LICENSE.md) ©
+[Appsemble](https://appsemble.com)
