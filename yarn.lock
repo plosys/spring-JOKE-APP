@@ -11794,4 +11794,88 @@ postcss-custom-selectors@^7.1.0:
 postcss-dir-pseudo-class@^7.0.0:
   version "7.0.2"
   resolved "https://registry.yarnpkg.com/postcss-dir-pseudo-class/-/postcss-dir-pseudo-class-7.0.2.tgz#71618b7eb4abe067845d11b3c8f322760c9b3e88"
-  integrity sha512
+  integrity sha512-cMnslilYxBf9k3qejnovrUONZx1rXeUZJw06fgIUBzABJe3D2LiLL5WAER7Imt3nrkaIgG05XZBztueLEf5P8w==
+  dependencies:
+    postcss-selector-parser "^6.0.10"
+
+postcss-discard-comments@^5.1.2:
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/postcss-discard-comments/-/postcss-discard-comments-5.1.2.tgz#8df5e81d2925af2780075840c1526f0660e53696"
+  integrity sha512-+L8208OVbHVF2UQf1iDmRcbdjJkuBF6IS29yBDSiWUIzpYaAhtNl6JYnYm12FnkeCwQqF5LeklOu6rAqgfBZqQ==
+
+postcss-discard-duplicates@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/postcss-discard-duplicates/-/postcss-discard-duplicates-5.1.0.tgz#9eb4fe8456706a4eebd6d3b7b777d07bad03e848"
+  integrity sha512-zmX3IoSI2aoenxHV6C7plngHWWhUOV3sP1T8y2ifzxzbtnuhk1EdPwm0S1bIUNaJ2eNbWeGLEwzw8huPD67aQw==
+
+postcss-discard-empty@^5.1.1:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/postcss-discard-empty/-/postcss-discard-empty-5.1.1.tgz#e57762343ff7f503fe53fca553d18d7f0c369c6c"
+  integrity sha512-zPz4WljiSuLWsI0ir4Mcnr4qQQ5e1Ukc3i7UfE2XcrwKK2LIPIqE5jxMRxO6GbI3cv//ztXDsXwEWT3BHOGh3A==
+
+postcss-discard-overridden@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/postcss-discard-overridden/-/postcss-discard-overridden-5.1.0.tgz#7e8c5b53325747e9d90131bb88635282fb4a276e"
+  integrity sha512-21nOL7RqWR1kasIVdKs8HNqQJhFxLsyRfAnUDm4Fe4t4mCWL9OJiHvlHPjcd8zc5Myu89b/7wZDnOSjFgeWRtw==
+
+postcss-double-position-gradients@^4.0.0:
+  version "4.0.2"
+  resolved "https://registry.yarnpkg.com/postcss-double-position-gradients/-/postcss-double-position-gradients-4.0.2.tgz#855a23201f26be447210504e9b668429cbf4640c"
+  integrity sha512-GXL1RmFREDK4Q9aYvI2RhVrA6a6qqSMQQ5ke8gSH1xgV6exsqbcJpIumC7AOgooH6/WIG3/K/T8xxAiVHy/tJg==
+  dependencies:
+    "@csstools/postcss-progressive-custom-properties" "^2.0.0"
+    postcss-value-parser "^4.2.0"
+
+postcss-focus-visible@^8.0.0:
+  version "8.0.2"
+  resolved "https://registry.yarnpkg.com/postcss-focus-visible/-/postcss-focus-visible-8.0.2.tgz#a7ac26ffe3e9c2bd17d7200d75e2d79ee8110891"
+  integrity sha512-f/Vd+EC/GaKElknU59esVcRYr/Y3t1ZAQyL4u2xSOgkDy4bMCmG7VP5cGvj3+BTLNE9ETfEuz2nnt4qkZwTTeA==
+  dependencies:
+    postcss-selector-parser "^6.0.10"
+
+postcss-focus-within@^7.0.0:
+  version "7.0.2"
+  resolved "https://registry.yarnpkg.com/postcss-focus-within/-/postcss-focus-within-7.0.2.tgz#5d2c866030e66ed22b204c9506de640943310b1c"
+  integrity sha512-AHAJ89UQBcqBvFgQJE9XasGuwMNkKsGj4D/f9Uk60jFmEBHpAL14DrnSk3Rj+SwZTr/WUG+mh+Rvf8fid/346w==
+  dependencies:
+    postcss-selector-parser "^6.0.10"
+
+postcss-font-variant@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/postcss-font-variant/-/postcss-font-variant-5.0.0.tgz#efd59b4b7ea8bb06127f2d031bfbb7f24d32fa66"
+  integrity sha512-1fmkBaCALD72CK2a9i468mA/+tr9/1cBxRRMXOUaZqO43oWPR5imcyPjXwuv7PXbCid4ndlP5zWhidQVVa3hmA==
+
+postcss-gap-properties@^4.0.0:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/postcss-gap-properties/-/postcss-gap-properties-4.0.1.tgz#0347d6a84a46bfbe88bedc542cc4b354e04a8338"
+  integrity sha512-V5OuQGw4lBumPlwHWk/PRfMKjaq/LTGR4WDTemIMCaMevArVfCCA9wBJiL1VjDAd+rzuCIlkRoRvDsSiAaZ4Fg==
+
+postcss-image-set-function@^5.0.0:
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/postcss-image-set-function/-/postcss-image-set-function-5.0.2.tgz#088e0f535f43e74d6ea8033ff7b0482e2735ea6e"
+  integrity sha512-Sszjwo0ubETX0Fi5MvpYzsONwrsjeabjMoc5YqHvURFItXgIu3HdCjcVuVKGMPGzKRhgaknmdM5uVWInWPJmeg==
+  dependencies:
+    postcss-value-parser "^4.2.0"
+
+postcss-import@^15.0.0:
+  version "15.1.0"
+  resolved "https://registry.yarnpkg.com/postcss-import/-/postcss-import-15.1.0.tgz#41c64ed8cc0e23735a9698b3249ffdbf704adc70"
+  integrity sha512-hpr+J05B2FVYUAXHeK1YyI267J/dDDhMU6B6civm8hSY1jYJnBXxzKDKDswzJmtLHryrjhnDjqqp/49t8FALew==
+  dependencies:
+    postcss-value-parser "^4.0.0"
+    read-cache "^1.0.0"
+    resolve "^1.1.7"
+
+postcss-initial@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/postcss-initial/-/postcss-initial-4.0.1.tgz#529f735f72c5724a0fb30527df6fb7ac54d7de42"
+  integrity sha512-0ueD7rPqX8Pn1xJIjay0AZeIuDoF+V+VvMt/uOnn+4ezUKhZM/NokDeP6DwMNyIoYByuN/94IQnt5FEkaN59xQ==
+
+postcss-lab-function@^5.0.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/postcss-lab-function/-/postcss-lab-function-5.1.0.tgz#ed3822feb0f7ff229e6d185929583b16861f7753"
+  integrity sha512-iZApRTNcpc71uTn7PkzjHtj5cmuZpvu6okX4jHnM5OFi2fG97sodjxkq6SpL65xhW0NviQrAMSX97ntyGVRV0w==
+  dependencies:
+    "@csstools/color-helpers" "^1.0.0"
+    "@csstools/postcss-progressive-custom-properties" "^2.0.0"
+    post
